@@ -118,6 +118,14 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route 
+          path="/principal/*" 
+          element={
+            <ProtectedRoute role="principal">
+              <PrincipalDashboard />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* Fallback to login */}
         <Route path="*" element={<Navigate to="/" replace />} />

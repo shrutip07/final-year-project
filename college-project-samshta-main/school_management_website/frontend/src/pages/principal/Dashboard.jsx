@@ -1,125 +1,491 @@
+
+// import React, { useState, useEffect } from "react";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
+// import Profile from "./Profile";
+// import Teachers from "./Teachers";
+// import Students from "./Students";
+
+// export default function PrincipalDashboard() {
+//   const navigate = useNavigate();
+//   const [dashboardData, setDashboardData] = useState(null);
+//   const [sidebarTab, setSidebarTab] = useState("dashboard");
+//   const [profile, setProfile] = useState(null);
+//   const [students, setStudents] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState("");
+
+//   const sidebarItems = [
+//     { key: "dashboard", label: "Dashboard", icon: "bi-house" },
+//     { key: "profile", label: "Profile", icon: "bi-person" },
+//     { key: "teachers", label: "Teachers", icon: "bi-people" },
+//     { key: "students", label: "Students", icon: "bi-person-lines-fill" },
+//   ];
+
+//   useEffect(() => {
+//   const fetchProfile = async () => {
+//     try {
+//       const token = localStorage.getItem("token");
+//       const response = await axios.get("http://localhost:5000/api/principal/me", {
+//         headers: { Authorization: `Bearer ${token}` },
+//       });
+//       setProfile(response.data);
+//     } catch (err) {
+//       if (err.response?.status === 404) {
+//         navigate("/principal/onboarding");
+//       } else {
+//         setError(err.response?.data?.message || "Failed to load profile");
+//       }
+//     }
+//   };
+
+//   const fetchDashboard = async () => {
+//     try {
+//       const token = localStorage.getItem("token");
+//       const res = await axios.get("http://localhost:5000/api/principal/dashboard-data", {
+//         headers: { Authorization: `Bearer ${token}` },
+//       });
+//       setDashboardData(res.data);
+//       setLoading(false);
+//     } catch (err) {
+//       if (err.response?.status === 404) {
+//         navigate("/principal/onboarding");
+//       } else {
+//         setError(err.response?.data?.message || "Failed to load dashboard data");
+//         setLoading(false);
+//       }
+//     }
+//   };
+
+//   const fetchStudents = async () => {
+//     try {
+//       const token = localStorage.getItem("token");
+//       const response = await axios.get("http://localhost:5000/api/principal/students", {
+//         headers: { Authorization: `Bearer ${token}` },
+//       });
+//       setStudents(response.data);
+//     } catch (err) {
+//       setError(err.response?.data?.message || "Failed to load students");
+//     }
+//   };
+
+//   // Run all async calls together
+//   Promise.all([fetchProfile(), fetchStudents(), fetchDashboard()])
+//     .finally(() => setLoading(false));
+
+// }, [navigate]);
+// if (!dashboardData) return null;
+//     const { principal, unit, teacherCount, studentCount } = dashboardData;
+
+//     return (
+//       <div>
+//         <h2>Principal Dashboard</h2>
+//         {/* Principal section */}
+//         <div
+//           style={{
+//             border: "1px solid #ccc",
+//             background: "#fafafa",
+//             padding: "18px",
+//             marginBottom: 24,
+//             borderRadius: 6
+//           }}
+//         >
+//           <h3>Principal Profile</h3>
+//           <div style={{ marginTop: 8 }}>
+//             <b>Name:</b> {principal.full_name} <br />
+//             <b>Email:</b> {principal.email} <br />
+//             <b>Phone:</b> {principal.phone} <br />
+//             <b>Qualification:</b> {principal.qualification} <br />
+//             <b>Unit ID:</b> {principal.unit_id}
+//           </div>
+//         </div>
+//         {/* Unit section */}
+//         {unit && (
+//           <div
+//             style={{
+//               border: "1px solid #ccc",
+//               background: "#fafafa",
+//               padding: "18px",
+//               marginBottom: 24,
+//               borderRadius: 6
+//             }}
+//           >
+//             <h3>Unit Details (School Info)</h3>
+//             <div style={{ columns: 2 }}>
+//               {Object.entries(unit).map(([key, value]) => (
+//                 <div key={key} style={{ marginBottom: 6 }}>
+//                   <b>{key}:</b> {value !== null ? value.toString() : "-"}
+//                 </div>
+//               ))}
+//             </div>
+//             <div
+//               style={{
+//                 display: "flex",
+//                 gap: "24px",
+//                 fontSize: "1.1rem",
+//                 marginTop: 18
+//               }}
+//             >
+//               <div
+//                 style={{
+//                   background: "#fff",
+//                   border: "1px solid #ddd",
+//                   borderRadius: 5,
+//                   padding: "10px 30px",
+//                   minWidth: 90,
+//                   textAlign: "center"
+//                 }}
+//               >
+//                 Teachers<br />
+//                 <span style={{ fontWeight: 700, fontSize: "1.2em" }}>
+//                   {teacherCount}
+//                 </span>
+//               </div>
+//               <div
+//                 style={{
+//                   background: "#fff",
+//                   border: "1px solid #ddd",
+//                   borderRadius: 5,
+//                   padding: "10px 30px",
+//                   minWidth: 90,
+//                   textAlign: "center"
+//                 }}
+//               >
+//                 Students<br />
+//                 <span style={{ fontWeight: 700, fontSize: "1.2em" }}>
+//                   {studentCount}
+//                 </span>
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+//     );
+//   };
+
+//   const renderContent = () => {
+//     switch (sidebarTab) {
+//       case "dashboard":
+//         return renderDashboard();
+//       case "profile":
+//         return <div>Profile component here</div>;
+//       case "teachers":
+//         return <div>Teachers component here</div>;
+//       case "students":
+//         return <div>Students component here</div>;
+//       default:
+//         return <div>Select a tab</div>;
+//     }
+//   };
+
+//   if (loading) return <div>Loading...</div>;
+//   if (error) return <div style={{ color: "red" }}>{error}</div>;
+
+//   return (
+//     <div style={{ display: "flex", minHeight: "100vh" }}>
+//       <aside
+//         style={{
+//           width: 220,
+//           backgroundColor: "#212b36",
+//           color: "white",
+//           paddingTop: 24,
+//           borderRight: "1px solid #e3e7ed",
+//           display: "flex",
+//           flexDirection: "column"
+//         }}
+//       >
+//         <div style={{ paddingLeft: 16, paddingBottom: 12, fontWeight: "bold", fontSize: 18 }}>
+//           <i className="bi bi-grid-3x3-gap me-2" /> Principal Portal
+//         </div>
+//         <nav style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
+//           {sidebarItems.map((item) => (
+//             <button
+//               key={item.key}
+//               onClick={() => setSidebarTab(item.key)}
+//               style={{
+//                 background: sidebarTab === item.key ? "#2a3b4d" : "transparent",
+//                 color: sidebarTab === item.key ? "#0dcaf0" : "#fff",
+//                 textAlign: "left",
+//                 padding: "12px 20px",
+//                 fontSize: "1rem",
+//                 border: "none",
+//                 borderLeft: sidebarTab === item.key ? "4px solid #0dcaf0" : "none",
+//                 cursor: "pointer"
+//               }}
+//             >
+//               <i className={`bi me-2 ${item.icon}`}></i>{item.label}
+//             </button>
+//           ))}
+//         </nav>
+//         <button
+//           onClick={() => {
+//             localStorage.removeItem("token");
+//             navigate("/login");
+//           }}
+//           style={{
+//             margin: "16px",
+//             padding: "12px 20px",
+//             background: "transparent",
+//             color: "red",
+//             border: "none",
+//             cursor: "pointer",
+//             textAlign: "left",
+//             fontWeight: "bold"
+//           }}
+//         >
+//           <i className="bi bi-box-arrow-right me-2"></i> Logout
+//         </button>
+//         <div style={{ padding: "0 16px 16px 16px", fontSize: "12px", color: "#ccc" }}>
+//           © {new Date().getFullYear()} School Principal
+//         </div>
+//       </aside>
+//       <main style={{ flexGrow: 1, padding: "24px", overflowY: "auto" }}>
+//         {renderContent()}
+//       </main>
+//     </div>
+//   );
+// }
+
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../../components/Navbar";
+import axios from "axios";
 import Profile from "./Profile";
 import Teachers from "./Teachers";
-import Students from "./Students"; // Import Students component
+import Students from "./Students";
 
-export default function Dashboard() {
+export default function PrincipalDashboard() {
   const navigate = useNavigate();
+  const [dashboardData, setDashboardData] = useState(null);
   const [sidebarTab, setSidebarTab] = useState("dashboard");
-  const [profileExists, setProfileExists] = useState(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    fetch("/api/principal/me", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => res.json())
-      .then((res) => {
-        if (!res.exists) {
-          navigate("/principal/onboarding");
-        } else {
-          setProfileExists(true);
-        }
-      })
-      .catch(() => {
-        navigate("/principal/onboarding");
-      });
-  }, [navigate]);
+  const [profile, setProfile] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const sidebarItems = [
     { key: "dashboard", label: "Dashboard", icon: "bi-house" },
     { key: "profile", label: "Profile", icon: "bi-person" },
     { key: "teachers", label: "Teachers", icon: "bi-people" },
-    { key: "students", label: "Students", icon: "bi-person-lines-fill" }
+    { key: "students", label: "Students", icon: "bi-person-lines-fill" },
   ];
 
-  const renderContent = () => {
-    switch (sidebarTab) {
-      case "profile": 
-        return <Profile />;
-      case "teachers": 
-        return <Teachers />;
-      case "students": 
-        return <Students />; // Add this case
-      case "dashboard":
-      default:
-        return (
-          <div className="dashboard-container">
-            <h1>Principal Dashboard</h1>
-            <div className="dashboard-cards">
-              <div className="card" onClick={() => navigate('/principal/profile')}>
-                <h3>Profile</h3>
-                <p>View and edit your profile</p>
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:5000/api/principal/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setProfile(response.data);
+      } catch (err) {
+        if (err.response?.status === 404) {
+          navigate("/principal/onboarding");
+        } else {
+          setError(err.response?.data?.message || "Failed to load profile");
+        }
+      }
+    };
+
+    const fetchDashboard = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:5000/api/principal/dashboard-data", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setDashboardData(res.data);
+      } catch (err) {
+        if (err.response?.status === 404) {
+          navigate("/principal/onboarding");
+        } else {
+          setError(err.response?.data?.message || "Failed to load dashboard data");
+        }
+      }
+    };
+
+    const fetchStudents = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:5000/api/principal/students", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setStudents(response.data);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to load students");
+      }
+    };
+
+    Promise.all([fetchProfile(), fetchStudents(), fetchDashboard()])
+      .finally(() => setLoading(false));
+  }, [navigate]);
+
+  const renderDashboard = () => {
+    if (!dashboardData) return null;
+    const { principal, unit, teacherCount, studentCount } = dashboardData;
+
+    return (
+      <div>
+        <h2>Principal Dashboard</h2>
+        {/* Principal section */}
+        <div
+          style={{
+            border: "1px solid #ccc",
+            background: "#fafafa",
+            padding: "18px",
+            marginBottom: 24,
+            borderRadius: 6,
+          }}
+        >
+          <h3>Principal Profile</h3>
+          <div style={{ marginTop: 8 }}>
+            <b>Name:</b> {principal.full_name} <br />
+            <b>Email:</b> {principal.email} <br />
+            <b>Phone:</b> {principal.phone} <br />
+            <b>Qualification:</b> {principal.qualification} <br />
+            <b>Unit ID:</b> {principal.unit_id}
+          </div>
+        </div>
+        {/* Unit section */}
+        {unit && (
+          <div
+            style={{
+              border: "1px solid #ccc",
+              background: "#fafafa",
+              padding: "18px",
+              marginBottom: 24,
+              borderRadius: 6,
+            }}
+          >
+            <h3>Unit Details (School Info)</h3>
+            <div style={{ columns: 2 }}>
+              {Object.entries(unit).map(([key, value]) => (
+                <div key={key} style={{ marginBottom: 6 }}>
+                  <b>{key}:</b> {value !== null ? value.toString() : "-"}
+                </div>
+              ))}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: "24px",
+                fontSize: "1.1rem",
+                marginTop: 18,
+              }}
+            >
+              <div
+                style={{
+                  background: "#fff",
+                  border: "1px solid #ddd",
+                  borderRadius: 5,
+                  padding: "10px 30px",
+                  minWidth: 90,
+                  textAlign: "center",
+                }}
+              >
+                Teachers<br />
+                <span style={{ fontWeight: 700, fontSize: "1.2em" }}>
+                  {teacherCount}
+                </span>
               </div>
-              <div className="card" onClick={() => navigate('/principal/teachers')}>
-                <h3>Teachers</h3>
-                <p>Manage teachers</p>
-              </div>
-              <div className="card" onClick={() => navigate('/principal/students')}>
-                <h3>Students</h3>
-                <p>View all students</p>
+              <div
+                style={{
+                  background: "#fff",
+                  border: "1px solid #ddd",
+                  borderRadius: 5,
+                  padding: "10px 30px",
+                  minWidth: 90,
+                  textAlign: "center",
+                }}
+              >
+                Students<br />
+                <span style={{ fontWeight: 700, fontSize: "1.2em" }}>
+                  {studentCount}
+                </span>
               </div>
             </div>
           </div>
-        );
+        )}
+      </div>
+    );
+  };
+
+  const renderContent = () => {
+    switch (sidebarTab) {
+      case "dashboard":
+        return renderDashboard();
+      case "profile":
+        return <Profile />;
+      case "teachers":
+        return <Teachers />;
+      case "students":
+        return <Students />;
+      default:
+        return <div>Select a tab</div>;
     }
   };
 
-  if (profileExists === null) {
-    return <div className="text-center mt-5">Loading...</div>;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div style={{ color: "red" }}>{error}</div>;
 
   return (
-    <div className="d-flex" style={{ minHeight: "100vh", background: "#f7fafd" }}>
-      {/* Sidebar and Main Layout unchanged */}
-      <div
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      <aside
         style={{
-          minWidth: 220,
-          background: "#212b36",
-          color: "#fff",
+          width: 220,
+          backgroundColor: "#212b36",
+          color: "white",
           paddingTop: 24,
-          borderRight: "1px solid #e3e7ed"
+          borderRight: "1px solid #e3e7ed",
+          display: "flex",
+          flexDirection: "column",
         }}
-        className="flex-shrink-0 d-flex flex-column"
       >
-        <div className="ps-4 pb-3 fs-4 fw-bold">
-          <i className="bi bi-grid-3x3-gap me-2"></i>Principal Panel
+        <div style={{ paddingLeft: 16, paddingBottom: 12, fontWeight: "bold", fontSize: 18 }}>
+          <i className="bi bi-grid-3x3-gap me-2" /> Principal Portal
         </div>
-        <div className="nav flex-column">
-          {sidebarItems.map(item => (
+        <nav style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
+          {sidebarItems.map((item) => (
             <button
               key={item.key}
-              className={`btn btn-link px-4 py-3 text-start w-100 text-${sidebarTab === item.key ? "info" : "light"} fs-6 fw-semibold`}
-              style={{
-                ...(sidebarTab === item.key && {
-                  background: "#2a3b4d",
-                  borderLeft: "4px solid #0dcaf0"
-                }),
-                border: "none",
-                borderRadius: 0
-              }}
               onClick={() => setSidebarTab(item.key)}
+              style={{
+                background: sidebarTab === item.key ? "#2a3b4d" : "transparent",
+                color: sidebarTab === item.key ? "#0dcaf0" : "#fff",
+                textAlign: "left",
+                padding: "12px 20px",
+                fontSize: "1rem",
+                border: "none",
+                borderLeft: sidebarTab === item.key ? "4px solid #0dcaf0" : "none",
+                cursor: "pointer",
+              }}
             >
               <i className={`bi me-2 ${item.icon}`}></i>{item.label}
             </button>
           ))}
-          <button
-            className="btn btn-link px-4 py-3 text-start w-100 text-danger fs-6 fw-semibold mt-3"
-            style={{ border: "none", borderRadius: 0 }}
-            onClick={() => {
-              localStorage.removeItem("token");
-              navigate("/login");
-            }}
-          >
-            <i className="bi bi-box-arrow-right me-2"></i>Logout
-          </button>
-        </div>
-        <div className="mt-auto ps-4 pb-4 text-muted small">
+        </nav>
+        <button
+          onClick={() => {
+            localStorage.removeItem("token");
+            navigate("/login");
+          }}
+          style={{
+            margin: "16px",
+            padding: "12px 20px",
+            background: "transparent",
+            color: "red",
+            border: "none",
+            cursor: "pointer",
+            textAlign: "left",
+            fontWeight: "bold",
+          }}
+        >
+          <i className="bi bi-box-arrow-right me-2"></i> Logout
+        </button>
+        <div style={{ padding: "0 16px 16px 16px", fontSize: "12px", color: "#ccc" }}>
           © {new Date().getFullYear()} School Principal
         </div>
-      </div>
-      {/* Main Content */}
-      <main className="flex-fill" style={{ padding: "2.5rem 2rem" }}>
+      </aside>
+      <main style={{ flexGrow: 1, padding: "24px", overflowY: "auto" }}>
         {renderContent()}
       </main>
     </div>

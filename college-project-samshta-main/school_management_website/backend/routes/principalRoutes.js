@@ -1,21 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken, authorizeRoles } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 const principalController = require('../controllers/principalController');
 
 // Principal Onboarding (create profile)
-router.post('/', authenticateToken, authorizeRoles('principal'), principalController.createProfile);
+router.post('/onboard', authenticateToken, principalController.onboard);
 
 // Get principal profile
-router.get('/me', authenticateToken, authorizeRoles('principal'), principalController.getMyProfile);
+router.get('/me', authenticateToken, principalController.getProfile);
 
 // Update principal profile
-router.put('/:principal_id', authenticateToken, authorizeRoles('principal'), principalController.updateProfile);
+router.put('/:principal_id', authenticateToken, principalController.updateProfile);
 
 // Get all teachers
-router.get('/teachers', authenticateToken, authorizeRoles('principal'), principalController.getTeachers);
+router.get('/teachers', authenticateToken, principalController.getTeachers);
+
+router.get('/dashboard-data', authenticateToken, principalController.getDashboardData);
 
 // Add this new route
-router.get('/students', authenticateToken, authorizeRoles('principal'), principalController.getStudents);
+router.get('/students', authenticateToken, principalController.getStudents);
 
 module.exports = router;

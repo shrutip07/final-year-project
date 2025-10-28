@@ -102,7 +102,7 @@ export default function Students() {
     const token = localStorage.getItem("token");
     try {
       await axios.put(
-        `/api/teacher/student/${form.student_id}`,
+        `http://localhost:5000/api/teacher/student/${form.student_id}`,
         form,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -131,7 +131,7 @@ export default function Students() {
     const token = localStorage.getItem("token");
     try {
       const res = await axios.post(
-        "/api/teacher/student",
+        "http://localhost:5000/api/teacher/student",
         form,
         { headers: { Authorization: `Bearer ${token}` } }
       );
