@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken } = require('../middleware/auth');
+//const { authenticateToken } = require('../middleware/auth');
 const principalController = require('../controllers/principalController');
+const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
 // Principal Onboarding (create profile)
 router.post('/onboard', authenticateToken, principalController.onboard);
@@ -16,6 +17,7 @@ router.put('/:principal_id', authenticateToken, principalController.updateProfil
 router.get('/teachers', authenticateToken, principalController.getTeachers);
 
 router.get('/dashboard-data', authenticateToken, principalController.getDashboardData);
+router.get('/analytics', authenticateToken, authorizeRoles('principal'), principalController.getAnalytics);
 
 // Add this new route
 router.get('/students', authenticateToken, principalController.getStudents);
