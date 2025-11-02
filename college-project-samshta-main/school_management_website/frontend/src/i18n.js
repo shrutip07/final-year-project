@@ -64,7 +64,13 @@ const resources = {
       failed_load_units: "Failed to load units",
       failed_update: "Failed to update",
       all_fields_required: "All fields are required",
-      onboarding_failed: "Onboarding failed"
+      onboarding_failed: "Onboarding failed",
+
+      // Notifications
+      notifications: "Notifications",
+      no_notifications: "No notifications found",
+      notification_title: "Notifications",
+      mark_as_read: "Mark as read"
     }
   },
   mr: {
@@ -129,7 +135,13 @@ const resources = {
       failed_load_units: "युनिट्स लोड करण्यात अयशस्वी",
       failed_update: "अपडेट करण्यात अयशस्वी",
       all_fields_required: "सर्व फील्ड्स आवश्यक आहेत",
-      onboarding_failed: "ऑनबोर्डिंग अयशस्वी"
+      onboarding_failed: "ऑनबोर्डिंग अयशस्वी",
+
+      // Notifications
+      notifications: "सूचनाएँ",
+      no_notifications: "कोई सूचना नहीं मिली",
+      notification_title: "सूचनाएँ",
+      mark_as_read: "पढ़ा के रूप में चिह्नित करें"
     }
   }
 };

@@ -45,25 +45,52 @@ exports.createNotification = async (req, res) => {
 
 exports.getNotifications = async (req, res) => {
   try {
-    const role = req.user.role; // ✅ receiver role based
+    const { role } = req.query;
+    const userId = req.user.id;
 
-    const result = await pool.query(
-      `SELECT * FROM notifications 
-       WHERE receiver_role = $1 
-       ORDER BY created_at DESC`,
-      [role]
-    );
+    console.log('Fetching notifications:', { role, userId }); // Debug log
 
-    return res.status(200).json(result.rows);
+    const query = `
+      SELECT * FROM notifications 
+      WHERE receiver_role = $1 
+      AND (receiver_id IS NULL OR receiver_id = $2)
+      ORDER BY created_at DESC
+    `;
+
+    const result = await pool.query(query, [role, userId]);
+    
+    console.log(`Found ${result.rows.length} notifications`); // Debug log
+
+    return res.json(result.rows);
   } catch (err) {
-    console.error("Error fetching notifications:", err.message);
-    return res.status(500).json({ error: err.message });
+    console.error('Database error:', err);
+    return res.status(500).json({
+      message: 'Error fetching notifications',
+      error: err.message
+    });
   }
 };
 
-
-// ✅ Principal Notifications
 exports.getPrincipalNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id; // Get user ID from auth token
+
+    const result = await pool.query(
+      `SELECT * FROM notifications 
+       WHERE (receiver_role = 'principal' AND (receiver_id = $1 OR receiver_id IS NULL))
+       ORDER BY created_at DESC`,
+      [userId]
+    );
+
+    console.log('Fetched notifications:', result.rows); // Debug log
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching notifications:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+// ✅ Principal Notifications
+/*exports.getPrincipalNotifications = async (req, res) => {
   try {
     const principalId = req.user.user_id;
 
@@ -79,7 +106,8 @@ exports.getPrincipalNotifications = async (req, res) => {
     console.error("Error fetching notifications:", err);
     res.status(500).json({ message: "Server error" });
   }
-};
+};*/
+
 
 
 

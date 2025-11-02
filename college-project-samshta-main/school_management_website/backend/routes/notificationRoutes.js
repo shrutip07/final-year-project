@@ -1,47 +1,27 @@
-/*const express = require("express");
-const router = express.Router();
-const { protect } = require("../middleware/auth");
-const {
-  createNotification,
-  getNotifications,
-  markAsRead,
-} = require("../controllers/notificationController");
-
-router.post("/", protect, createNotification);
-router.get("/", protect, getNotifications);
-router.patch("/:id/read", protect, markAsRead);
-
-module.exports = router;*/
 const express = require("express");
 const router = express.Router();
-
-const {
-  createNotification,
-  getNotifications,
-  markAsRead,
-} = require("../controllers/notificationController");
-
 const { authenticateToken } = require("../middleware/auth");
+const notificationController = require("../controllers/notificationController");
 
-// ✅ Admin: Send notification
-router.post(
-  "/send",
-  authenticateToken,
-  createNotification   // Admin check is inside controller or can be added later
-);
-
-// ✅ Logged-in user: fetch notifications
+// Get notifications with role filter
 router.get(
   "/",
   authenticateToken,
-  getNotifications
+  notificationController.getNotifications
 );
 
-// ✅ Mark notification as read
+// Get principal-specific notifications
+router.get(
+  "/principal",
+  authenticateToken,
+  notificationController.getPrincipalNotifications
+);
+
+// Mark as read
 router.put(
   "/:id/read",
   authenticateToken,
-  markAsRead
+  notificationController.markAsRead
 );
 
 module.exports = router;
