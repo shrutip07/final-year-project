@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
+import Notifications from "./pages/Notifications";
+
 import AdminDashboard from './pages/admin/Dashboard';
 import PrincipalDashboard from './pages/principal/Dashboard';
 import TeacherDashboard from './pages/teacher/Dashboard';
@@ -14,6 +16,10 @@ import { jwtDecode } from "jwt-decode";
 import TeacherProfile from './pages/teacher/Profile';
 import PrincipalStudents from './pages/principal/Students';
 import TeacherStudents from './pages/teacher/Students';
+import PrincipalNotificationsPage from "./pages/principal/PrincipalNotificationsPage";
+import TeacherNotificationsPage from "./pages/teacher/TeacherNotificationsPage";
+import AdminNotificationsPage from "./pages/AdminNotificationsPage";
+
 
 // Add these imports
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -52,6 +58,9 @@ function App() {
             <Tables />
           </ProtectedRoute>
         } />
+       
+
+
         <Route 
           path="/admin/tables/:unitId" 
           element={
@@ -60,6 +69,34 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route 
+  path="/admin/notifications" 
+  element={
+    <ProtectedRoute role="admin">
+      <AdminNotificationsPage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route 
+  path="/principal/notifications" 
+  element={
+    <ProtectedRoute role="principal">
+      <PrincipalNotificationsPage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route 
+  path="/teacher/notifications" 
+  element={
+    <ProtectedRoute role="teacher">
+      <TeacherNotificationsPage />
+    </ProtectedRoute>
+  }
+/>
+
+
 
         {/* Teacher Dashboard */}
         <Route path="/teacher" element={

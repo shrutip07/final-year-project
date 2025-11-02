@@ -3,6 +3,8 @@ const router = express.Router();
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 const teacherController = require('../controllers/teacherController');
 
+
+
 // Get current logged-in teacher's staff profile
 router.get('/me', authenticateToken, authorizeRoles('teacher'), teacherController.getMyProfile);
 router.get('/students', authenticateToken, authorizeRoles('teacher'), teacherController.getMyStudents);

@@ -405,9 +405,14 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 import "./Dashboard.scss";
+import AdminNotificationsPage from "../AdminNotificationsPage";
+
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+
   const [sidebarTab, setSidebarTab] = useState("dashboard");
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -418,8 +423,19 @@ export default function AdminDashboard() {
     { key: "dashboard", label: t("dashboard"), icon: "bi-speedometer2" },
     { key: "tables", label: t("tables"), icon: "bi-table" },
     { key: "charts", label: t("charts"), icon: "bi-bar-chart-fill" },
-    { key: "budgets", label: t("budgets"), icon: "bi-wallet2" }
+    { key: "budgets", label: t("budgets"), icon: "bi-wallet2" },
+    { key: "notifications", label: "Notifications", icon: "bi-bell-fill" }
+
   ];
+  useEffect(() => {
+  // Dummy notifications for testing
+  setNotifications([
+    { id: 1, message: "New school added" },
+    { id: 2, message: "Budget updated" },
+  ]);
+}, []);
+
+
 
   useEffect(() => {
     const fetchUnits = async () => {
@@ -446,10 +462,18 @@ export default function AdminDashboard() {
       case "dashboard":
         return (
           <div className="dashboard-content">
-            <div className="page-header">
-              <h2>{t("school_overview")}</h2>
-              <p className="text-muted">{t("manage_monitor_all_schools")}</p>
-            </div>
+            <div className="page-header d-flex justify-content-between align-items-center">
+  <div>
+    <h2>{t("school_overview")}</h2>
+    <p className="text-muted">{t("manage_monitor_all_schools")}</p>
+  </div>
+
+  {/* 🔔 Notification Bell */}
+  
+
+  
+</div>
+
 
             <div className="stats-cards mb-4">
               <div className="row g-3">
@@ -536,6 +560,9 @@ export default function AdminDashboard() {
       case "tables":
         navigate("/admin/tables");
         return null;
+      case "notifications":
+  return <AdminNotificationsPage />;
+
       default:
         return <div>{t("select_tab")}</div>;
     }
@@ -577,6 +604,42 @@ export default function AdminDashboard() {
         </div>
       </div>
       {/* Main Content */}
+      {/* Top Header */}
+<div className="top-header d-flex justify-content-end align-items-center p-3 bg-white shadow-sm position-relative">
+  <button
+    className="btn btn-light position-relative me-3"
+    onClick={() => setShowNotifications(!showNotifications)}
+  >
+    <i className="bi bi-bell fs-5"></i>
+    {notifications.length > 0 && (
+      <span className="badge bg-danger position-absolute top-0 start-100 translate-middle">
+        {notifications.length}
+      </span>
+    )}
+  </button>
+
+  {showNotifications && (
+    <div
+      className="position-absolute bg-white shadow rounded p-2"
+      style={{ top: "60px", right: "20px", width: "250px", zIndex: 1000 }}
+    >
+      <h6 className="border-bottom pb-2 mb-2">{t("notifications")}</h6>
+      {notifications.length === 0 ? (
+        <p className="text-muted mb-0">{t("no_new_notifications")}</p>
+      ) : (
+        <ul className="list-unstyled mb-0">
+          {notifications.map((n) => (
+            <li key={n.id} className="mb-2">
+              <i className="bi bi-dot text-primary"></i> {n.message}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )}
+</div>
+
+
       <main className="main-content">
         {loading ? (
           <div className="loading-spinner">
