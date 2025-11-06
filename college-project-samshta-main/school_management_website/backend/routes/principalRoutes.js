@@ -3,6 +3,7 @@ const router = express.Router();
 //const { authenticateToken } = require('../middleware/auth');
 const principalController = require('../controllers/principalController');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
+const { getPrincipalNotifications } = require("../controllers/notificationController");
 
 // Principal Onboarding (create profile)
 router.post('/onboard', authenticateToken, principalController.onboard);
@@ -21,5 +22,10 @@ router.get('/analytics', authenticateToken, authorizeRoles('principal'), princip
 
 // Add this new route
 router.get('/students', authenticateToken, principalController.getStudents);
-
+router.get(
+  "/notifications",
+  authenticateToken,
+  authorizeRoles("principal"),
+  getPrincipalNotifications
+);
 module.exports = router;

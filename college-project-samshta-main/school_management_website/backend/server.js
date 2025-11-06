@@ -6,12 +6,16 @@ const adminRoutes = require('./routes/adminRoutes');
 const authRoutes = require('./routes/authRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
 const principalRoutes = require('./routes/principalRoutes');
+const notificationRoutes = require("./routes/notificationRoutes"); // ✅ Fixed
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+// ✅ Notification API before role-based routes
+app.use("/api/notifications", notificationRoutes);
 
+// ✅ Other API routes
 // Auth, Admin, Teacher, Principal API
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
