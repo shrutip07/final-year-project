@@ -1,6 +1,187 @@
 
 
 const pool = require('../config/db');
+// Create a new form with questions (admin)
+
+exports.createForm = async (req, res) => {
+  const { title, description, receiver_role, deadline, questions } = req.body;
+  const created_by = req.user.id;
+
+  if (!title || !receiver_role || !deadline || !questions || !Array.isArray(questions)) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const formResult = await client.query(
+      `INSERT INTO forms (title, description, created_by, receiver_role, deadline) 
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [title, description, created_by, receiver_role, deadline]
+    );
+    const formId = formResult.rows[0].id;
+
+    // Insert questions
+    for (const q of questions) {
+      await client.query(
+        `INSERT INTO form_questions (form_id, question_text, question_type, options)
+         VALUES ($1, $2, $3, $4)`,
+        [formId, q.question_text, q.question_type, q.options || null]
+      );
+    }
+    await client.query('COMMIT');
+    res.status(201).json({ success: true, form: formResult.rows[0] });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error("CreateForm error:", err);
+    res.status(500).json({ error: "Failed to create form" });
+  } finally {
+    client.release();
+  }
+};
+
+// Get all active forms for a role (for principal/teacher view)
+exports.getActiveForms = async (req, res) => {
+  const { role } = req.query; // 'principal' or 'teacher'
+  const now = new Date();
+
+  try {
+    const formsRes = await pool.query(
+      `SELECT * FROM forms 
+       WHERE receiver_role=$1 AND is_active=TRUE AND deadline > $2
+       ORDER BY created_at DESC`,
+      [role, now]
+    );
+    res.json(formsRes.rows);
+  } catch (err) {
+    console.error("getActiveForms error:", err);
+    res.status(500).json({ error: "Failed to fetch forms" });
+  }
+};
+
+// Get form questions for a given form
+exports.getFormQuestions = async (req, res) => {
+  const { formId } = req.params;
+  try {
+    const questionsRes = await pool.query(
+      `SELECT * FROM form_questions WHERE form_id = $1`,
+      [formId]
+    );
+    res.json(questionsRes.rows);
+  } catch (err) {
+    console.error("getFormQuestions error:", err);
+    res.status(500).json({ error: "Failed to fetch questions" });
+  }
+};
+
+// Submit a filled form
+exports.submitFormResponse = async (req, res) => {
+  const { formId } = req.params;
+  const { answers } = req.body;
+
+  console.log("submitFormResponse:", { user: req.user, formId, answers });
+
+  // FIX: Accept both school_id and unit_id as fallback
+  let school_id = req.user?.school_id;
+  if (!school_id && req.user.unit_id) {
+    school_id = req.user.unit_id;
+  }
+  const submitted_by = req.user?.id;
+
+  if (!school_id || !submitted_by) {
+    return res.status(400).json({ error: "Missing user or school context." });
+  }
+  if (!answers || !Array.isArray(answers) || answers.length === 0) {
+    return res.status(400).json({ error: "Answers required and should not be empty." });
+  }
+  for (const ans of answers) {
+    if (!ans.question_id || typeof ans.answer === "undefined") {
+      return res.status(400).json({ error: "Malformed question or answer." });
+    }
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const respRes = await client.query(
+      `INSERT INTO form_responses (form_id, school_id, submitted_by) 
+       VALUES ($1, $2, $3) RETURNING *`,
+      [formId, school_id, submitted_by]
+    );
+    const responseId = respRes.rows[0].id;
+    for (const ans of answers) {
+      await client.query(
+        `INSERT INTO form_answers (response_id, question_id, answer)
+         VALUES ($1, $2, $3)`,
+        [responseId, ans.question_id, ans.answer]
+      );
+    }
+    await client.query('COMMIT');
+    res.status(201).json({ success: true });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error("submitFormResponse error:", err); // <--- READ CONSOLE OUTPUT!
+    res.status(500).json({ error: "Failed to submit response" });
+  } finally {
+    client.release();
+  }
+};
+exports.getAllFormResponses = async (req, res) => {
+  try {
+    // Adjust table/column names to match your schema
+    const result = await pool.query('SELECT * FROM form_answers ORDER BY submitted_at DESC');
+    // You can join other tables for more details if needed
+    res.json({ data: result.rows });
+  } catch (err) {
+    console.error('Error fetching form responses:', err);
+    res.status(500).json({ message: 'Failed to retrieve form responses' });
+  }
+};
+
+// Get all responses for a form (admin/creator view)
+exports.getFormResponses = async (req, res) => {
+  const { formId } = req.params;
+  try {
+    // Get responses, then answers for each response
+    const respRes = await pool.query(
+      `SELECT * FROM form_responses WHERE form_id = $1`,
+      [formId]
+    );
+    const responses = respRes.rows;
+    for (let response of responses) {
+      const answersRes = await pool.query(
+        `SELECT fa.*, fq.question_text, fq.question_type 
+         FROM form_answers fa
+         JOIN form_questions fq ON fa.question_id = fq.id
+         WHERE fa.response_id = $1`,
+        [response.id]
+      );
+      response.answers = answersRes.rows;
+    }
+    res.json(responses);
+  } catch (err) {
+    console.error("getFormResponses error:", err);
+    res.status(500).json({ error: "Failed to fetch responses" });
+  }
+};
+
+// Discard/Deactivate a form
+exports.deactivateForm = async (req, res) => {
+  const { formId } = req.params;
+  try {
+    await pool.query(
+      `UPDATE forms SET is_active = FALSE WHERE id = $1`,
+      [formId]
+    );
+    res.json({ success: true, message: "Form deactivated" });
+  } catch (err) {
+    console.error("deactivateForm error:", err);
+    res.status(500).json({ error: "Failed to deactivate form" });
+  }
+};
+
+// ...rest of your code (analytics, units, students) remains the same...
+
 exports.getUnitAnalytics = async (req, res) => {
   const { unitId } = req.params;
   try {
@@ -59,6 +240,9 @@ exports.getUnits = async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM unit');
     const units = result.rows;
+    if (!Array.isArray(units) || units.length === 0) {
+      return res.json([]);
+    }
 
     // For each unit, fetch staff and student count
     const enrichedUnits = await Promise.all(
@@ -73,8 +257,8 @@ exports.getUnits = async (req, res) => {
         );
         return {
           ...unit,
-          staff_count: parseInt(staffRes.rows[0].count),
-          student_count: parseInt(studentRes.rows[0].count)
+          staff_count: parseInt(staffRes.rows[0].count || 0),
+          student_count: parseInt(studentRes.rows[0].count || 0)
         };
       })
     );
@@ -82,11 +266,10 @@ exports.getUnits = async (req, res) => {
     res.json(enrichedUnits);
   } catch (err) {
     console.error('Error in getUnits:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message || 'Failed to fetch units.' });
   }
 };
 
-// Get single unit's full details by ID (teachers + students with enrollments)
 exports.getUnitById = async (req, res) => {
   try {
     const { unitId } = req.params;
@@ -97,22 +280,18 @@ exports.getUnitById = async (req, res) => {
     const teachersResult = await pool.query(
       `SELECT staff_id, full_name, email, phone, qualification, designation, subject, joining_date, updatedat
        FROM staff WHERE unit_id = $1 AND staff_type = 'teaching'`, [unitId]);
-const paymentsResult = await pool.query(
-  'SELECT * FROM unit_payments WHERE unit_id = $1 ORDER BY fiscal_year, category', [unitId]
-);
-// Budgets per unit
-const budgetsResult = await pool.query(
-  'SELECT * FROM unit_budgets WHERE unit_id = $1 ORDER BY fiscal_year, version', [unitId]
-);
-// Banks per unit
-const banksResult = await pool.query(
-  'SELECT * FROM unit_banks WHERE unit_id = $1 ORDER BY bank_id', [unitId]
-);
-// Cases per unit
-const casesResult = await pool.query(
-  'SELECT * FROM unit_cases WHERE unit_id = $1 ORDER BY id', [unitId]
-);
-    // Students with enrollments (the critical change)
+    const paymentsResult = await pool.query(
+      'SELECT * FROM unit_payments WHERE unit_id = $1 ORDER BY fiscal_year, category', [unitId]
+    );
+    const budgetsResult = await pool.query(
+      'SELECT * FROM unit_budgets WHERE unit_id = $1 ORDER BY fiscal_year, version', [unitId]
+    );
+    const banksResult = await pool.query(
+      'SELECT * FROM unit_banks WHERE unit_id = $1 ORDER BY bank_id', [unitId]
+    );
+    const casesResult = await pool.query(
+      'SELECT * FROM unit_cases WHERE unit_id = $1 ORDER BY id', [unitId]
+    );
     const studentsResult = await pool.query(
       `SELECT s.student_id, s.full_name, s.dob, s.gender, s.address, s.parent_name, s.parent_phone, s.admission_date,
               e.standard, e.division, e.roll_number, e.academic_year, e.passed, s.createdat, s.updatedat
@@ -128,16 +307,15 @@ const casesResult = await pool.query(
       teachers: teachersResult.rows,
       students: studentsResult.rows,
       payments: paymentsResult.rows,
-  budgets: budgetsResult.rows,
-  banks: banksResult.rows,
-  cases: casesResult.rows
+      budgets: budgetsResult.rows,
+      banks: banksResult.rows,
+      cases: casesResult.rows
     });
   } catch (err) {
     console.error("Error in getUnitById:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message || "Failed to load unit detail." });
   }
 };
-
 // Get all teaching staff for a unit
 exports.getUnitTeachers = async (req, res) => {
   try {
