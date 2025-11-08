@@ -153,6 +153,7 @@ const teacherRoutes = require('./routes/teacherRoutes');
 const principalRoutes = require('./routes/principalRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const formRoutes = require('./routes/formRoutes');
+const chatRoutes = require("./routes/chat");
 const { verify } = require('./controllers/authController'); // <-- Import this!
 
 // CORS middleware
@@ -173,6 +174,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/principal', principalRoutes);
+app.use('/api/chat', chatRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

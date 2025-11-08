@@ -387,6 +387,9 @@ localStorage.removeItem("token");
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
+
+import Assistant from "./components/Assistant";
+
 import AdminDashboard from './pages/admin/Dashboard';
 import PrincipalDashboard from './pages/principal/Dashboard';
 import TeacherDashboard from './pages/teacher/Dashboard';
@@ -406,6 +409,7 @@ import FormResponsePage from './pages/FormResponsePage';
 import { jwtDecode } from "jwt-decode";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+
 
 const ProtectedRoute = ({ children, role }) => {
   const token = localStorage.getItem("token");
@@ -523,6 +527,10 @@ function App() {
         {/* Catch-all fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {/* Chat Assistant mounted globally so it's available on every page */}
+      
+      <Assistant />
     </Router>
   );
 }
