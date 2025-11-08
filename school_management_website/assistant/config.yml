@@ -1,0 +1,64 @@
+# version: "3.1"
+# language: en
+
+# pipeline:
+# - name: WhitespaceTokenizer
+# - name: RegexFeaturizer
+# - name: LanguageModelFeaturizer
+#   model_name: "bert"
+#   model_weights: "bert-base-multilingual-cased"
+# - name: LexicalSyntacticFeaturizer
+# - name: CountVectorsFeaturizer
+# - name: CountVectorsFeaturizer
+#   analyzer: char_wb
+#   min_ngram: 3
+#   max_ngram: 5
+# - name: DIETClassifier
+#   epochs: 80
+#   constrain_similarities: true
+# - name: EntitySynonymMapper
+# - name: ResponseSelector
+#   epochs: 80
+
+# policies:
+# - name: RulePolicy
+#   core_fallback_threshold: 0.3
+#   core_fallback_action_name: "action_default_fallback"
+# - name: TEDPolicy
+#   max_history: 6
+#   epochs: 60
+# assistant_id: 20251107-184248-humongous-acquisition
+
+version: "3.1"
+language: en
+
+pipeline:
+- name: WhitespaceTokenizer
+- name: RegexFeaturizer
+- name: LanguageModelFeaturizer
+  model_name: "bert"
+  model_weights: "bert-base-multilingual-cased"
+- name: LexicalSyntacticFeaturizer
+- name: CountVectorsFeaturizer
+- name: CountVectorsFeaturizer
+  analyzer: char_wb
+  min_ngram: 3
+  max_ngram: 5
+- name: DIETClassifier
+  epochs: 80
+  constrain_similarities: true
+- name: EntitySynonymMapper
+- name: ResponseSelector
+  epochs: 80
+- name: FallbackClassifier
+  threshold: 0.6           # tune if too sensitive
+  ambiguity_threshold: 0.1
+
+policies:
+- name: RulePolicy
+  core_fallback_threshold: 0.3
+  core_fallback_action_name: "action_default_fallback"
+- name: TEDPolicy
+  max_history: 6
+  epochs: 60
+assistant_id: 20251108-121738-immature-soy
