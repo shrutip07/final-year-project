@@ -1,0 +1,63 @@
+version: "3.1"
+
+intents:
+  - greet
+  - navigate_admin
+  - navigate_admin_tables
+  - navigate_admin_charts
+  - navigate_admin_budgets
+  - navigate_dashboard
+  - navigate_tables
+  - navigate_charts
+  - navigate_budgets
+  - navigate_teacher
+  - navigate_teacher_charts
+  - navigate_principal
+  - navigate_login
+  - ask_fees
+  - ask_admissions
+  - give_school
+  - ask_budget
+  - nlu_fallback
+
+entities:
+  - school
+
+slots:
+  school:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: school
+      - type: from_text
+        conditions:
+          - active_loop: null
+
+  user_role:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: null
+
+responses:
+  utter_greet:
+    - text: "Hi! Ask me 'open charts', 'go to admin', किंवा 'शुल्क कसे भरायचे?'"
+
+  utter_fees:
+    - text: "Fees → select term → verify amount → pay. If any issue, go to Contact and raise a ticket."
+
+  utter_admissions:
+    - text: "Admissions → Choose program → Fill form → Upload docs → Submit. Track from Dashboard."
+
+  utter_ask_school:
+    - text: "For which school? (Kendrashala Alpha / Kendrashala Beta)"
+
+  utter_fallback:
+    - text: "I didn't get that. Try 'teacher charts', 'admin tables', or ask 'शुल्क कसे भरायचे?'."
+
+actions:
+  - action_navigate
+  - action_llm_answer

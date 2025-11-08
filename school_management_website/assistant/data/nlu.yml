@@ -1,0 +1,73 @@
+version: "3.1"
+nlu:
+- intent: greet
+  examples: |
+    - hi
+    - hello
+    - नमस्कार
+
+- intent: navigate_admin
+  examples: |
+    - go to admin
+    - open admin
+    - admin dashboard
+    - अॅडमिन उघडा
+
+- intent: navigate_admin_tables
+  examples: |
+    - open tables
+    - admin tables
+    - टेबल्स दाखवा
+
+- intent: navigate_teacher
+  examples: |
+    - teacher page
+    - teacher dashboard
+    - शिक्षक पेज
+    - शिक्षक उघडा
+
+- intent: navigate_teacher_charts
+  examples: |
+    - open charts
+    - go to charts
+    - charts page
+    - analytics
+    - चार्ट्स उघडा
+
+- intent: navigate_principal
+  examples: |
+    - principal dashboard
+    - open principal
+    - प्राचार्य पेज
+
+- intent: navigate_login
+  examples: |
+    - login
+    - sign in
+    - लॉगिन
+
+- intent: ask_fees
+  examples: |
+    - how to pay fees
+    - fees payment steps
+    - शुल्क कसे भरायचे
+
+- intent: ask_admissions
+  examples: |
+    - admission process
+    - how to apply for admission
+    - प्रवेश प्रक्रिया
+
+- intent: give_school
+  examples: |
+    - Kendrashala Alpha
+    - Kendrashala Beta
+    - केन्द्रशाळा अल्फा
+    - केन्द्रशाळा बीटा
+
+- intent: ask_budget
+  examples: |
+    - show budget
+    - budget of [Kendrashala Alpha](school)
+    - budgets of [Kendrashala Beta](school)
+    - अल्फा चे बजेट दाखवा

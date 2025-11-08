@@ -1,0 +1,60 @@
+# version: "3.1"
+# rules:
+# - rule: greet
+#   steps:
+#     - intent: greet
+#     - action: utter_greet
+
+# # LLM fallback when NLU is unsure
+# - rule: llm fallback
+#   steps:
+#     - intent: nlu_fallback
+#     - action: action_llm_answer
+
+# - rule: navigate
+#   steps:
+#     - intent: navigate_any
+#     - action: action_navigate
+
+# - rule: navigate charts
+#   steps:
+#     - intent: navigate_charts
+#     - action: action_navigate
+
+# - rule: navigate tables
+#   steps:
+#     - intent: navigate_tables
+#     - action: action_navigate
+
+# - rule: navigate budgets
+#   steps:
+#     - intent: navigate_budgets
+#     - action: action_navigate
+
+version: "3.1"
+rules:
+- rule: admin explain dashboard
+  steps:
+    - intent: navigate_dashboard
+    - action: action_navigate
+
+- rule: admin explain tables
+  steps:
+    - intent: navigate_tables
+    - action: action_navigate
+
+- rule: admin explain charts
+  steps:
+    - intent: navigate_charts
+    - action: action_navigate
+
+- rule: admin explain budgets
+  steps:
+    - intent: navigate_budgets
+    - action: action_navigate
+
+# Fallback → dynamic retrieval from knowledge/*.md
+- rule: fallback to RAG
+  steps:
+    - intent: nlu_fallback
+    - action: action_llm_answer
