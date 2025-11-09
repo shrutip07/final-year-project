@@ -1,8 +1,6 @@
-
-
 const pool = require('../config/db');
-// Create a new form with questions (admin)
 
+// Create a new form with questions (admin)
 exports.createForm = async (req, res) => {
   const { title, description, receiver_role, deadline, questions } = req.body;
   const created_by = req.user.id;
@@ -40,6 +38,42 @@ exports.createForm = async (req, res) => {
   }
 };
 
+// Admin: Get all filled form data, joined in a single result
+exports.getAllFormResponsesDetailed = async (req, res) => {
+  try {
+    const query = `
+      SELECT
+       f.id AS form_id,
+       f.title AS form_title,
+       fr.id AS response_id,
+       fr.submitted_at,
+       u.id AS submitted_by_id,
+       COALESCE(s.full_name, p.full_name) AS submitted_by_name,
+       u.role AS submitted_by_role,
+       un.unit_id AS unit_id,
+       un.kendrashala_name AS unit_name,
+       fq.id AS question_id,
+       fq.question_text,
+       fq.question_type,
+       fa.answer
+      FROM form_answers fa
+       JOIN form_questions fq ON fa.question_id = fq.id
+       JOIN form_responses fr ON fa.response_id = fr.id
+       JOIN forms f ON fr.form_id = f.id
+       JOIN "Users" u ON fr.submitted_by = u.id
+       LEFT JOIN staff s ON s.user_id = u.id
+       LEFT JOIN principal p ON p.user_id = u.id
+       JOIN unit un ON fr.school_id = un.unit_id
+      ORDER BY fa.id DESC
+    `;
+    const result = await pool.query(query);
+    res.json({ data: result.rows });
+  } catch (err) {
+    console.error('Error fetching all form responses (detailed):', err);
+    res.status(500).json({ message: 'Failed to retrieve form responses (detailed)' });
+  }
+};
+
 // Get all active forms for a role (for principal/teacher view)
 exports.getActiveForms = async (req, res) => {
   const { role } = req.query; // 'principal' or 'teacher'
@@ -74,14 +108,13 @@ exports.getFormQuestions = async (req, res) => {
   }
 };
 
-// Submit a filled form
+// Submit a filled form with deadline enforcement
 exports.submitFormResponse = async (req, res) => {
   const { formId } = req.params;
   const { answers } = req.body;
 
   console.log("submitFormResponse:", { user: req.user, formId, answers });
 
-  // FIX: Accept both school_id and unit_id as fallback
   let school_id = req.user?.school_id;
   if (!school_id && req.user.unit_id) {
     school_id = req.user.unit_id;
@@ -98,6 +131,21 @@ exports.submitFormResponse = async (req, res) => {
     if (!ans.question_id || typeof ans.answer === "undefined") {
       return res.status(400).json({ error: "Malformed question or answer." });
     }
+  }
+
+  // Deadline check to reject submission if expired
+  try {
+    const formRes = await pool.query('SELECT deadline FROM forms WHERE id = $1', [formId]);
+    if (formRes.rowCount === 0) {
+      return res.status(404).json({ error: "Form not found." });
+    }
+    const deadline = new Date(formRes.rows[0].deadline);
+    const now = new Date();
+    if (now > deadline) {
+      return res.status(400).json({ error: "This form has expired. Deadline has passed." });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: "Form deadline check failed." });
   }
 
   const client = await pool.connect();
@@ -120,12 +168,16 @@ exports.submitFormResponse = async (req, res) => {
     res.status(201).json({ success: true });
   } catch (err) {
     await client.query('ROLLBACK');
-    console.error("submitFormResponse error:", err); // <--- READ CONSOLE OUTPUT!
+    console.error("submitFormResponse error:", err);
     res.status(500).json({ error: "Failed to submit response" });
   } finally {
     client.release();
   }
 };
+
+// Other controller methods remain unchanged...
+
+
 exports.getAllFormResponses = async (req, res) => {
   try {
     // Adjust table/column names to match your schema
