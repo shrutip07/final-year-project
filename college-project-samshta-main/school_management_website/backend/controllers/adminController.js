@@ -231,6 +231,19 @@ exports.deactivateForm = async (req, res) => {
     res.status(500).json({ error: "Failed to deactivate form" });
   }
 };
+// ADD THIS if it does not exist!
+exports.getFormById = async (req, res) => {
+  try {
+    const { formId } = req.params;
+    const formRes = await pool.query('SELECT * FROM forms WHERE id = $1', [formId]);
+    if (formRes.rowCount === 0) {
+      return res.status(404).json({ error: "Form not found." });
+    }
+    res.json(formRes.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch form." });
+  }
+};
 
 // ...rest of your code (analytics, units, students) remains the same...
 

@@ -6,6 +6,7 @@ import axios from "axios";
 import { useTranslation } from "react-i18next";
 import "./Dashboard.scss";
 import Charts from "./Charts"; // if your Dashboard.jsx and Charts.jsx are in the same folder
+import TeacherNotificationsPage from "./TeacherNotificationsPage";
 
 
 // Update columns as per your backend SELECT
@@ -44,7 +45,8 @@ export default function TeacherDashboard() {
     { key: "dashboard", label: t("dashboard"), icon: "bi-speedometer2" },
     { key: "profile", label: t("profile"), icon: "bi-person" },
     { key: "students", label: t("students"), icon: "bi-people" },
-    { key: "charts", label: t("charts"), icon: "bi-bar-chart" }
+    { key: "charts", label: t("charts"), icon: "bi-bar-chart" },
+    { key: "notifications", label: t("notifications"), icon: "bi-bell" },
   ];
 
   // Teacher profile on load
@@ -254,6 +256,8 @@ export default function TeacherDashboard() {
         return null;
         case "charts":
       return <Charts />;
+      case "notifications":
+      return <TeacherNotificationsPage />;
       default:
         return <div>{t("select_tab")}</div>;
     }

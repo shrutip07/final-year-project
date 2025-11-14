@@ -17,6 +17,11 @@ router.get(
   authenticateToken,
   notificationController.getPrincipalNotifications
 );
+router.get(
+  "/teacher",
+  authenticateToken,
+  notificationController.getTeacherNotifications
+);
 // Add this new POST route:
 router.post(
   "/",
