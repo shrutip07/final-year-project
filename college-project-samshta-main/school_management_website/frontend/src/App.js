@@ -25,6 +25,7 @@ import TeacherNotificationsPage from "./pages/teacher/TeacherNotificationsPage";
 import AdminNotificationsPage from "./pages/AdminNotificationsPage";
 import FormResponsePage from './pages/FormResponsePage';
 import { jwtDecode } from "jwt-decode";
+import Report from './pages/admin/Report';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
@@ -101,6 +102,12 @@ function App() {
           <ProtectedRoute role="principal">
             <PrincipalNotificationsPage />
           </ProtectedRoute>
+        } />
+        {/* NEW Admin Report Route */}
+        <Route path="/admin/report" element={
+        <ProtectedRoute role="admin">
+        <Report />
+        </ProtectedRoute>
         } />
 
         {/* Teacher */}

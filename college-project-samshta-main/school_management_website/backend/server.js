@@ -11,6 +11,7 @@ const principalRoutes = require('./routes/principalRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const formRoutes = require('./routes/formRoutes');
 const chatRoutes = require("./routes/chat");
+const reportRoutes = require('./routes/reportRoutes'); // Report Route
 const { verify } = require('./controllers/authController'); // <-- Import this!
 
 // CORS middleware
@@ -32,7 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/principal', principalRoutes);
 app.use('/api/chat', chatRoutes);
-
+app.use('/api/report', reportRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

@@ -46,6 +46,7 @@ export default function AdminDashboard() {
     { key: "charts", label: t("charts"), icon: "bi-bar-chart-fill" },
     { key: "budgets", label: t("budgets"), icon: "bi-wallet2" },
     { key: "notifications", label: t("notifications"), icon: "bi-bell-fill" },
+    { key: "reports", label: "Reports", icon: "bi-file-earmark-text" } 
   ];
 
   useEffect(() => {
@@ -85,6 +86,59 @@ export default function AdminDashboard() {
       setNotifications([]);
     }
   };
+// ===============================
+// REPORT PAGE UI
+// ===============================
+const renderReportsPage = () => {
+ return (
+ <div>
+ <h2 className="mb-4">Generate School Reports</h2>
+ <p>Select a school to download a full report</p>
+ <div className="row">
+ {units.map(unit => (
+ <div key={unit.unit_id} className="col-md-4 col-lg-3 col-sm-6 mb-3">
+ <div className="card p-3 shadow-sm" style={{ borderRadius: 12 }}>
+ <h5>{unit.kendrashala_name}</h5>
+ <p className="text-muted mb-2">
+ Staff: {unit.staff_count} | Students: {unit.student_count}
+ </p>
+ <button
+ className="btn btn-primary"
+ onClick={() => downloadReport(unit.unit_id)}
+ >
+ Download Report
+ </button>
+ </div>
+ </div>
+ ))}
+ </div>
+ </div>
+ );
+};
+// ===============================
+// DOWNLOAD REPORT FUNCTION
+// ===============================
+async function downloadReport(unitId) {
+ try {
+ const token = localStorage.getItem("token");
+ const res = await axios.get(
+ `http://localhost:5000/api/report/units/${unitId}/report`,
+ {
+ headers: { Authorization: `Bearer ${token}` },
+ responseType: "blob" // PDF file
+ }
+ );
+ // force download
+ const url = window.URL.createObjectURL(new Blob([res.data]));
+ const link = document.createElement("a");
+ link.href = url;
+ link.download = `School_Report_Unit_${unitId}.pdf`;
+ link.click();
+ } catch (err) {
+ console.error(err);
+ alert("Failed to download report");
+ }
+}
 
   const loadForms = async () => {
     const token = localStorage.getItem("token");
@@ -680,6 +734,9 @@ export default function AdminDashboard() {
             </div>
           </div>
         );
+
+      case "reports":
+        return renderReportsPage(); // ⭐ NEW
       default:
         return null;
     }
