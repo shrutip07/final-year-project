@@ -106,8 +106,9 @@
 // }
 
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import AuthContext from "../context/AuthContext";
 
 function uid() {
   let id = localStorage.getItem("chat_session_id");
@@ -121,6 +122,8 @@ function uid() {
 export default function Assistant() {
   const nav = useNavigate();
   const sessionId = useMemo(() => uid(), []);
+  const authContext = useContext(AuthContext) || {};
+  const { accessToken, user } = authContext;
   const [messages, setMessages] = useState([
     { from: "bot", text: "Hi! How can I help you?.'" }
   ]);
@@ -142,7 +145,7 @@ export default function Assistant() {
     add("user", text);
     setInput("");
 
-    const token = localStorage.getItem("token");
+    const token = accessToken || localStorage.getItem("token");
     try {
       const resp = await fetch("http://localhost:5000/api/chat/query", {
         method: "POST",
@@ -150,7 +153,8 @@ export default function Assistant() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
-        body: JSON.stringify({ text, sessionId })
+        // include user role explicitly as a fallback for non-authenticated paths
+        body: JSON.stringify({ text, sessionId, role: user?.role })
       });
       const data = await resp.json();
 

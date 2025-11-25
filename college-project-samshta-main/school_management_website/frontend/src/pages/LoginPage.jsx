@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
@@ -9,6 +7,7 @@ import mksssLogo from "../assets/mksss-logo.png";
 import sideVideo from "../assets/background.mp4";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "../App.scss";
+import ChatWidget from "../components/ChatWidget";
 
 export default function LoginPage() {
   const { t, i18n } = useTranslation();
@@ -280,6 +279,7 @@ export default function LoginPage() {
           {t("copyright")}
         </div>
       </footer>
+      <ChatWidget />
     </div>
   );
 }

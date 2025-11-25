@@ -306,6 +306,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
+import ChatWidget from "../../components/ChatWidget";
 
 // Table columns reflecting your backend
 const COLUMNS = [
@@ -470,6 +471,7 @@ export default function Students() {
         {loading && <div>{t("loading") || "Loading..."}</div>}
       </div>
       {error && <div className="alert alert-danger mt-3">{error}</div>}
+      <ChatWidget />
     </div>
   );
 }

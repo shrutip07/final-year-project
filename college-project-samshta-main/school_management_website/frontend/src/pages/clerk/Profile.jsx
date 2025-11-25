@@ -39,6 +39,7 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ChatWidget from "../../components/ChatWidget";
 
 export default function ClerkProfile() {
   const [profile, setProfile] = useState(null);
@@ -73,10 +74,16 @@ export default function ClerkProfile() {
     setIsEditing(false);
   }
 
-  if (!profile) return <div>Loading...</div>;
+  if (!profile) return (
+    <>
+      <div>Loading...</div>
+      <ChatWidget />
+    </>
+  );
 
   if (isEditing) {
     return (
+      <>
       <form onSubmit={handleSubmit}>
         <input name="full_name" value={editForm.full_name || ''} onChange={handleChange} placeholder="Full Name" />
         {/* Repeat for other fields */}
@@ -87,10 +94,13 @@ export default function ClerkProfile() {
         <button type="submit">Save</button>
         <button type="button" onClick={() => setIsEditing(false)}>Cancel</button>
       </form>
+      <ChatWidget />
+      </>
     );
   }
 
   return (
+    <>
     <div>
       <h2>Clerk Profile</h2>
       <table className="table">
@@ -104,5 +114,7 @@ export default function ClerkProfile() {
       </table>
       <button onClick={handleEdit}>Edit Profile</button>
     </div>
+    <ChatWidget />
+    </>
   );
 }

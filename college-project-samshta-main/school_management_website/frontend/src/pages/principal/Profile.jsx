@@ -213,6 +213,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import ChatWidget from "../../components/ChatWidget";
 
 export default function PrincipalProfile() {
   const { t } = useTranslation();
@@ -271,15 +272,37 @@ export default function PrincipalProfile() {
     }
   };
 
-  if (loading) return <div>{t("loading_profile")}...</div>;
-  if (error) return <div className="alert alert-danger">{error}</div>;
-  if (!profile) return <div>{t("no_profile_found")}</div>;
+  if (loading) {
+    return (
+      <>
+        <div>{t("loading_profile")}...</div>
+        <ChatWidget />
+      </>
+    );
+  }
+  if (error) {
+    return (
+      <>
+        <div className="alert alert-danger">{error}</div>
+        <ChatWidget />
+      </>
+    );
+  }
+  if (!profile) {
+    return (
+      <>
+        <div>{t("no_profile_found")}</div>
+        <ChatWidget />
+      </>
+    );
+  }
 
   if (isEditing) {
     return (
-      <div className="container">
-        <h2>{t("edit_profile")}</h2>
-        <form onSubmit={handleSubmit}>
+      <>
+        <div className="container">
+          <h2>{t("edit_profile")}</h2>
+          <form onSubmit={handleSubmit}>
           {/* Repeat for all fields, replacing labels with t() keys */}
           <div className="mb-3">
             <label className="form-label">{t("unit_id")}</label>
@@ -294,13 +317,16 @@ export default function PrincipalProfile() {
           {/* other fields similarly */}
           <button type="submit" className="btn btn-primary">{t("save_changes")}</button>
           <button type="button" className="btn btn-secondary ms-2" onClick={() => setIsEditing(false)}>{t("cancel")}</button>
-        </form>
-      </div>
+          </form>
+        </div>
+        <ChatWidget />
+      </>
     );
   }
 
   return (
-    <div className="container" style={{ maxWidth: 700 }}>
+    <>
+      <div className="container" style={{ maxWidth: 700 }}>
       <h2>{t("principal_profile")}</h2>
       <button className="btn btn-primary mb-3" onClick={handleEdit}>{t("edit_profile")}</button>
       <table className="table table-bordered">
@@ -320,5 +346,7 @@ export default function PrincipalProfile() {
         </tbody>
       </table>
     </div>
+      <ChatWidget />
+    </>
   );
 }

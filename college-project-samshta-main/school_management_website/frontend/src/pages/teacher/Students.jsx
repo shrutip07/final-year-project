@@ -3330,6 +3330,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
+import ChatWidget from "../../components/ChatWidget";
+import "./Dashboard.scss";
 
 function getCurrentAcademicYear() {
   const now = new Date();
@@ -3539,30 +3541,49 @@ export default function Students() {
     }
   }
 
-  if (loadingCurrent) return <div className="mt-3 text-center">{t("loading_students")}...</div>;
-  if (error) return <div className="alert alert-danger mt-3">{error}</div>;
+  if (loadingCurrent) return (
+    <div className="teacher-students-page">
+      <div className="teacher-main-content">
+        <div className="loading-state">{t("loading_students")}...</div>
+      </div>
+    </div>
+  );
+  
+  if (error) return (
+    <div className="teacher-students-page">
+      <div className="teacher-main-content">
+        <div className="error-state">{error}</div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="container" style={{ maxWidth: 1100 }}>
-      <h2>{t("student_management")} - {currentYear}</h2>
+    <div className="teacher-students-page">
+      <div className="teacher-main-content">
+        <div className="page-header">
+          <h2>{t("student_management")} - {currentYear}</h2>
+        </div>
 
-      {/* Current Academic Year Student Table */}
-      <div className="mb-3">
-        {currentYear === currentYear && (
-          <button className="btn btn-success mb-3" onClick={handleAddNew}>
-            {t("add_student")}
-          </button>
-        )}
-
-        <input
-          className="form-control mb-3"
-          placeholder={t("search_placeholder")}
-          value={searchCurrentYear}
-          onChange={handleSearchChange}
-        />
-        <div className="table-responsive mb-5">
-          <table className="table table-bordered table-hover">
-            <thead className="table-light">
+        <div className="teacher-students-card">
+          <div className="card-header">
+            <h3>{t("students")}</h3>
+            <div className="header-controls">
+              <button className="save-btn" onClick={handleAddNew}>
+                <i className="bi bi-plus-circle"></i> {t("add_student")}
+              </button>
+            </div>
+          </div>
+          <div className="card-body">
+            <input
+              className="form-control mb-3"
+              placeholder={t("search_placeholder")}
+              value={searchCurrentYear}
+              onChange={handleSearchChange}
+              style={{ maxWidth: 400 }}
+            />
+            <div className="table-responsive">
+              <table>
+                <thead>
               <tr>
                 <th>{t("roll_no")}</th>
                 <th>{t("full_name")}</th>
@@ -3593,10 +3614,10 @@ export default function Students() {
                   <td>{st.admission_date || ""}</td>
                   <td>{st.passed === true ? t("yes") : st.passed === false ? t("no") : ""}</td>
                   <td>
-                    <button className="btn btn-sm btn-info me-2" onClick={() => handleView(st)}>
+                    <button className="btn-sm btn-info me-2" onClick={() => handleView(st)} style={{ padding: "6px 12px", borderRadius: "6px", border: "none", background: "#0B63E5", color: "white", cursor: "pointer" }}>
                       {t("view")}
                     </button>
-                    <button className="btn btn-sm btn-primary" onClick={() => handleEdit(st)}>
+                    <button className="btn-sm btn-primary" onClick={() => handleEdit(st)} style={{ padding: "6px 12px", borderRadius: "6px", border: "none", background: "#1D9BF0", color: "white", cursor: "pointer" }}>
                       {t("edit")}
                     </button>
                   </td>
@@ -3604,27 +3625,29 @@ export default function Students() {
               ))}
               {filteredStudents(studentsCurrentYear, searchCurrentYear).length === 0 && (
                 <tr>
-                  <td colSpan="12" className="text-center">{t("no_students_found")}</td>
+                  <td colSpan="12" style={{ textAlign: "center", padding: "20px" }}>{t("no_students_found")}</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+        </div>
       </div>
+    </div>
 
       {(modalType === "view" || modalType === "edit" || modalType === "add") && (
-        <div className="modal show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
+        <div className="modal show d-block" tabIndex="-1" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="modal-dialog" style={{ maxWidth: "600px", width: "90%" }}>
+            <div className="modal-content" style={{ background: "white", borderRadius: "12px", padding: "24px" }}>
+              <div className="modal-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", paddingBottom: "16px", borderBottom: "1px solid #E5E7EB" }}>
+                <h5 className="modal-title" style={{ margin: 0, color: "#0A2540", fontSize: "20px", fontWeight: 600 }}>
                   {modalType === "view"
                     ? t("student_details")
                     : modalType === "edit"
                     ? t("edit_student")
                     : t("add_student")}
                 </h5>
-                <button type="button" className="btn-close" onClick={closeModal}></button>
+                <button type="button" className="btn-close" onClick={closeModal} style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer" }}>×</button>
               </div>
               <div className="modal-body">
                 {modalType === "view" ? (
@@ -3662,9 +3685,14 @@ export default function Students() {
                         <option value="false">{t("no")}</option>
                       </select>
                     </div>
-                    <button className="btn btn-primary mt-2" type="submit" disabled={updating}>
-                      {updating ? (modalType === "add" ? t("adding") : t("saving")) : (modalType === "add" ? t("add") : t("save"))}
-                    </button>
+                    <div className="form-actions" style={{ marginTop: "24px", display: "flex", gap: "12px" }}>
+                      <button className="save-btn" type="submit" disabled={updating} style={{ padding: "10px 20px", borderRadius: "8px", background: "#0B63E5", color: "white", border: "none", cursor: "pointer", fontSize: "14px", fontWeight: 500 }}>
+                        {updating ? (modalType === "add" ? t("adding") : t("saving")) : (modalType === "add" ? t("add") : t("save"))}
+                      </button>
+                      <button type="button" className="cancel-btn" onClick={closeModal} style={{ padding: "10px 20px", borderRadius: "8px", background: "#F9FAFB", color: "#0A2540", border: "1px solid #E5E7EB", cursor: "pointer", fontSize: "14px", fontWeight: 500 }}>
+                        {t("cancel")}
+                      </button>
+                    </div>
                   </form>
                 )}
               </div>
@@ -3672,6 +3700,7 @@ export default function Students() {
           </div>
         </div>
       )}
+      <ChatWidget />
     </div>
   );
 }

@@ -105,6 +105,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
+import ChatWidget from "../../components/ChatWidget";
 
 export default function Teachers() {
   const { t } = useTranslation();
@@ -203,6 +204,7 @@ export default function Teachers() {
           </tbody>
         </table>
       </div>
+      <ChatWidget />
     </div>
   );
 }

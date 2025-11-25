@@ -4,3 +4,4 @@ Admin → Tables:
 - Click a row to view that unit’s details (unitId route).
 - Tip: Filter first, then export if available.
 Troubleshooting: If empty, check API or refresh page.
+

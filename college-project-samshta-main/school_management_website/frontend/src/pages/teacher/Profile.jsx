@@ -205,6 +205,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
+import ChatWidget from "../../components/ChatWidget";
+import "../teacher/Dashboard.scss";
 
 export default function TeacherProfile() {
   const { t } = useTranslation();
@@ -262,30 +264,32 @@ export default function TeacherProfile() {
     }
   };
 
-  if (loading) return <div>{t("loading_profile")}...</div>;
-  if (error) return <div className="alert alert-danger">{error}</div>;
+  if (loading) return <div className="loading-state">{t("loading_profile")}...</div>;
+  if (error) return <div className="error-state">{error}</div>;
 
   return (
-    <div className="container mt-4">
-      <div className="d-flex align-items-center mb-4">
-        <button
-          className="btn btn-link"
-          onClick={() => navigate('/teacher')}
-        >
-          <i className="bi bi-arrow-left"></i> {t("back_to_dashboard")}
-        </button>
-        <h2 className="mb-0 ms-3">{t("teacher_profile")}</h2>
-      </div>
-      <div className="card">
-        <div className="card-header d-flex justify-content-between align-items-center">
-          <h3>{t("teacher_profile")}</h3>
-          {!isEditing && (
-            <button className="btn btn-primary" onClick={handleEdit}>
-              {t("edit_profile")}
-            </button>
-          )}
+    <>
+    <div className="teacher-profile-page">
+      <div className="teacher-main-content">
+        <div className="page-header">
+          <button
+            className="back-button"
+            onClick={() => navigate('/teacher')}
+          >
+            <i className="bi bi-arrow-left"></i> {t("back_to_dashboard")}
+          </button>
+          <h2>{t("teacher_profile")}</h2>
         </div>
-        <div className="card-body">
+        <div className="teacher-profile-card">
+          <div className="card-header">
+            <h3>{t("teacher_profile")}</h3>
+            {!isEditing && (
+              <button className="edit-profile-btn" onClick={handleEdit}>
+                {t("edit_profile")}
+              </button>
+            )}
+          </div>
+          <div className="card-body">
           {isEditing ? (
             <form onSubmit={handleSubmit}>
               <div className="row">
@@ -365,13 +369,13 @@ export default function TeacherProfile() {
                   </div>
                 </div>
               </div>
-              <div className="mt-3">
-                <button type="submit" className="btn btn-success me-2">
+              <div className="form-actions">
+                <button type="submit" className="save-btn">
                   {t("save_changes")}
                 </button>
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="cancel-btn"
                   onClick={handleCancel}
                 >
                   {t("cancel")}
@@ -395,8 +399,11 @@ export default function TeacherProfile() {
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>
+    <ChatWidget />
+    </>
   );
 }

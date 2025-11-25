@@ -9,6 +9,7 @@ import Teachers from "./Teachers";
 import Students from "./Students";
 import Charts from "./Charts";
 import PrincipalNotificationsPage from "./PrincipalNotificationsPage";
+import ChatWidget from "../../components/ChatWidget";
 
 export default function PrincipalDashboard() {
   const { t } = useTranslation();
@@ -202,6 +203,7 @@ export default function PrincipalDashboard() {
       <main style={{ flexGrow: 1, padding: 24, overflowY: "auto" }}>
         {renderContent()}
       </main>
+      <ChatWidget />
     </div>
   );
 }

@@ -2,22 +2,37 @@ version: "3.1"
 
 intents:
   - greet
-  - navigate_admin
-  - navigate_admin_tables
-  - navigate_admin_charts
-  - navigate_admin_budgets
+  - goodbye
+  - request_login
+  - request_password_reset
+  - request_signup
+  - request_logout
   - navigate_dashboard
-  - navigate_tables
-  - navigate_charts
-  - navigate_budgets
+  - navigate_admin
   - navigate_teacher
-  - navigate_teacher_charts
   - navigate_principal
-  - navigate_login
+  - see_charts
+  - use_charts
+  - see_tables
+  - use_tables
+  - see_budgets
+  - use_budgets
+  - see_notifications
+  - use_notifications
+  - see_dashboard
+  - request_help
+  - request_feedback
+  - ask_in_marathi
+  - ask_school_info
   - ask_fees
   - ask_admissions
-  - give_school
-  - ask_budget
+  - create_form
+  - ask_teacher_students
+  - ask_teacher_profile
+  - ask_teacher_charts
+  - ask_teacher_attendance
+  - ask_teacher_grades
+  - ask_teacher_notifications
   - nlu_fallback
 
 entities:
@@ -42,22 +57,132 @@ slots:
         conditions:
           - active_loop: null
 
+  requested_language:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_intent
+        intent: ask_in_marathi
+        value: "marathi"
+      - type: from_text
+        conditions:
+          - active_loop: null
+
 responses:
   utter_greet:
-    - text: "Hi! Ask me 'open charts', 'go to admin', किंवा 'शुल्क कसे भरायचे?'"
+    - text: "Hello! How can I help you today?"
+    - text: "नमस्कार! मी तुम्हाला कसे मदत करू शकतो?"
 
-  utter_fees:
-    - text: "Fees → select term → verify amount → pay. If any issue, go to Contact and raise a ticket."
+  utter_goodbye:
+    - text: "Goodbye! See you soon. Feel free to ask anytime."
+    - text: "विदा! लवकरच भेटू. कधीही प्रश्न विचारा."
 
-  utter_admissions:
-    - text: "Admissions → Choose program → Fill form → Upload docs → Submit. Track from Dashboard."
+  utter_request_login:
+    - text: "🔐 **Login Steps:** 1) Open the Login page. 2) Enter your registered email address. 3) Enter your password. 4) Click the 'Login' button. 5) You'll be redirected to your dashboard."
+    - text: "🔐 **लॉगिन कृती:** 1) Login पृष्ठ उघडा. 2) नोंदणीकृत ईमेल टाका. 3) पासवर्ड टाका. 4) Login क्लिक करा. 5) डॅशबोर्डवर येऊ शकाल."
 
-  utter_ask_school:
-    - text: "For which school? (Kendrashala Alpha / Kendrashala Beta)"
+  utter_request_password_reset:
+    - text: "🔑 **Forgot your password?** 1) Click 'Forgot Password' on the Login page. 2) Enter your email address. 3) Check your email for a password reset link. 4) Click the link and create a new password. 5) Log in with your new password."
+    - text: "🔑 **पासवर्ड विसरलात?** 1) Login पृष्ठावर 'Forgot Password' क्लिक करा. 2) ईमेल पत्ता टाका. 3) नवीन पासवर्ड निर्मिती लिंक ईमेलमध्ये तपासा. 4) लिंकवर क्लिक करा आणि नवीन पासवर्ड सेट करा. 5) नवीन पासवर्डने लॉगिन करा."
+
+  utter_request_signup:
+    - text: "📝 **Sign up process:** 1) Click 'Sign Up' on the login page. 2) Enter your email, create a strong password. 3) Select your role: Teacher, Principal, or Admin. 4) Click Register. 5) Check your email for a verification link. 6) Confirm your email, then log in with your credentials."
+    - text: "📝 **साइन अप कसे करायचे:** 1) लॉगिन पृष्ठावर 'Sign Up' क्लिक करा. 2) ईमेल दाखल करा व पासवर्ड सेट करा. 3) तुमची भूमिका निवडा (शिक्षक/प्राचार्य/Admin). 4) Register क्लिक करा. 5) ईमेलमध्ये पुष्टीकरण लिंक तपासा. 6) लॉगिन करा."
+
+  utter_request_logout:
+    - text: "🔓 **To logout:** The Logout button is at the **bottom-left corner of the sidebar**. Click it to log out and return to the login page. Your session will end securely."
+    - text: "🔓 **लॉगआउट करण्यासाठी:** **Logout बटण साइडबारच्या खाली-डाव्या कोपऱ्यात** आहे. लॉग आउट होण्यासाठी क्लिक करा."
+
+  utter_see_charts:
+    - text: "📊 **To view charts:** 1) Click 'Charts' in the left menu. 2) Select a school from the 'Select Unit' dropdown. 3) Choose optional date range if available. 4) View the trend lines for admissions, students, budgets, and more. 5) Hover over lines to see exact values."
+    - text: "📊 **चार्ट्स कसे पाहायचे:** 1) डाव्या मेनूमधून 'Charts' क्लिक करा. 2) 'Select Unit' ड्रॉपडाऊनमधून शाळा निवडा. 3) तारीख श्रेणी निवडा (यदि उपलब्ध). 4) ट्रेंड लाईन्स पहा. 5) अचूक मूल्ये बघण्यासाठी होव्हर करा."
+
+  utter_use_charts:
+    - text: "📈 **What are charts?** Charts display trends across admissions, students, budgets, and payments. You can:\n• View multiple data trends on one screen.\n• Compare schools/years with filters.\n• Spot patterns and growth over time.\n• Export data for reports."
+    - text: "📈 **चार्ट्स काय आहेत?** चार्ट्समध्ये प्रवृत्ती दाखवली जातात:\n• प्रवेश, विद्यार्थी, बजेट, देयके यांचे डेटा.\n• शाळा व वर्षानुवर्ष तुलना.\n• वेळेनुसार नमुने तपासा.\n• डेटा Export करा."
+
+  utter_see_tables:
+    - text: "📋 **To view tables:** 1) Click 'Tables' in the left menu. 2) You'll see all schools/units listed with their counts. 3) Use the search box to find a unit by name or ID. 4) Click any row to view full details (staff, students, contact info)."
+    - text: "📋 **टेबल्स कसे पाहायचे:** 1) डाव्या मेनूमधून 'Tables' क्लिक करा. 2) सर्व शाळांची यादी दिसेल. 3) नाव/ID ने शोधा. 4) तपशील पाहण्यासाठी रांगेवर क्लिक करा."
+
+  utter_use_tables:
+    - text: "📊 **What are tables?** Tables provide a comprehensive list of all schools/units with:\n• Unit ID, school name, and administrative details.\n• Staff count and student enrollment.\n• Quick search and filter options.\n• Click to drill down into each school's full data."
+    - text: "📊 **टेबल्स काय आहेत?** टेबल्समध्ये सर्व शाळांची सूची असते:\n• Unit ID, नाव, प्रशासनिक तपशील.\n• कर्मचारी व विद्यार्थी संख्या.\n• शोध व फिल्टर सुविधा.\n• प्रत्येक शाळेचे पूर्ण डेटा पाहा."
+
+  utter_see_budgets:
+    - text: "💰 **To view budgets:** 1) Click 'Budgets' in the left menu. 2) Select a school and year from dropdowns. 3) View the Income vs Expenses chart. 4) See payment breakdowns by category (staff, facilities, counseling). 5) Use Export to download filtered data."
+    - text: "💰 **बजेट कसे पाहायचे:** 1) डाव्या मेनूमधून 'Budgets' क्लिक करा. 2) शाळा व वर्ष निवडा. 3) Income vs Expenses चार्ट पहा. 4) श्रेणीनिहाय देयके तपासा. 5) डेटा Export करा."
+
+  utter_use_budgets:
+    - text: "💼 **What are budgets?** The Budget section helps you:\n• Compare allocated vs spent money by year.\n• Track income sources and expense categories.\n• Analyze year-over-year trends.\n• Ensure school stays within budget.\n• Export financial reports for audits or planning."
+    - text: "💼 **बजेट काय आहेत?** बजेट विभागात तुम्ही:\n• वाटप vs खर्च तुलना कराल.\n• उत्पन्न व खर्च ट्रॅक कराल.\n• वर्षानुवर्ष प्रवृत्तीचे विश्लेषण कराल.\n• आर्थिक अहवाल Export कराल."
+
+  utter_see_notifications:
+    - text: "🔔 **To send notifications:** 1) Click 'Notifications' in the left menu. 2) Fill 'Send To' field (choose Principals, Teachers, Students). 3) Add a clear Title and Message. 4) (Optional) Click 'Create and Send Form' to attach a custom form. 5) Click Send. Recipients get instant notification."
+    - text: "🔔 **अधिसूचना कसे पाठवायचे:** 1) डाव्या मेनूमधून 'Notifications' क्लिक करा. 2) प्राप्तकर्ता निवडा. 3) शीर्षक व संदेश लिहा. 4) (पर्यायी) कस्टम फॉर्म जोडा. 5) Send क्लिक करा."
+
+  utter_use_notifications:
+    - text: "📢 **What are notifications?** Notifications let you:\n• Send instant messages to staff, teachers, or students.\n• Create custom forms (surveys, attendance, fee reminders).\n• Track who has seen each notification.\n• Build an audit trail of all communications.\n• Ensure everyone is informed about updates."
+    - text: "📢 **अधिसूचना काय आहेत?** अधिसूचनांद्वारे तुम्ही:\n• तत्काळ संदेश पाठवू शकता.\n• कस्टम फॉर्म तयार करू शकता.\n• कोणी पाहिले ते ट्रॅक करू शकता.\n• सर्व संप्रेषणची नोंद राखू शकता."
+
+  utter_see_dashboard:
+    - text: "📊 **What is the Dashboard?** The Dashboard is your main hub where you can:\n• See a quick overview of all your schools.\n• View total staff count and student enrollment.\n• Access key metrics and recent activity.\n• Navigate to Charts, Tables, Budgets, Notifications with one click.\n• Monitor school health and performance at a glance."
+    - text: "📊 **डॅशबोर्ड काय आहे?** डॅशबोर्ड तुमचे मुख्य केंद्र आहे:\n• सर्व शाळांचा आढावा एक नजरात पाहा.\n• एकूण कर्मचारी व विद्यार्थी संख्या.\n• मुख्य मेट्रिक्स व अलीकडील क्रियाकलाप.\n• Charts, Tables, Budgets, Notifications ला एक क्लिकमध्ये प्रवेश करा.\n• शाळेच्या स्वास्थ्य व कामगिरी लक्ष ठेवा."
+
+  utter_request_help:
+    - text: "🤝 **How can I help you?** I can assist with:\n• **Login & Access**: how to login, reset password, sign up.\n• **Navigation**: explain Dashboard, Charts, Tables, Budgets, Notifications.\n• **Features**: how to send notifications, create forms, view data.\n• **Troubleshooting**: report issues or ask for guidance.\n\nJust ask, or say 'in Marathi' for a Marathi reply!"
+    - text: "🤝 **मी तुम्हाला कसे मदत करू शकतो?** मी साहाय्य करू शकतो:\n• **लॉगिन**: लॉगिन कसे करायचे, पासवर्ड रीसेट.\n• **नॅव्हिगेशन**: सर्व विभागांची माहिती.\n• **वैशिष्ट्ये**: अधिसूचना, फॉर्म, डेटा कसे वापरायचे.\n• **समस्या समाधान**: समस्या सांगा किंवा मदत मागा.\n\nप्रश्न विचारा किंवा 'मराठीत' म्हणा!"
+
+  utter_request_feedback:
+    - text: "📞 **Thank you for your feedback!** Please describe the issue or suggestion:\n1) What happened?\n2) When did it occur?\n3) Which part of the system was affected?\n\nYour feedback helps us improve. You can also contact support directly at your school office."
+    - text: "📞 **आपल्या अभिप्रायामुळे धन्यवाद!** समस्या/सुझाव विवरण द्या:\n1) काय झाले?\n2) केव्हा घडले?\n3) कोणता भाग प्रभावित झाला?\n\nआपल्या अभिप्रायामुळे आम्ही सुधार करू शकतो."
+
+  utter_ask_school_info:
+    - text: "📍 **School Information:** To view details about a specific school, go to the **Dashboard** or **Tables** section. Click on the school name or row to see:\n• Staff roster and student list.\n• Contact details and location.\n• Enrollment numbers and recent activity.\n• Performance metrics and trends."
+    - text: "📍 **शाळेची माहिती:** Dashboard किंवा Tables मध्ये जाऊन शाळा निवडा. तुम्हाला दिसेल:\n• कर्मचारी व विद्यार्थी सूची.\n• संपर्क तपशील व स्थान.\n• नोंदणी संख्या व अलीकडील क्रियाकलाप.\n• कामगिरी मेट्रिक्स."
+
+  utter_ask_fees:
+    - text: "💳 **How to Pay Fees:** 1) Log in to your account. 2) Go to **Dashboard** or check your notifications. 3) Look for the **Fee Payment** section. 4) Select the term/month for which you want to pay. 5) Verify the amount and click **Pay Now**. 6) Follow payment instructions (online/offline). 7) Keep the receipt for your records."
+    - text: "💳 **शुल्क कसे भरायचे:** 1) लॉगिन करा. 2) Dashboard किंवा Notifications तपासा. 3) Fee Payment विभाग शोधा. 4) टर्म/महिना निवडा. 5) रक्कम तपासा व Pay Now क्लिक करा. 6) भरणा पद्धती अनुसरण करा. 7) पावती ठेवा."
+
+  utter_ask_admissions:
+    - text: "📋 **Admission Process:** 1) Visit the school website or contact the office. 2) Request an **Application Form**. 3) Fill in the form with student and parent details. 4) Collect required documents (birth certificate, transfer cert, medical records). 5) Submit the form and documents to the school office. 6) Await the school's decision and admission letter. 7) Complete the registration to enroll."
+    - text: "📋 **प्रवेश प्रक्रिया:** 1) शाळेच्या वेबसाइटला भेट द्या किंवा कार्यालयात संपर्क करा. 2) Application Form मागा. 3) तपशील भरा. 4) आवश्यक कागदपत्र संकलित करा. 5) फॉर्म व कागदपत्रे जमा करा. 6) प्रवेश पत्र प्रतीक्षा करा. 7) नोंदणी पूर्ण करा."
+
+  utter_create_form:
+    - text: "📝 **Creating & Sending Forms:** 1) Go to **Notifications** section. 2) Scroll to 'Create and Send Form'. 3) Choose recipients (Principals, Teachers, Students). 4) Enter Form Title (e.g., 'Monthly Attendance Report'). 5) Add Description and Deadline. 6) Click 'Add Questions' and add your questions (text, checkbox, dropdown). 7) Click **Create Form & Send**. Recipients fill it, responses appear in Received section."
+    - text: "📝 **फॉर्म तयार करणे व पाठवणे:** 1) Notifications विभागात जा. 2) 'Create and Send Form' शोधा. 3) प्राप्तकर्ते निवडा. 4) Form Title लिहा. 5) Description व Deadline जोडा. 6) प्रश्न जोडा (text, checkbox, इ.). 7) Create Form & Send क्लिक करा. प्राप्तकर्ते भरतील, उत्तरं Received मध्ये दिसतील."
+
+  utter_ask_teacher_students:
+    - text: "👥 **View Your Students:** 1) Go to **Dashboard** or click **Students** in the sidebar. 2) Select an academic year from the dropdown. 3) View the list of all students assigned to your classes. 4) Use the search box to find a specific student by name, roll number, or standard. 5) Click on a student row to view detailed information."
+    - text: "👥 **तुमचे विद्यार्थी पहा:** 1) **Dashboard** वर जा किंवा साइडबारमधून **Students** क्लिक करा. 2) ड्रॉपडाऊनमधून शैक्षणिक वर्ष निवडा. 3) तुमच्या वर्गातील सर्व विद्यार्थ्यांची यादी पहा. 4) शोध बॉक्स वापरून नाव, रोल नंबर किंवा इयत्तेनुसार शोधा. 5) तपशील पाहण्यासाठी विद्यार्थी रांगेवर क्लिक करा."
+
+  utter_ask_teacher_profile:
+    - text: "👤 **Update Your Profile:** 1) Click **Profile** in the left sidebar. 2) Click **Edit Profile** button. 3) Update your information (name, phone, qualification, designation, subject). 4) Click **Save Changes** to update. 5) Your profile information will be updated immediately."
+    - text: "👤 **प्रोफाइल अपडेट करा:** 1) डाव्या साइडबारमधून **Profile** क्लिक करा. 2) **Edit Profile** बटण क्लिक करा. 3) माहिती अपडेट करा (नाव, फोन, पात्रता, पदवी, विषय). 4) **Save Changes** क्लिक करा. 5) प्रोफाइल ताबडतोब अपडेट होईल."
+
+  utter_ask_teacher_charts:
+    - text: "📊 **Student Performance Charts:** 1) Click **Charts** in the sidebar. 2) Select an academic year. 3) View **Gender Distribution** chart showing male/female student ratio. 4) View **Pass/Fail Distribution** chart showing student performance. 5) Charts update automatically based on your assigned students' data."
+    - text: "📊 **विद्यार्थी कामगिरी चार्ट्स:** 1) साइडबारमधून **Charts** क्लिक करा. 2) शैक्षणिक वर्ष निवडा. 3) **Gender Distribution** चार्ट पहा (मुलगे/मुली प्रमाण). 4) **Pass/Fail Distribution** चार्ट पहा (कामगिरी). 5) चार्ट्स तुमच्या विद्यार्थ्यांच्या डेटावर आधारित स्वयंचलितपणे अपडेट होतात."
+
+  utter_ask_teacher_attendance:
+    - text: "📝 **Mark Attendance:** 1) Go to **Students** section. 2) Select the class/standard you want to mark attendance for. 3) Use the attendance marking feature (if available in your system). 4) Mark present/absent for each student. 5) Save the attendance record. **Note:** Contact your administrator if attendance marking is not visible."
+    - text: "📝 **उपस्थिती नोंदवा:** 1) **Students** विभागात जा. 2) ज्या वर्गासाठी उपस्थिती नोंदवायची आहे तो निवडा. 3) उपस्थिती नोंदवण्याची सुविधा वापरा. 4) प्रत्येक विद्यार्थीसाठी उपस्थित/अनुपस्थित चिन्हांकित करा. 5) उपस्थिती नोंद जतन करा. **नोट:** उपस्थिती नोंदवणे दिसत नसल्यास प्रशासकाशी संपर्क करा."
+
+  utter_ask_teacher_grades:
+    - text: "📈 **Enter Student Grades:** 1) Go to **Students** section. 2) Find the student you want to grade. 3) Click **Edit** or **View** on the student row. 4) Enter or update grades in the grade entry section. 5) Save the changes. **Note:** Grade entry features may vary. Contact your administrator for specific instructions."
+    - text: "📈 **विद्यार्थी गुण टाका:** 1) **Students** विभागात जा. 2) ज्या विद्यार्थ्याला गुण देयचे आहेत तो शोधा. 3) विद्यार्थी रांगेवर **Edit** किंवा **View** क्लिक करा. 4) गुण प्रविष्टी विभागात गुण टाका. 5) बदल जतन करा. **नोट:** गुण प्रविष्टी सुविधा बदलू शकते. तपशीलासाठी प्रशासकाशी संपर्क करा."
+
+  utter_ask_teacher_notifications:
+    - text: "🔔 **Teacher Notifications:** 1) Click **Notifications** in the sidebar (if available). 2) View messages from Principal or Admin. 3) Check for forms that need to be filled. 4) Respond to notifications as required. 5) Notifications help you stay updated with school announcements and requests."
+    - text: "🔔 **शिक्षक अधिसूचना:** 1) साइडबारमधून **Notifications** क्लिक करा. 2) प्राचार्य किंवा Admin कडून संदेश पहा. 3) भरण्यासाठी फॉर्म तपासा. 4) आवश्यकतेनुसार अधिसूचनांना उत्तर द्या. 5) अधिसूचना तुम्हाला शाळेच्या घोषणा आणि विनंत्यांबद्दल अद्यतन ठेवतात."
 
   utter_fallback:
-    - text: "I didn't get that. Try 'teacher charts', 'admin tables', or ask 'शुल्क कसे भरायचे?'."
+    - text: "Sorry — I didn't quite understand that. Could you rephrase? Try asking 'how to login', 'what are charts', 'how to view my students', or 'update my profile'. Or add 'in Marathi' if you'd like a Marathi reply."
+    - text: "मला क्षमस्व, मी समजले नाही. कृपया पुन्हा विचारा किंवा 'how to login', 'what are charts', 'माझे विद्यार्थी कसे पाहायचे' असे शब्द वापरा. किंवा 'मराठीत' म्हणा."
 
 actions:
   - action_navigate
   - action_llm_answer
+  - action_localized_utter
+  - action_answer_in_marathi

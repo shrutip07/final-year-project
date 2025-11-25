@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ChatWidget from "../components/ChatWidget";
 
 export default function AdminNotificationsPage() {
   const [notifications, setNotifications] = useState([]);
@@ -321,6 +322,7 @@ export default function AdminNotificationsPage() {
           ))
         )}
       </div>
+      <ChatWidget />
     </div>
   );
 }

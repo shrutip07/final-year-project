@@ -81,6 +81,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import ChatWidget from '../components/ChatWidget';
 
 export default function FormResponsePage() {
   const { formId } = useParams();
@@ -176,6 +177,7 @@ export default function FormResponsePage() {
           <button type="submit" className="btn btn-primary">Submit</button>
         </form>
       )}
+      <ChatWidget />
     </div>
   );
 }

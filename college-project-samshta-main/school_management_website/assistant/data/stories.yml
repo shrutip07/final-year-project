@@ -1,13 +1,44 @@
 version: "3.1"
+
 stories:
+- story: greet
+  steps:
+    - intent: greet
+    - action: action_localized_utter
+
+- story: goodbye
+  steps:
+    - intent: goodbye
+    - action: action_localized_utter
+
+- story: request login
+  steps:
+    - intent: request_login
+    - action: action_localized_utter
+
+- story: request password reset
+  steps:
+    - intent: request_password_reset
+    - action: action_localized_utter
+
+- story: request signup
+  steps:
+    - intent: request_signup
+    - action: action_localized_utter
+
+- story: request logout
+  steps:
+    - intent: request_logout
+    - action: action_localized_utter
+
+- story: navigate dashboard
+  steps:
+    - intent: navigate_dashboard
+    - action: action_navigate
+
 - story: navigate admin
   steps:
     - intent: navigate_admin
-    - action: action_navigate
-
-- story: navigate admin tables
-  steps:
-    - intent: navigate_admin_tables
     - action: action_navigate
 
 - story: navigate teacher
@@ -15,18 +46,128 @@ stories:
     - intent: navigate_teacher
     - action: action_navigate
 
-- story: navigate teacher charts
-  steps:
-    - intent: navigate_teacher_charts
-    - action: action_navigate
-
 - story: navigate principal
   steps:
     - intent: navigate_principal
     - action: action_navigate
 
-- story: navigate login
+- story: see charts
   steps:
-    - intent: navigate_login
-    - action: action_navigate
+    - intent: see_charts
+    - action: action_localized_utter
 
+- story: use charts
+  steps:
+    - intent: use_charts
+    - action: action_localized_utter
+
+- story: see tables
+  steps:
+    - intent: see_tables
+    - action: action_localized_utter
+
+- story: use tables
+  steps:
+    - intent: use_tables
+    - action: action_localized_utter
+
+- story: see budgets
+  steps:
+    - intent: see_budgets
+    - action: action_localized_utter
+
+- story: use budgets
+  steps:
+    - intent: use_budgets
+    - action: action_localized_utter
+
+- story: see notifications
+  steps:
+    - intent: see_notifications
+    - action: action_localized_utter
+
+- story: use notifications
+  steps:
+    - intent: use_notifications
+    - action: action_localized_utter
+
+- story: see dashboard
+  steps:
+    - intent: see_dashboard
+    - action: action_localized_utter
+
+- story: request help
+  steps:
+    - intent: request_help
+    - action: action_localized_utter
+
+- story: request feedback
+  steps:
+    - intent: request_feedback
+    - action: action_localized_utter
+
+- story: ask in marathi
+  steps:
+    - intent: ask_in_marathi
+    - action: action_answer_in_marathi
+
+- story: ask school info
+  steps:
+    - intent: ask_school_info
+    - action: action_localized_utter
+
+- story: ask fees
+  steps:
+    - intent: ask_fees
+    - action: action_localized_utter
+
+- story: ask admissions
+  steps:
+    - intent: ask_admissions
+    - action: action_localized_utter
+
+- story: create form
+  steps:
+    - intent: create_form
+    - action: action_localized_utter
+
+- story: ask teacher students
+  steps:
+    - intent: ask_teacher_students
+    - action: action_localized_utter
+
+- story: ask teacher profile
+  steps:
+    - intent: ask_teacher_profile
+    - action: action_localized_utter
+
+- story: ask teacher charts
+  steps:
+    - intent: ask_teacher_charts
+    - action: action_localized_utter
+
+- story: ask teacher attendance
+  steps:
+    - intent: ask_teacher_attendance
+    - action: action_localized_utter
+
+- story: ask teacher grades
+  steps:
+    - intent: ask_teacher_grades
+    - action: action_localized_utter
+
+- story: ask teacher notifications
+  steps:
+    - intent: ask_teacher_notifications
+    - action: action_localized_utter
+
+- story: nlu fallback
+  steps:
+    - intent: nlu_fallback
+    - action: utter_fallback
+
+rules:
+- rule: fallback rule
+  steps:
+    - intent: nlu_fallback
+    - action: utter_fallback

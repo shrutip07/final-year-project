@@ -189,6 +189,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import ChatWidget from "../../components/ChatWidget";
+import "../teacher/Dashboard.scss";
 
 export default function TeacherOnboarding() {
   const { t } = useTranslation();
@@ -253,13 +255,24 @@ export default function TeacherOnboarding() {
     }
   };
 
-  if (loading) return <div className="text-center mt-5">{t("loading")}...</div>;
+  if (loading) {
+    return (
+      <>
+        <div className="loading-state">{t("loading")}...</div>
+        <ChatWidget />
+      </>
+    );
+  }
 
   return (
-    <div className="container mt-5" style={{ maxWidth: 600 }}>
-      <h2 className="mb-4">{t("complete_teacher_profile")}</h2>
-      {error && <div className="alert alert-danger">{error}</div>}
-      <form onSubmit={handleSubmit} className="card p-4 shadow-sm">
+    <div className="teacher-onboarding-page">
+      <div className="teacher-main-content" style={{ maxWidth: 700, margin: "0 auto" }}>
+      <div className="page-header">
+        <h2>{t("complete_teacher_profile")}</h2>
+      </div>
+      {error && <div className="error-state">{error}</div>}
+      <div className="teacher-profile-card">
+        <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label className="form-label">{t("full_name")}</label>
           <input
@@ -350,10 +363,15 @@ export default function TeacherOnboarding() {
           </select>
           {error && <div className="text-danger mt-1">{error}</div>}
         </div>
-        <button type="submit" className="btn btn-primary">
-          {t("complete_registration")}
-        </button>
-      </form>
+          <div className="form-actions">
+            <button type="submit" className="save-btn">
+              {t("complete_registration")}
+            </button>
+          </div>
+        </form>
+      </div>
+      </div>
+      <ChatWidget />
     </div>
   );
 }

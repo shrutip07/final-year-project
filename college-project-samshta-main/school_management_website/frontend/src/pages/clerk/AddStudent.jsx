@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import ChatWidget from "../../components/ChatWidget";
 
 export default function AddStudent() {
   const [form, setForm] = useState({
@@ -54,6 +55,7 @@ export default function AddStudent() {
         <button type="submit">Add Student</button>
       </form>
       {message && <div>{message}</div>}
+      <ChatWidget />
     </div>
   );
 }

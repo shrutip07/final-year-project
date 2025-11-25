@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import ChatWidget from "../../components/ChatWidget";
 export default function Report() {
 const [units, setUnits] = useState([]);
 const [unitId, setUnitId] = useState("");
@@ -63,6 +64,7 @@ return (
  />
  </div>
  )}
+ <ChatWidget />
  </div>
 );
 }

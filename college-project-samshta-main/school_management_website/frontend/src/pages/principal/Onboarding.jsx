@@ -135,6 +135,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import ChatWidget from "../../components/ChatWidget";
 
 export default function PrincipalOnboarding() {
   const { t } = useTranslation();
@@ -259,6 +260,7 @@ export default function PrincipalOnboarding() {
         </div>
         <button type="submit" className="btn btn-primary">{t("submit")}</button>
       </form>
+      <ChatWidget />
     </div>
   );
 }

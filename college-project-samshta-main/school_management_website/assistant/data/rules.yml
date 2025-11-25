@@ -1,60 +1,175 @@
-# version: "3.1"
-# rules:
-# - rule: greet
-#   steps:
-#     - intent: greet
-#     - action: utter_greet
-
-# # LLM fallback when NLU is unsure
-# - rule: llm fallback
-#   steps:
-#     - intent: nlu_fallback
-#     - action: action_llm_answer
-
-# - rule: navigate
-#   steps:
-#     - intent: navigate_any
-#     - action: action_navigate
-
-# - rule: navigate charts
-#   steps:
-#     - intent: navigate_charts
-#     - action: action_navigate
-
-# - rule: navigate tables
-#   steps:
-#     - intent: navigate_tables
-#     - action: action_navigate
-
-# - rule: navigate budgets
-#   steps:
-#     - intent: navigate_budgets
-#     - action: action_navigate
-
 version: "3.1"
 rules:
-- rule: admin explain dashboard
+# Navigation rules
+- rule: navigate to dashboard
   steps:
     - intent: navigate_dashboard
     - action: action_navigate
 
-- rule: admin explain tables
+- rule: navigate to admin
   steps:
-    - intent: navigate_tables
+    - intent: navigate_admin
     - action: action_navigate
 
-- rule: admin explain charts
+- rule: navigate to teacher
   steps:
-    - intent: navigate_charts
+    - intent: navigate_teacher
     - action: action_navigate
 
-- rule: admin explain budgets
+- rule: navigate to principal
   steps:
-    - intent: navigate_budgets
+    - intent: navigate_principal
     - action: action_navigate
 
-# Fallback → dynamic retrieval from knowledge/*.md
-- rule: fallback to RAG
+# Feature view/usage rules
+- rule: see charts
+  steps:
+    - intent: see_charts
+    - action: action_localized_utter
+
+- rule: use charts
+  steps:
+    - intent: use_charts
+    - action: action_localized_utter
+
+- rule: see tables
+  steps:
+    - intent: see_tables
+    - action: action_localized_utter
+
+- rule: use tables
+  steps:
+    - intent: use_tables
+    - action: action_localized_utter
+
+- rule: see budgets
+  steps:
+    - intent: see_budgets
+    - action: action_localized_utter
+
+- rule: use budgets
+  steps:
+    - intent: use_budgets
+    - action: action_localized_utter
+
+- rule: see notifications
+  steps:
+    - intent: see_notifications
+    - action: action_localized_utter
+
+- rule: use notifications
+  steps:
+    - intent: use_notifications
+    - action: action_localized_utter
+
+- rule: see dashboard
+  steps:
+    - intent: see_dashboard
+    - action: action_localized_utter
+
+# Greeting and closing
+- rule: greet
+  steps:
+    - intent: greet
+    - action: action_localized_utter
+
+- rule: goodbye
+  steps:
+    - intent: goodbye
+    - action: action_localized_utter
+
+# Auth rules
+- rule: request login
+  steps:
+    - intent: request_login
+    - action: action_localized_utter
+
+- rule: request password reset
+  steps:
+    - intent: request_password_reset
+    - action: action_localized_utter
+
+- rule: request signup
+  steps:
+    - intent: request_signup
+    - action: action_localized_utter
+
+- rule: request logout
+  steps:
+    - intent: request_logout
+    - action: action_localized_utter
+
+# Help and feedback
+- rule: request help
+  steps:
+    - intent: request_help
+    - action: action_localized_utter
+
+- rule: request feedback
+  steps:
+    - intent: request_feedback
+    - action: action_localized_utter
+
+# Misc queries
+- rule: ask school info
+  steps:
+    - intent: ask_school_info
+    - action: action_localized_utter
+
+- rule: ask fees
+  steps:
+    - intent: ask_fees
+    - action: action_localized_utter
+
+- rule: ask admissions
+  steps:
+    - intent: ask_admissions
+    - action: action_localized_utter
+
+- rule: create form
+  steps:
+    - intent: create_form
+    - action: action_localized_utter
+
+# Language switching
+- rule: answer in marathi
+  steps:
+    - intent: ask_in_marathi
+    - action: action_answer_in_marathi
+
+# Teacher-specific rules
+- rule: ask teacher students
+  steps:
+    - intent: ask_teacher_students
+    - action: action_localized_utter
+
+- rule: ask teacher profile
+  steps:
+    - intent: ask_teacher_profile
+    - action: action_localized_utter
+
+- rule: ask teacher charts
+  steps:
+    - intent: ask_teacher_charts
+    - action: action_localized_utter
+
+- rule: ask teacher attendance
+  steps:
+    - intent: ask_teacher_attendance
+    - action: action_localized_utter
+
+- rule: ask teacher grades
+  steps:
+    - intent: ask_teacher_grades
+    - action: action_localized_utter
+
+- rule: ask teacher notifications
+  steps:
+    - intent: ask_teacher_notifications
+    - action: action_localized_utter
+
+# Explicit fallback rule (matches stories.yml)
+- rule: fallback rule
   steps:
     - intent: nlu_fallback
-    - action: action_llm_answer
+    - action: utter_fallback

@@ -4,6 +4,7 @@ import axios from "axios";
 import {
   PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer
 } from "recharts";
+import ChatWidget from "../../components/ChatWidget";
 
 const GENDER_COLORS = ["#278BCD", "#E9B949"];
 const PASS_COLORS = ["#56C596", "#F37272"];
@@ -64,6 +65,7 @@ export default function Charts() {
   }, [academicYear]);
 
   return (
+    <>
     <div style={{
       background: "#23242a",
       minHeight: "100vh",
@@ -180,5 +182,7 @@ export default function Charts() {
         </div>
       </div>
     </div>
+    <ChatWidget />
+    </>
   );
 }

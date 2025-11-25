@@ -545,6 +545,7 @@ import { useNavigate } from "react-router-dom";
 import ClerkProfile from "./Profile";
 import StudentFees from "./StudentFees";
 import TeacherSalaries from "./TeacherSalaries";
+import ChatWidget from "../../components/ChatWidget";
 
 export default function ClerkDashboard() {
   const [tab, setTab] = useState("dashboard");
@@ -670,6 +671,7 @@ export default function ClerkDashboard() {
         {tab === "fees" && <StudentFees />}
         {tab === "salaries" && <TeacherSalaries />}
       </main>
+      <ChatWidget />
     </div>
   );
 }

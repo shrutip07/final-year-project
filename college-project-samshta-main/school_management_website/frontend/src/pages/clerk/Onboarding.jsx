@@ -66,6 +66,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ChatWidget from "../../components/ChatWidget";
 
 export default function ClerkOnboarding() {
   const [form, setForm] = useState({
@@ -153,6 +154,7 @@ export default function ClerkOnboarding() {
         </select>
         <button type="submit">Save</button>
       </form>
+      <ChatWidget />
     </div>
   );
 }

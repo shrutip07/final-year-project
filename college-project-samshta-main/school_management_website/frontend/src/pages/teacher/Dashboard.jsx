@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import "./Dashboard.scss";
 import Charts from "./Charts"; // if your Dashboard.jsx and Charts.jsx are in the same folder
 import TeacherNotificationsPage from "./TeacherNotificationsPage";
+import ChatWidget from "../../components/ChatWidget";
 
 
 // Update columns as per your backend SELECT
@@ -323,6 +324,7 @@ export default function TeacherDashboard() {
 
       {/* Main Content */}
       <div style={{ flex: 1, padding: "20px" }}>{renderContent()}</div>
+      <ChatWidget />
     </div>
   );
 }

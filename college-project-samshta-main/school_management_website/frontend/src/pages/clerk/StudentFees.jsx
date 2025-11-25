@@ -880,6 +880,7 @@
 // }
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import ChatWidget from "../../components/ChatWidget";
 
 export default function StudentFees() {
   const [feeRows, setFeeRows] = useState([]);
@@ -1024,6 +1025,7 @@ export default function StudentFees() {
   });
 
   return (
+    <>
     <div>
       <h2>Set Fees For Standard</h2>
       <form onSubmit={handleSubmit} className="mb-4" style={{ display: 'flex', gap: 8, alignItems: "center" }}>
@@ -1195,5 +1197,7 @@ export default function StudentFees() {
         </tbody>
       </table>
     </div>
+    <ChatWidget />
+    </>
   );
 }

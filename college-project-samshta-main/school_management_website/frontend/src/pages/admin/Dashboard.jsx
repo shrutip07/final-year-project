@@ -4,6 +4,7 @@ import axios from "axios";
 import { useTranslation } from "react-i18next";
 import "./Dashboard.scss";
 import AdminCharts from "./Charts";
+import ChatWidget from "../../components/ChatWidget";
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
@@ -56,15 +57,19 @@ export default function AdminDashboard() {
         const response = await axios.get("http://localhost:5000/api/admin/units", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUnits(response.data);
+        const unitData = Array.isArray(response.data) ? response.data : [];
+        setUnits(unitData);
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.message || t("failed_load_units"));
+        setUnits([]);
         setLoading(false);
       }
     }
     fetchUnits();
   }, [t]);
+
+  const safeUnits = Array.isArray(units) ? units : [];
 
   useEffect(() => {
     if (sidebarTab === "notifications") {
@@ -95,7 +100,7 @@ const renderReportsPage = () => {
  <h2 className="mb-4">Generate School Reports</h2>
  <p>Select a school to download a full report</p>
  <div className="row">
- {units.map(unit => (
+ {safeUnits.map(unit => (
  <div key={unit.unit_id} className="col-md-4 col-lg-3 col-sm-6 mb-3">
  <div className="card p-3 shadow-sm" style={{ borderRadius: 12 }}>
  <h5>{unit.kendrashala_name}</h5>
@@ -565,7 +570,7 @@ async function downloadReport(unitId) {
               <p className="text-muted">{t("manage_monitor_all_schools")}</p>
             </div>
             <div className="row">
-              {units.map((unit, idx) => (
+              {safeUnits.map((unit, idx) => (
                 <div key={unit.unit_id} className="col-md-4 col-lg-3 col-sm-6 mb-4">
                   <div className="card shadow-sm text-center p-3" style={{ cursor: "pointer", borderRadius: 14 }} onClick={() => handleUnitCardClick(unit.unit_id)}>
                     <div style={{ fontSize: "2rem", fontWeight: 700 }}>{idx + 1}</div>
@@ -806,6 +811,7 @@ async function downloadReport(unitId) {
           renderContent()
         )}
       </main>
+      <ChatWidget />
     </div>
   );
 }

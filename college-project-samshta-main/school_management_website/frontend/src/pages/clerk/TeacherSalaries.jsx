@@ -259,6 +259,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import ChatWidget from "../../components/ChatWidget";
 
 const monthsArr = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -405,6 +406,7 @@ const paySalary = async (staff_id, monthObj) => {
 
   // --- Render ---
   return (
+    <>
     <div>
       {/* ---- Assignment ---- */}
       <h3 style={{ marginBottom: 16 }}>Assign/Update Teacher Salary</h3>
@@ -595,5 +597,7 @@ const paySalary = async (staff_id, monthObj) => {
         <span style={{ background: '#f9dcdc', padding: '2px 6px', marginLeft: 6 }}>Pending</span>
       </div>
     </div>
+    <ChatWidget />
+    </>
   );
 }

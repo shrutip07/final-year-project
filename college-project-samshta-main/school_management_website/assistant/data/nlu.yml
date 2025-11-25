@@ -1,73 +1,718 @@
+# version: "3.1"
+# nlu:
+# - intent: greet
+#   examples: |
+#     - hi
+#     - hello
+#     - नमस्कार
+
+# - intent: navigate_admin
+#   examples: |
+#     - go to admin
+#     - open admin
+#     - admin dashboard
+#     - अॅडमिन उघडा
+
+# - intent: navigate_admin_tables
+#   examples: |
+#     - open tables
+#     - admin tables
+#     - टेबल्स दाखवा
+
+# - intent: navigate_teacher
+#   examples: |
+#     - teacher page
+#     - teacher dashboard
+#     - शिक्षक पेज
+#     - शिक्षक उघडा
+
+# - intent: navigate_teacher_charts
+#   examples: |
+#     - open charts
+#     - go to charts
+#     - charts page
+#     - analytics
+#     - चार्ट्स उघडा
+
+# - intent: navigate_principal
+#   examples: |
+#     - principal dashboard
+#     - open principal
+#     - प्राचार्य पेज
+
+# - intent: navigate_login
+#   examples: |
+#     - login
+#     - sign in
+#     - लॉगिन
+
+# - intent: ask_fees
+#   examples: |
+#     - how to pay fees
+#     - fees payment steps
+#     - शुल्क कसे भरायचे
+
+# - intent: ask_admissions
+#   examples: |
+#     - admission process
+#     - how to apply for admission
+#     - प्रवेश प्रक्रिया
+
+# - intent: give_school
+#   examples: |
+#     - Kendrashala Alpha
+#     - Kendrashala Beta
+#     - केन्द्रशाळा अल्फा
+#     - केन्द्रशाळा बीटा
+#     - what is Kendrashala Alpha
+#     - tell me about Kendrashala Alpha
+#     - info on Kendrashala Alpha
+#     - kendrashal alpha
+#     - kendrashala alffa
+#     - मला अल्फा बद्दल सांगा
+#     - के बारे में बताओ केंद्रशाला अल्फा
+
+# - intent: ask_budget
+#   examples: |
+#     - show budget
+#     - budget of [Kendrashala Alpha](school)
+#     - budgets of [Kendrashala Beta](school)
+#     - अल्फा चे बजेट दाखवा
+
+# - intent: navigate_charts
+#   examples: |
+#     - open charts
+#     - charts page
+#     - show analytics
+#     - चार्ट्स दाखवा
+
+# - intent: navigate_tables
+#   examples: |
+#     - open tables
+#     - show tables
+#     - list units
+#     - टेबल दाखवा
+
+# - intent: navigate_budgets
+#   examples: |
+#     - open budgets
+#     - show budgets
+#     - budget page
+#     - बजेट दाखवा
+
+# - intent: navigate_dashboard
+#   examples: |
+#     - open dashboard
+#     - show dashboard
+#     - go to dashboard
+#     - डॅशबोर्ड दाखवा
+
+# - intent: explain_charts
+#   examples: |
+#     - explain charts
+#     - what do charts show
+#     - charts overview
+#     - purpose of charts
+#     - चार्ट्स का?
+#     - charts क्या दिखाते हैं
+
+# - intent: howto_charts
+#   examples: |
+#     - how to see charts
+#     - how to use charts
+#     - steps to view charts
+#     - चार्ट्स कसे पाहायचे
+#     - how do I read charts
+#     - where are charts
+
+# - intent: what_are_charts
+#   examples: |
+#     - what is charts
+#     - what are the different charts
+#     - types of charts available
+#     - chart types
+#     - चार्ट्स काय आहेत
+#     - कौन से चार्ट्स हैं
+
+# - intent: explain_dashboard
+#   examples: |
+#     - explain dashboard
+#     - what is the dashboard
+#     - dashboard overview
+#     - what does dashboard show
+#     - डॅशबोर्ड काय आहे
+#     - डॅशबोर्ड के बारे में बताओ
+
+# - intent: howto_dashboard
+#   examples: |
+#     - how to use dashboard
+#     - how to navigate dashboard
+#     - steps for dashboard
+#     - डॅशबोर्ड कसे वापरायचे
+#     - डॅशबोर्ड का उपयोग कैसे करें
+
+# - intent: what_is_dashboard
+#   examples: |
+#     - what can I see on dashboard
+#     - what information is on dashboard
+#     - dashboard details
+#     - डॅशबोर्ड वर काय दिसते
+
+# - intent: explain_tables
+#   examples: |
+#     - explain tables
+#     - what is tables section
+#     - tables overview
+#     - what do tables show
+#     - टेबल्स काय आहेत
+#     - टेबल्स क्या दिखाते हैं
+
+# - intent: howto_tables
+#   examples: |
+#     - how to use tables
+#     - how to search in tables
+#     - steps for tables
+#     - how to find a school in tables
+#     - टेबल्स कसे वापरायचे
+
+# - intent: what_are_tables
+#   examples: |
+#     - what information is in tables
+#     - what can I find in tables
+#     - table details
+#     - what data do tables contain
+
+# - intent: explain_budgets
+#   examples: |
+#     - explain budgets
+#     - what is budget section
+#     - budgets overview
+#     - what do budgets show
+#     - बजेट काय आहे
+#     - बजेट क्या दिखाता है
+
+# - intent: howto_budgets
+#   examples: |
+#     - how to use budgets
+#     - how to check budget
+#     - steps for budgets
+#     - how to view financial data
+#     - बजेट कसे पाहायचे
+#     - बजेट का उपयोग कैसे करें
+
+# - intent: what_is_budget
+#   examples: |
+#     - what information is in budgets
+#     - what can I find in budget section
+#     - budget details
+#     - what financial data is available
+#     - बजेटमध्ये काय आहे
+
+# - intent: explain_notifications
+#   examples: |
+#     - explain notifications
+#     - what is notifications section
+#     - notifications overview
+#     - how to send notifications
+#     - how to communicate with staff
+#     - नोटिफिकेशन काय आहे
+#     - नोटिफिकेशन क्या है
+
+# - intent: send_notification
+#   examples: |
+#     - how to send a notification
+#     - steps to send notification
+#     - send message to principals
+#     - send notice to teachers
+#     - नोटिफिकेशन कसे पाठवायचे
+#     - अधिसूचना भेजने के लिए कदम
+
+# - intent: create_form
+#   examples: |
+#     - how to create a form
+#     - how to send a form
+#     - how to create and send forms
+#     - create custom form
+#     - form creation steps
+#     - फॉर्म कसे तयार करायचे
+#     - फॉर्म भेजने के लिए कदम
+
+# - intent: howto_login
+#   examples: |
+#     - how to login
+#     - how do I sign in
+#     - I can't login
+#     - login help
+#     - login issues
+#     - how to access the dashboard
+
+# - intent: login_help
+#   examples: |
+# - lookup: school
+#   examples: |
+#     - !include lookup/schools.txt
+#     - forgot password
+#     - I forgot my password
+#     - can't access my account
+#     - help me login
+#     - login not working
+
+
 version: "3.1"
 nlu:
+
+# ============================================================================
+# GREETING & CLOSING
+# ============================================================================
 - intent: greet
   examples: |
-    - hi
+    - hey
     - hello
+    - hi
+    - good morning
+    - good afternoon
+    - good evening
+    - good night
+    - namaste
     - नमस्कार
+    - नमस्ते
+    - राम राम
+    - आरे कसे आहो
+    - हेलो
+    - हाय
+
+- intent: goodbye
+  examples: |
+    - bye
+    - goodbye
+    - see you
+    - take care
+    - catch you
+    - farewell
+    - bye bye
+    - विदा
+    - अलविदा
+    - आता जातो
+    - आता निघतो
+    - बाय
+
+# ============================================================================
+# LOGIN / AUTHENTICATION
+# ============================================================================
+- intent: request_login
+  examples: |
+    - how to login
+    - how do I login
+    - help me login
+    - login process
+    - login steps
+    - how do I sign in
+    - i can't login
+    - login help
+    - लॉगिन कसे करायचे
+    - लॉगिन प्रक्रिया
+    - लॉग इन कसे करू
+    - साइन इन कसे करायचे
+    - मला लॉगिन न होता
+    - लॉगिनमध्ये समस्या
+
+- intent: request_password_reset
+  examples: |
+    - forgot password
+    - I forgot my password
+    - reset password
+    - how to recover password
+    - I can't remember my password
+    - password recovery
+    - पासवर्ड विसरलो
+    - पासवर्ड रीसेट कसे करायचे
+    - मला पासवर्ड विसरला आहे
+
+- intent: request_signup
+  examples: |
+    - how to register
+    - how to signup
+    - sign up process
+    - create account
+    - I don't have an account
+    - register me
+    - नवीन खाते कसे तयार करायचे
+    - नोंदणी कसे करायची
+    - साइन अप कसे करायचे
+    - खाता कसे बनवायचे
+    - नोंदणी प्रक्रिया
+
+# ============================================================================
+# LOGOUT / EXIT
+# ============================================================================
+- intent: request_logout
+  examples: |
+    - how to logout
+    - logout
+    - log out
+    - how to exit
+    - where is the logout button
+    - logout button
+    - sign out
+    - लॉगआउट कसे करायचे
+    - लॉग आउट करायचे
+    - बाहेर निघायचे
+    - लॉगआउट बटण कोठे आहे
+
+# ============================================================================
+# NAVIGATE / DASHBOARD
+# ============================================================================
+- intent: navigate_dashboard
+  examples: |
+    - open dashboard
+    - show dashboard
+    - go to dashboard
+    - view dashboard
+    - dashboard
+    - home
+    - डॅशबोर्ड दाखवा
+    - डॅशबोर्ड खोला
+    - डॅशबोर्डला जा
+    - मुख्य पृष्ठ
 
 - intent: navigate_admin
   examples: |
     - go to admin
     - open admin
     - admin dashboard
+    - admin panel
+    - admin section
+    - अॅडमिन पॅनल
     - अॅडमिन उघडा
-
-- intent: navigate_admin_tables
-  examples: |
-    - open tables
-    - admin tables
-    - टेबल्स दाखवा
+    - प्रशासन भाग
 
 - intent: navigate_teacher
   examples: |
+    - go to teacher
     - teacher page
     - teacher dashboard
+    - teacher section
     - शिक्षक पेज
-    - शिक्षक उघडा
-
-- intent: navigate_teacher_charts
-  examples: |
-    - open charts
-    - go to charts
-    - charts page
-    - analytics
-    - चार्ट्स उघडा
+    - शिक्षक डॅशबोर्ड
+    - शिक्षक भाग
 
 - intent: navigate_principal
   examples: |
     - principal dashboard
-    - open principal
+    - go to principal
+    - principal page
+    - principal section
+    - प्राचार्य डॅशबोर्ड
     - प्राचार्य पेज
+    - प्राचार्य भाग
 
-- intent: navigate_login
+# ============================================================================
+# VIEW / EXPLAIN (CONSOLIDATED INTENTS)
+# ============================================================================
+- intent: see_charts
   examples: |
-    - login
-    - sign in
-    - लॉगिन
+    - how to see charts
+    - how to view charts
+    - how do I see charts
+    - show me charts
+    - where are the charts
+    - chart section
+    - view charts
+    - charts page
+    - चार्ट्स कसे पाहायचे
+    - चार्ट्स दाखवा
+    - चार्ट्स कोठे आहेत
+    - चार्ट्स कसे खोलायचे
+    - how to see charts in marathi
+    - चार्ट्स दाखवा मराठीत
+
+- intent: use_charts
+  examples: |
+    - explain charts
+    - what do charts show
+    - charts overview
+    - purpose of charts
+    - what are charts
+    - types of charts
+    - chart types
+    - how to use charts
+    - चार्ट्स काय दाखवतात
+    - चार्ट्स काय आहेत
+    - चार्ट्स काय आहेत बाबा
+    - चार्ट्स कशासाठी आहेत
+    - चार्ट्स कसे वापरायचे
+
+- intent: see_tables
+  examples: |
+    - how to see tables
+    - view tables
+    - open tables
+    - show tables
+    - tables page
+    - table section
+    - where are the tables
+    - show me tables
+    - टेबल्स कसे पाहायचे
+    - टेबल्स दाखवा
+    - टेबल्स खोला
+    - टेबल्स कोठे आहेत
+    - टेबल्स कसे खोलायचे
+    - how to see tables in marathi
+    - टेबल्स दाखवा मराठीत
+
+- intent: use_tables
+  examples: |
+    - explain tables
+    - what are tables
+    - tables overview
+    - table information
+    - what do tables show
+    - how to use tables
+    - how to search in tables
+    - search tables
+    - टेबल्स काय आहेत
+    - टेबल्स कशासाठी आहेत
+    - टेबल्स कसे वापरायचे
+    - टेबल्स मध्ये शोध कसे करायचे
+
+- intent: see_budgets
+  examples: |
+    - how to see budgets
+    - view budgets
+    - open budgets
+    - show budgets
+    - budgets page
+    - budget section
+    - where are the budgets
+    - बजेट कसे पाहायचे
+    - बजेट दाखवा
+    - बजेट खोला
+    - बजेट कोठे आहेत
+    - बजेट कसे खोलायचे
+    - how to see budgets in marathi
+    - बजेट दाखवा मराठीत
+
+- intent: use_budgets
+  examples: |
+    - explain budgets
+    - what are budgets
+    - budgets overview
+    - what do budgets show
+    - how to use budgets
+    - how to check budget
+    - budget information
+    - बजेट काय आहेत
+    - बजेट कशासाठी आहेत
+    - बजेट कसे वापरायचे
+    - बजेट तपशील
+
+- intent: see_notifications
+  examples: |
+    - how to send notifications
+    - view notifications
+    - open notifications
+    - show notifications
+    - notifications page
+    - notification section
+    - where are notifications
+    - नोटिफिकेशन कसे पाठवायचे
+    - नोटिफिकेशन दाखवा
+    - नोटिफिकेशन खोला
+    - नोटिफिकेशन कोठे आहेत
+    - how to send notifications in marathi
+    - नोटिफिकेशन पाठवा मराठीत
+
+- intent: use_notifications
+  examples: |
+    - explain notifications
+    - what are notifications
+    - notifications overview
+    - what do notifications do
+    - how to use notifications
+    - send a notification
+    - create notification
+    - नोटिफिकेशन काय आहे
+    - नोटिफिकेशन कशासाठी आहे
+    - नोटिफिकेशन कसे वापरायचे
+    - नोटिफिकेशन माहिती
+
+- intent: see_dashboard
+  examples: |
+    - what is the dashboard
+    - explain dashboard
+    - dashboard overview
+    - what does dashboard show
+    - dashboard information
+    - dashboard guide
+    - डॅशबोर्ड काय आहे
+    - डॅशबोर्ड कशासाठी आहे
+    - डॅशबोर्ड तपशील
+    - डॅशबोर्ड सविस्तर
+
+# ============================================================================
+# FALLBACK / HELP
+# ============================================================================
+- intent: request_help
+  examples: |
+    - help
+    - I need help
+    - help me
+    - assistance
+    - what can you do
+    - what can i do
+    - guide me
+    - मदत करा
+    - मला मदत हवी
+    - मला सहाय्य हवे
+    - तुम्ही काय करू शकता
+
+- intent: request_feedback
+  examples: |
+    - I have feedback
+    - give feedback
+    - report issue
+    - something is broken
+    - bug report
+    - issue report
+    - मला अडचण आहे
+    - काहीतरी चुकीचे आहे
+    - अडचण सांगू
+
+# ============================================================================
+# LANGUAGE SWITCHING
+# ============================================================================
+- intent: ask_in_marathi
+  examples: |
+    - in marathi
+    - मराठीत
+    - मराठीमध्ये
+    - मराठीत सांग
+    - मराठीत उत्तर दे
+    - मराठीत समजावून सांग
+    - answer in marathi
+    - reply in marathi
+    - मराठी भाषेत
+    - मराठीशी
+    - हिंदीत नाही मराठीत
+
+# ============================================================================
+# MISCELLANEOUS / NAVIGATION
+# ============================================================================
+- intent: ask_school_info
+  examples: |
+    - tell me about this school
+    - school information
+    - what school is this
+    - school details
+    - information about school
+    - शाळेची माहिती
+    - या शाळेबद्दल सांगा
+    - या शाळेची माहिती
+    - शाळा कोणती आहे
 
 - intent: ask_fees
   examples: |
     - how to pay fees
-    - fees payment steps
+    - fees payment
+    - pay fees
+    - fee information
     - शुल्क कसे भरायचे
+    - शुल्क भरण्याची प्रक्रिया
+    - शुल्क माहिती
 
 - intent: ask_admissions
   examples: |
     - admission process
     - how to apply for admission
+    - apply for admission
+    - admission information
     - प्रवेश प्रक्रिया
+    - प्रवेश कसे होतो
+    - प्रवेश माहिती
 
-- intent: give_school
+- intent: create_form
   examples: |
-    - Kendrashala Alpha
-    - Kendrashala Beta
-    - केन्द्रशाळा अल्फा
-    - केन्द्रशाळा बीटा
+    - how to create a form
+    - create form
+    - send a form
+    - create custom form
+    - form creation
+    - फॉर्म कसे तयार करायचे
+    - फॉर्म तयार करा
+    - फॉर्म कसे पाठवायचे
+    - कस्टम फॉर्म तयार करा
 
-- intent: ask_budget
+# ============================================================================
+# TEACHER-SPECIFIC QUERIES
+# ============================================================================
+- intent: ask_teacher_students
   examples: |
-    - show budget
-    - budget of [Kendrashala Alpha](school)
-    - budgets of [Kendrashala Beta](school)
-    - अल्फा चे बजेट दाखवा
+    - how to view my students
+    - show my students
+    - view student list
+    - where are my students
+    - how to see students assigned to me
+    - view my students
+    - how to view my students in marathi
+    - show my students list
+    - where can I see my students
+    - how do I view my students
+    - माझे विद्यार्थी कसे पाहायचे
+    - माझे विद्यार्थी दाखवा
+    - विद्यार्थी यादी पहा
+    - माझे विद्यार्थी कसे पाहायचे मराठीत
+    - माझे विद्यार्थी दाखवा मराठीत
+
+- intent: ask_teacher_profile
+  examples: |
+    - how to update my profile
+    - edit my profile
+    - update teacher profile
+    - change my information
+    - माझी प्रोफाइल कशी अपडेट करायची
+    - माझी माहिती बदला
+    - प्रोफाइल संपादित करा
+
+- intent: ask_teacher_charts
+  examples: |
+    - how to see student performance charts
+    - view student statistics
+    - show student analytics
+    - student performance data
+    - विद्यार्थी कामगिरी चार्ट्स कसे पाहायचे
+    - विद्यार्थी आकडेवारी पहा
+    - कामगिरी डेटा
+
+- intent: ask_teacher_attendance
+  examples: |
+    - how to mark attendance
+    - take attendance
+    - record student attendance
+    - attendance marking
+    - उपस्थिती कशी नोंदवायची
+    - उपस्थिती घ्या
+    - विद्यार्थी उपस्थिती नोंदवा
+
+- intent: ask_teacher_grades
+  examples: |
+    - how to enter grades
+    - update student grades
+    - mark student grades
+    - grade entry
+    - गुण कसे टाकायचे
+    - विद्यार्थी गुण अपडेट करा
+    - गुण नोंदवा
+
+- intent: ask_teacher_notifications
+  examples: |
+    - how to receive notifications
+    - view teacher notifications
+    - check my notifications
+    - teacher messages
+    - शिक्षक अधिसूचना कशा पाहायच्या
+    - माझ्या अधिसूचना तपासा
+    - शिक्षक संदेश
+
+- lookup: school
+  examples: |
+    - !include lookup/schools.txt
