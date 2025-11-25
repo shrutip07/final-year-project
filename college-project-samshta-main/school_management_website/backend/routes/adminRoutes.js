@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 const adminController = require('../controllers/adminController');
+const { listSimpleUnits } = require('../controllers/adminController');
+router.get('/units', listSimpleUnits);
 
 // Units and their data
 router.get('/filled-forms-detailed', adminController.getAllFormResponsesDetailed);

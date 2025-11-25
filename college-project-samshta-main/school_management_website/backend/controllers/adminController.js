@@ -418,3 +418,15 @@ exports.getUnitStudents = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+exports.listSimpleUnits = async (req, res) => {
+  try {
+    // Use the correct columns!
+    const result = await pool.query(
+      "SELECT unit_id, kendrashala_name AS unit_name FROM unit ORDER BY kendrashala_name"
+    );
+    res.json({ units: result.rows }); // This shape matches your frontend!
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch units" });
+  }
+};

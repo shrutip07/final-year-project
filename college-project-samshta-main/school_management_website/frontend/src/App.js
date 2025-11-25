@@ -1,11 +1,11 @@
 
-// Force logout: clear token on every app load/page refresh
-localStorage.removeItem("token");
+window.addEventListener("beforeunload", () => {
+  localStorage.removeItem("token");
+});
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
-
 import Assistant from "./components/Assistant";
 
 import AdminDashboard from './pages/admin/Dashboard';
@@ -29,6 +29,9 @@ import Report from './pages/admin/Report';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
+// Clerk pages
+import ClerkDashboard from './pages/clerk/Dashboard';
+import ClerkOnboarding from './pages/clerk/Onboarding';
 
 const ProtectedRoute = ({ children, role }) => {
   const token = localStorage.getItem("token");
@@ -44,117 +47,95 @@ const ProtectedRoute = ({ children, role }) => {
   return children;
 };
 
+// Below is the new Clerk Guard for onboarding enforcement
+const ProtectedClerkRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+  const [checking, setChecking] = useState(true);
+  const [hasProfile, setHasProfile] = useState(null);
+
+  useEffect(() => {
+    async function checkClerkProfile() {
+      if (!token) {
+        setChecking(false);
+        setHasProfile(false);
+        return;
+      }
+      try {
+        const decoded = jwtDecode(token);
+        if (decoded.role !== "clerk") {
+          setHasProfile(false);
+          setChecking(false);
+          return;
+        }
+        const res = await fetch("http://localhost:5000/api/clerk/me", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.status === 404) {
+          setHasProfile(false); // Will redirect to onboarding if missing
+        } else {
+          setHasProfile(true);
+        }
+      } catch {
+        setHasProfile(false);
+      } finally {
+        setChecking(false);
+      }
+    }
+    checkClerkProfile();
+  }, [token]);
+
+  if (checking) return <div>Loading...</div>;
+  if (!hasProfile) return <Navigate to="/clerk/onboarding" replace />;
+  return children;
+};
+
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Login/Signup page */}
+        {/* Login/Signup always at root */}
         <Route path="/" element={<LoginPage />} />
+
         {/* Admin */}
-        <Route path="/admin" element={
-          <ProtectedRoute role="admin">
-            <AdminDashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/tables" element={
-          <ProtectedRoute role="admin">
-            <Tables />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/tables/:unitId" element={
-          <ProtectedRoute role="admin">
-            <Tables />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/notifications" element={
-          <ProtectedRoute role="admin">
-            <AdminNotificationsPage />
-          </ProtectedRoute>
-        } />
+        <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/admin/tables" element={<ProtectedRoute role="admin"><Tables /></ProtectedRoute>} />
+        <Route path="/admin/tables/:unitId" element={<ProtectedRoute role="admin"><Tables /></ProtectedRoute>} />
+        <Route path="/admin/notifications" element={<ProtectedRoute role="admin"><AdminNotificationsPage /></ProtectedRoute>} />
+        <Route path="/admin/report" element={<ProtectedRoute role="admin"><Report /></ProtectedRoute>} />
 
         {/* Principal */}
-        <Route path="/principal" element={
-          <ProtectedRoute role="principal">
-            <PrincipalDashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/principal/onboarding" element={
-          <ProtectedRoute role="principal">
-            <PrincipalOnboarding />
-          </ProtectedRoute>
-        } />
-        <Route path="/principal/profile" element={
-          <ProtectedRoute role="principal">
-            <PrincipalProfile />
-          </ProtectedRoute>
-        } />
-        <Route path="/principal/teachers" element={
-          <ProtectedRoute role="principal">
-            <PrincipalTeachers />
-          </ProtectedRoute>
-        } />
-        <Route path="/principal/students" element={
-          <ProtectedRoute role="principal">
-            <PrincipalStudents />
-          </ProtectedRoute>
-        } />
-        <Route path="/principal/notifications" element={
-          <ProtectedRoute role="principal">
-            <PrincipalNotificationsPage />
-          </ProtectedRoute>
-        } />
-        {/* NEW Admin Report Route */}
-        <Route path="/admin/report" element={
-        <ProtectedRoute role="admin">
-        <Report />
-        </ProtectedRoute>
-        } />
+        <Route path="/principal" element={<ProtectedRoute role="principal"><PrincipalDashboard /></ProtectedRoute>} />
+        <Route path="/principal/onboarding" element={<ProtectedRoute role="principal"><PrincipalOnboarding /></ProtectedRoute>} />
+        <Route path="/principal/profile" element={<ProtectedRoute role="principal"><PrincipalProfile /></ProtectedRoute>} />
+        <Route path="/principal/teachers" element={<ProtectedRoute role="principal"><PrincipalTeachers /></ProtectedRoute>} />
+        <Route path="/principal/students" element={<ProtectedRoute role="principal"><PrincipalStudents /></ProtectedRoute>} />
+        <Route path="/principal/notifications" element={<ProtectedRoute role="principal"><PrincipalNotificationsPage /></ProtectedRoute>} />
 
         {/* Teacher */}
-        <Route path="/teacher" element={
-          <ProtectedRoute role="teacher">
-            <TeacherDashboard />
+        <Route path="/teacher" element={<ProtectedRoute role="teacher"><TeacherDashboard /></ProtectedRoute>} />
+        <Route path="/teacher/onboarding" element={<ProtectedRoute role="teacher"><TeacherOnboarding /></ProtectedRoute>} />
+        <Route path="/teacher/profile" element={<ProtectedRoute role="teacher"><TeacherProfile /></ProtectedRoute>} />
+        <Route path="/teacher/students" element={<ProtectedRoute role="teacher"><TeacherStudents /></ProtectedRoute>} />
+        <Route path="/teacher/charts" element={<ProtectedRoute role="teacher"><Charts /></ProtectedRoute>} />
+        <Route path="/teacher/notifications" element={<ProtectedRoute role="teacher"><TeacherNotificationsPage /></ProtectedRoute>} />
+
+        {/* Clerk */}
+        <Route path="/clerk" element={
+          <ProtectedRoute role="clerk">
+            <ProtectedClerkRoute>
+              <ClerkDashboard />
+            </ProtectedClerkRoute>
           </ProtectedRoute>
-        } />
-        <Route path="/teacher/onboarding" element={
-          <ProtectedRoute role="teacher">
-            <TeacherOnboarding />
-          </ProtectedRoute>
-        } />
-        <Route path="/teacher/profile" element={
-          <ProtectedRoute role="teacher">
-            <TeacherProfile />
-          </ProtectedRoute>
-        } />
-        <Route path="/teacher/students" element={
-          <ProtectedRoute role="teacher">
-            <TeacherStudents />
-          </ProtectedRoute>
-        } />
-        <Route path="/teacher/charts" element={
-          <ProtectedRoute role="teacher">
-            <Charts />
-          </ProtectedRoute>
-        } />
-        <Route path="/teacher/notifications" element={
-          <ProtectedRoute role="teacher">
-            <TeacherNotificationsPage />
-          </ProtectedRoute>
-        } />
+        }/>
+        <Route path="/clerk/onboarding" element={<ProtectedRoute role="clerk"><ClerkOnboarding /></ProtectedRoute>} />
 
         {/* Standalone Form */}
-        <Route path="/forms/:formId" element={
-          <ProtectedRoute>
-            <FormResponsePage />
-          </ProtectedRoute>
-        } />
+        <Route path="/forms/:formId" element={<ProtectedRoute><FormResponsePage /></ProtectedRoute>} />
 
-        {/* Catch-all fallback */}
+        {/* Catch-all: go to login */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-
-      {/* Chat Assistant mounted globally so it's available on every page */}
-      
+      {/* Global chat assistant */}
       <Assistant />
     </Router>
   );

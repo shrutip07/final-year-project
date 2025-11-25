@@ -3,7 +3,13 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const app = express();
-
+// CORS middleware
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json());
 const adminRoutes = require('./routes/adminRoutes');
 const authRoutes = require('./routes/authRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
@@ -13,15 +19,12 @@ const formRoutes = require('./routes/formRoutes');
 const chatRoutes = require("./routes/chat");
 const reportRoutes = require('./routes/reportRoutes'); // Report Route
 const { verify } = require('./controllers/authController'); // <-- Import this!
+const clerkRoutes = require('./routes/clerkRoutes');
+app.use('/api/clerk', clerkRoutes);
 
-// CORS middleware
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-app.use(express.json());
 
+// Register routes
+app.use('/api/clerk', clerkRoutes);
 // Add this route for frontend compatibility!
 app.get('/api/verify', verify);
 
