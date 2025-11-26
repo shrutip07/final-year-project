@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 import React from 'react';
+=======
+import React, { useEffect, useState } from 'react';
+>>>>>>> Stashed changes
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import Notifications from "./pages/Notifications";
@@ -19,6 +23,7 @@ import TeacherStudents from './pages/teacher/Students';
 import PrincipalNotificationsPage from "./pages/principal/PrincipalNotificationsPage";
 import TeacherNotificationsPage from "./pages/teacher/TeacherNotificationsPage";
 import AdminNotificationsPage from "./pages/AdminNotificationsPage";
+<<<<<<< Updated upstream
 
 
 // Add these imports
@@ -26,6 +31,25 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 // Enhanced ProtectedRoute: checks token and optionally role
+=======
+import FormResponsePage from './pages/FormResponsePage';
+import { jwtDecode } from "jwt-decode";
+import Report from './pages/admin/Report';
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+
+// Clerk pages
+import ClerkDashboard from './pages/clerk/Dashboard';
+import ClerkOnboarding from './pages/clerk/Onboarding';
+
+/* ⬇️ Your code must be BELOW all imports */
+window.addEventListener("beforeunload", () => {
+  localStorage.removeItem("token");
+});
+
+
+>>>>>>> Stashed changes
 const ProtectedRoute = ({ children, role }) => {
   const token = localStorage.getItem("token");
   if (!token) return <Navigate to="/" replace />;
