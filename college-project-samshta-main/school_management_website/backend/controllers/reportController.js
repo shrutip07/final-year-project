@@ -1,9 +1,226 @@
+// const PDFDocument = require("pdfkit");
+// const pool = require("../config/db");
+// exports.getSchoolReport = async (req, res) => {
+// const { unitId } = req.params;
+// try {
+//  // 📌 1. Fetch school info
+//  const unit = await pool.query("SELECT * FROM unit WHERE unit_id = $1", [
+//  unitId
+//  ]);
+//  if (unit.rowCount === 0) {
+//  return res.status(404).json({ error: "Unit not found" });
+//  }
+//  const school = unit.rows[0];
+//  // 📌 2. Class summary
+//  const classSummary = await pool.query(
+//  `
+//  SELECT e.standard, e.division,
+//  COUNT(*) AS total,
+//  SUM(CASE WHEN s.gender='male' THEN 1 ELSE 0 END) AS boys,
+//  SUM(CASE WHEN s.gender='female' THEN 1 ELSE 0 END) AS girls,
+//  SUM(CASE WHEN e.passed=true THEN 1 ELSE 0 END) AS passed,
+//  SUM(CASE WHEN e.passed=false THEN 1 ELSE 0 END) AS failed,
+//  SUM(CASE WHEN s.admission_date >= DATE_TRUNC('year', CURRENT_DATE) THEN 1
+// ELSE 0 END)
+//  AS new_admissions,
+//  SUM(CASE WHEN e.roll_number IS NULL THEN 1 ELSE 0 END)
+//  AS left_students
+//  FROM enrollments e
+//  JOIN students s ON e.student_id = s.student_id
+//  WHERE s.unit_id = $1
+//  GROUP BY e.standard, e.division
+//  ORDER BY e.standard, e.division
+//  `,
+//  [unitId]
+//  );
+//  // 📌 3. Enrollment History
+//  const enrollmentHistory = await pool.query(
+//  `
+//  SELECT e.academic_year,
+//  COUNT(*) AS total
+//  FROM enrollments e
+//  JOIN students s ON s.student_id = e.student_id
+//  WHERE s.unit_id = $1
+//  GROUP BY e.academic_year
+//  ORDER BY e.academic_year
+//  `,
+//  [unitId]
+//  );
+//  // 📌 4. Teacher assignment
+//  const teachers = await pool.query(
+//  `
+//  SELECT DISTINCT e.standard, e.division,
+//  ''::text AS class_teacher
+//  FROM enrollments e
+//  JOIN students s ON s.student_id = e.student_id
+//  WHERE s.unit_id = $1
+//  ORDER BY e.standard, e.division
+//  `,
+//  [unitId]
+//  );
+//  // 📌 5. Admissions
+//  const admissions = await pool.query(
+//  `
+//  SELECT EXTRACT(YEAR FROM admission_date) AS year,
+//  COUNT(*) AS total
+//  FROM students
+//  WHERE unit_id = $1
+//  GROUP BY year
+//  ORDER BY year
+//  `,
+//  [unitId]
+//  );
+//  // ---------------------------------------------------
+//  // PDF START
+//  // ---------------------------------------------------
+//  const doc = new PDFDocument({ margin: 40 });
+//  res.setHeader("Content-Type", "application/pdf");
+//  res.setHeader("Content-Type", "application/pdf");
+// res.setHeader("Content-Disposition", `attachment; filename=School_Report_Unit_${unitId}.pdf`);
+
+//  doc.pipe(res);
+//  // 📌 Helper: Section title
+//  const section = (title) => {
+//  doc.moveDown(1.5);
+//  doc.font("Helvetica-Bold").fontSize(14).text(title);
+//  doc.moveDown(0.5);
+//  };
+//  // 📌 Helper: Full width table with proper spacing
+//  const drawTable = (headers, rows) => {
+//  const tableWidth = doc.page.width - doc.options.margin * 2;
+//  const colWidth = tableWidth / headers.length;
+//  const startX = doc.options.margin;
+//  let y = doc.y;
+//  // Header
+//  doc.rect(startX, y, tableWidth, 20).fill("#444");
+//  doc.fillColor("white").font("Helvetica-Bold").fontSize(10);
+//  headers.forEach((h, i) => {
+//  doc.text(h, startX + i * colWidth + 4, y + 6, {
+//  width: colWidth,
+//  align: "left"
+//  });
+//  });
+//  y += 22;
+//  // Rows
+//  rows.forEach((row, idx) => {
+//  const isEven = idx % 2 === 0;
+//  if (isEven) {
+//  doc.rect(startX, y, tableWidth, 18).fill("#F2F2F2");
+//  } else {
+//  doc.rect(startX, y, tableWidth, 18).fill("white");
+//  }
+//  doc.fillColor("black").font("Helvetica").fontSize(10);
+//  headers.forEach((h, i) => {
+//  const key = h.toLowerCase().replace(/\s+/g, "_");
+//  const value = row[key] ?? "";
+//  doc.text(String(value), startX + i * colWidth + 4, y + 4, {
+//  width: colWidth,
+//  align: "left"
+//  });
+//  });
+//  y += 20;
+//  });
+//  // After table ends, reset positions
+//  doc.moveDown(2);
+//  doc.x = doc.options.margin;
+//  doc.y = y + 10;
+//  };
+//  // ---------------------------------------------------
+//  // HEADER
+//  // ---------------------------------------------------
+//  doc.font("Helvetica-Bold").fontSize(22).text("School Annual Report", {
+//  align: "center"
+//  });
+//  doc.moveDown();
+//  doc.font("Helvetica").fontSize(12);
+//  doc.text(`School Name: ${school.kendrashala_name}`);
+//  doc.text(`SEMIS No: ${school.semis_no || "NA"}`);
+//  doc.text(`Management: ${school.type_of_management}`);
+//  doc.text(`Jurisdiction: ${school.school_jurisdiction}`);
+//  // ---------------------------------------------------
+//  // TABLES
+//  // ---------------------------------------------------
+//  section("1. Class Wise Summary");
+//  drawTable(
+//  ["Std", "Div", "Total", "Boys", "Girls", "New", "Left", "Passed", "Failed"],
+//  classSummary.rows.map((r) => ({
+//  std: r.standard,
+//  div: r.division,
+//  total: r.total,
+//  boys: r.boys,
+//  girls: r.girls,
+//  new: r.new_admissions,
+//  left: r.left_students,
+//  passed: r.passed,
+//  failed: r.failed
+//  }))
+//  );
+//  section("2. Academic Result Summary");
+//  drawTable(
+//  ["Std", "Div", "Passed", "Failed"],
+//  classSummary.rows.map((r) => ({
+//  std: r.standard,
+//  div: r.division,
+//  passed: r.passed,
+//  failed: r.failed
+//  }))
+//  );
+//  section("3. Teacher Assignment per Class");
+//  drawTable(
+//  ["Standard", "Division", "Class Teacher"],
+//  teachers.rows.map((r) => ({
+//  standard: r.standard,
+//  division: r.division,
+//  class_teacher: r.class_teacher
+//  }))
+//  );
+//  section("4. Enrollment History");
+//  drawTable(
+//  ["Year", "Total"],
+//  enrollmentHistory.rows.map((r) => ({
+//  year: r.academic_year,
+//  total: r.total
+//  }))
+//  );
+//  doc.addPage({ margin: 40 });
+//  section("5. Admission Summary");
+//  drawTable(
+//  ["Year", "Admissions"],
+//  admissions.rows.map((r) => ({
+//  year: r.year,
+//  admissions: r.total
+//  }))
+//  );
+//  doc.end();
+// } catch (error) {
+//  console.log(error);
+//  res.status(500).json({ error: "Failed to generate report" });
+// }
+// };
+
+
+// backend/controllers/reportController.js
 const PDFDocument = require("pdfkit");
 const pool = require("../config/db");
+// fetch available academic years
+exports.getAcademicYears = async (req, res) => {
+try {
+ const result = await pool.query(`
+ SELECT DISTINCT academic_year
+ FROM enrollments
+ ORDER BY academic_year ASC
+ `);
+ res.json(result.rows.map(r => r.academic_year));
+} catch (err) {
+ console.log(err);
+ res.status(500).json({ error: "Failed to fetch years" });
+}
+};
 exports.getSchoolReport = async (req, res) => {
 const { unitId } = req.params;
+const { year } = req.query; // optional filter
 try {
- // 📌 1. Fetch school info
+ // school info
  const unit = await pool.query("SELECT * FROM unit WHERE unit_id = $1", [
  unitId
  ]);
@@ -11,7 +228,7 @@ try {
  return res.status(404).json({ error: "Unit not found" });
  }
  const school = unit.rows[0];
- // 📌 2. Class summary
+ // class summary
  const classSummary = await pool.query(
  `
  SELECT e.standard, e.division,
@@ -20,20 +237,20 @@ try {
  SUM(CASE WHEN s.gender='female' THEN 1 ELSE 0 END) AS girls,
  SUM(CASE WHEN e.passed=true THEN 1 ELSE 0 END) AS passed,
  SUM(CASE WHEN e.passed=false THEN 1 ELSE 0 END) AS failed,
- SUM(CASE WHEN s.admission_date >= DATE_TRUNC('year', CURRENT_DATE) THEN 1
-ELSE 0 END)
- AS new_admissions,
+ SUM(CASE WHEN s.admission_date >= DATE_TRUNC('year', CURRENT_DATE)
+ THEN 1 ELSE 0 END) AS new_admissions,
  SUM(CASE WHEN e.roll_number IS NULL THEN 1 ELSE 0 END)
  AS left_students
  FROM enrollments e
  JOIN students s ON e.student_id = s.student_id
  WHERE s.unit_id = $1
+ AND ($2::text IS NULL OR e.academic_year = $2)
  GROUP BY e.standard, e.division
  ORDER BY e.standard, e.division
  `,
- [unitId]
+ [unitId, year || null]
  );
- // 📌 3. Enrollment History
+ // enrollment history
  const enrollmentHistory = await pool.query(
  `
  SELECT e.academic_year,
@@ -41,24 +258,26 @@ ELSE 0 END)
  FROM enrollments e
  JOIN students s ON s.student_id = e.student_id
  WHERE s.unit_id = $1
+ AND ($2::text IS NULL OR e.academic_year = $2)
  GROUP BY e.academic_year
  ORDER BY e.academic_year
  `,
- [unitId]
+ [unitId, year || null]
  );
- // 📌 4. Teacher assignment
+ // teacher section
  const teachers = await pool.query(
  `
  SELECT DISTINCT e.standard, e.division,
- ''::text AS class_teacher
+ '' AS class_teacher
  FROM enrollments e
  JOIN students s ON s.student_id = e.student_id
  WHERE s.unit_id = $1
+ AND ($2::text IS NULL OR e.academic_year = $2)
  ORDER BY e.standard, e.division
  `,
- [unitId]
+ [unitId, year || null]
  );
- // 📌 5. Admissions
+ // admissions
  const admissions = await pool.query(
  `
  SELECT EXTRACT(YEAR FROM admission_date) AS year,
@@ -70,28 +289,21 @@ ELSE 0 END)
  `,
  [unitId]
  );
- // ---------------------------------------------------
- // PDF START
- // ---------------------------------------------------
+ // create pdf
  const doc = new PDFDocument({ margin: 40 });
  res.setHeader("Content-Type", "application/pdf");
- res.setHeader("Content-Type", "application/pdf");
-res.setHeader("Content-Disposition", `attachment; filename=School_Report_Unit_${unitId}.pdf`);
-
  doc.pipe(res);
- // 📌 Helper: Section title
  const section = (title) => {
  doc.moveDown(1.5);
  doc.font("Helvetica-Bold").fontSize(14).text(title);
  doc.moveDown(0.5);
  };
- // 📌 Helper: Full width table with proper spacing
  const drawTable = (headers, rows) => {
  const tableWidth = doc.page.width - doc.options.margin * 2;
  const colWidth = tableWidth / headers.length;
  const startX = doc.options.margin;
  let y = doc.y;
- // Header
+ // header
  doc.rect(startX, y, tableWidth, 20).fill("#444");
  doc.fillColor("white").font("Helvetica-Bold").fontSize(10);
  headers.forEach((h, i) => {
@@ -101,14 +313,10 @@ res.setHeader("Content-Disposition", `attachment; filename=School_Report_Unit_${
  });
  });
  y += 22;
- // Rows
+ // rows
  rows.forEach((row, idx) => {
  const isEven = idx % 2 === 0;
- if (isEven) {
- doc.rect(startX, y, tableWidth, 18).fill("#F2F2F2");
- } else {
- doc.rect(startX, y, tableWidth, 18).fill("white");
- }
+ doc.rect(startX, y, tableWidth, 18).fill(isEven ? "#F2F2F2" : "white");
  doc.fillColor("black").font("Helvetica").fontSize(10);
  headers.forEach((h, i) => {
  const key = h.toLowerCase().replace(/\s+/g, "_");
@@ -120,14 +328,11 @@ res.setHeader("Content-Disposition", `attachment; filename=School_Report_Unit_${
  });
  y += 20;
  });
- // After table ends, reset positions
  doc.moveDown(2);
  doc.x = doc.options.margin;
  doc.y = y + 10;
  };
- // ---------------------------------------------------
- // HEADER
- // ---------------------------------------------------
+ // header
  doc.font("Helvetica-Bold").fontSize(22).text("School Annual Report", {
  align: "center"
  });
@@ -137,13 +342,12 @@ res.setHeader("Content-Disposition", `attachment; filename=School_Report_Unit_${
  doc.text(`SEMIS No: ${school.semis_no || "NA"}`);
  doc.text(`Management: ${school.type_of_management}`);
  doc.text(`Jurisdiction: ${school.school_jurisdiction}`);
- // ---------------------------------------------------
- // TABLES
- // ---------------------------------------------------
+ doc.text(`Academic Year: ${year || "All Years"}`);
+ // tables
  section("1. Class Wise Summary");
  drawTable(
  ["Std", "Div", "Total", "Boys", "Girls", "New", "Left", "Passed", "Failed"],
- classSummary.rows.map((r) => ({
+ classSummary.rows.map(r => ({
  std: r.standard,
  div: r.division,
  total: r.total,
@@ -158,7 +362,7 @@ res.setHeader("Content-Disposition", `attachment; filename=School_Report_Unit_${
  section("2. Academic Result Summary");
  drawTable(
  ["Std", "Div", "Passed", "Failed"],
- classSummary.rows.map((r) => ({
+ classSummary.rows.map(r => ({
  std: r.standard,
  div: r.division,
  passed: r.passed,
@@ -168,7 +372,7 @@ res.setHeader("Content-Disposition", `attachment; filename=School_Report_Unit_${
  section("3. Teacher Assignment per Class");
  drawTable(
  ["Standard", "Division", "Class Teacher"],
- teachers.rows.map((r) => ({
+ teachers.rows.map(r => ({
  standard: r.standard,
  division: r.division,
  class_teacher: r.class_teacher
@@ -177,7 +381,7 @@ res.setHeader("Content-Disposition", `attachment; filename=School_Report_Unit_${
  section("4. Enrollment History");
  drawTable(
  ["Year", "Total"],
- enrollmentHistory.rows.map((r) => ({
+ enrollmentHistory.rows.map(r => ({
  year: r.academic_year,
  total: r.total
  }))
@@ -186,14 +390,14 @@ res.setHeader("Content-Disposition", `attachment; filename=School_Report_Unit_${
  section("5. Admission Summary");
  drawTable(
  ["Year", "Admissions"],
- admissions.rows.map((r) => ({
+ admissions.rows.map(r => ({
  year: r.year,
  admissions: r.total
  }))
  );
  doc.end();
-} catch (error) {
- console.log(error);
+} catch (err) {
+ console.log(err);
  res.status(500).json({ error: "Failed to generate report" });
 }
 };

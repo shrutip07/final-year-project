@@ -300,40 +300,25 @@ exports.getUnitAnalytics = async (req, res) => {
     res.status(500).json({ error: "Failed to load analytics." });
   }
 };
-// Get all units/schools for the dashboard, including staff and student counts
 exports.getUnits = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM unit');
-    const units = result.rows;
-    if (!Array.isArray(units) || units.length === 0) {
-      return res.json([]);
-    }
-
-    // For each unit, fetch staff and student count
-    const enrichedUnits = await Promise.all(
-      units.map(async (unit) => {
-        const staffRes = await pool.query(
-          `SELECT COUNT(*) FROM staff WHERE unit_id=$1`,
-          [unit.unit_id]
-        );
-        const studentRes = await pool.query(
-          `SELECT COUNT(*) FROM students WHERE unit_id=$1`,
-          [unit.unit_id]
-        );
-        return {
-          ...unit,
-          staff_count: parseInt(staffRes.rows[0].count || 0),
-          student_count: parseInt(studentRes.rows[0].count || 0)
-        };
-      })
-    );
-
-    res.json(enrichedUnits);
+    const result = await pool.query(`
+      SELECT 
+        u.unit_id,
+        u.kendrashala_name AS unit_name,
+        (SELECT COUNT(*) FROM staff WHERE staff.unit_id = u.unit_id) AS staff_count,
+        (SELECT COUNT(*) FROM students WHERE students.unit_id = u.unit_id) AS student_count
+      FROM unit u
+      ORDER BY u.kendrashala_name
+    `);
+    res.json(result.rows);
   } catch (err) {
     console.error('Error in getUnits:', err);
     res.status(500).json({ error: err.message || 'Failed to fetch units.' });
   }
 };
+
+
 
 exports.getUnitById = async (req, res) => {
   try {
@@ -424,7 +409,8 @@ exports.listSimpleUnits = async (req, res) => {
     const result = await pool.query(
       "SELECT unit_id, kendrashala_name AS unit_name FROM unit ORDER BY kendrashala_name"
     );
-    res.json({ units: result.rows }); // This shape matches your frontend!
+     res.json(result.rows); // array
+// This shape matches your frontend!
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch units" });

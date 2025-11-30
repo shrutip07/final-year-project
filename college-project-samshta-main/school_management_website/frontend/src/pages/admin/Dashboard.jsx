@@ -10,6 +10,8 @@ export default function AdminDashboard() {
   const { t } = useTranslation();
   const [sidebarTab, setSidebarTab] = useState("dashboard");
   const [units, setUnits] = useState([]);
+  const [years, setYears] = useState([]);
+const [selectedYear, setSelectedYear] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedUnit, setSelectedUnit] = useState(null);
@@ -57,8 +59,13 @@ export default function AdminDashboard() {
         const response = await axios.get("http://localhost:5000/api/admin/units", {
           headers: { Authorization: `Bearer ${token}` },
         });
+<<<<<<< Updated upstream
         const unitData = Array.isArray(response.data) ? response.data : [];
         setUnits(unitData);
+=======
+        //setUnits(response.data);
+        setUnits(Array.isArray(response.data) ? response.data : []);
+>>>>>>> Stashed changes
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.message || t("failed_load_units"));

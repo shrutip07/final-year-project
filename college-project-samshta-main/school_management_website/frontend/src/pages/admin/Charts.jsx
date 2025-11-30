@@ -113,7 +113,7 @@ export default function AdminCharts({ units }) {
           onChange={e => setSelectedUnitId(e.target.value)}
         >
           {units.map(u => (
-            <option key={u.unit_id} value={u.unit_id}>{u.kendrashala_name}</option>
+            <option key={u.unit_id} value={u.unit_id}>{u.unit_name}</option>
           ))}
         </select>
       </div>
