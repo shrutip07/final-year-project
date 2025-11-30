@@ -291,52 +291,7 @@ exports.updateStudentFeeStatus = async (req, res) => {
     res.status(500).json({ error: err.message || "Failed to update payment status." });
   }
 };
-// Set or update salary for a teacher
-// exports.setTeacherSalary = async (req, res) => {
-//   try {
-//     const { staff_id, unit_id, amount, effective_from, remarks } = req.body;
-//     if (!staff_id || !unit_id || !amount) {
-//       return res.status(400).json({ error: "staff_id, unit_id, and amount are required" });
-//     }
-//     const result = await pool.query(
-//       `INSERT INTO salary_master (staff_id, unit_id, amount, effective_from, remarks)
-//        VALUES ($1, $2, $3, $4, $5)
-//        ON CONFLICT (staff_id, unit_id)
-//        DO UPDATE SET amount=$3, effective_from=$4, remarks=$5
-//        RETURNING *`,
-//       [staff_id, unit_id, amount, effective_from || new Date().toISOString().slice(0,10), remarks || null]
-//     );
-//     res.json(result.rows[0]);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
 
-// // Get salary info for all teachers in a unit
-// exports.getAllTeacherSalaries = async (req, res) => {
-//   try {
-//     // Get the current clerk's unit using their user id from JWT.
-//     const userId = req.user.id;
-//     const { rows: clerkRows } = await pool.query(
-//       "SELECT unit_id FROM clerks WHERE user_id = $1",
-//       [userId]
-//     );
-//     const unit_id = clerkRows[0]?.unit_id;
-//     if (!unit_id) return res.status(404).json({ error: "No unit assigned to clerk" });
-
-//     const { rows } = await pool.query(
-//       `SELECT s.staff_id, s.full_name, sm.amount, sm.remarks, sm.effective_from
-//        FROM staff s
-//        LEFT JOIN salary_master sm ON sm.staff_id = s.staff_id AND sm.unit_id = $1
-//        WHERE s.unit_id = $1 AND s.staff_type = 'teaching'
-//        ORDER BY s.full_name ASC`,
-//       [unit_id]
-//     );
-//     res.json(rows);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
 // Set or update salary for a teacher in salary_history (with audit/history)
 // Assigns/updates teacher salary in salary_history (no unit_id in req.body)
 exports.setTeacherSalary = async (req, res) => {
@@ -541,5 +496,333 @@ exports.getPendingSalaries = async (req, res) => {
     res.json(pending);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+exports.addStudent = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const {
+      full_name,
+      dob,
+      gender,
+      address,
+      parent_name,
+      parent_phone,
+      admission_date,
+      academic_year,
+      standard,
+      division,
+      roll_number
+    } = req.body;
+
+    // Basic validations
+    if (!full_name || !dob || !gender || !academic_year || !standard) {
+      return res.status(400).json({ error: "full_name, dob, gender, academic_year, standard are required." });
+    }
+
+    // Get clerk's unit_id
+    const { rows: clerkRows } = await pool.query(
+      "SELECT unit_id FROM clerks WHERE user_id = $1",
+      [userId]
+    );
+    const unit_id = clerkRows[0]?.unit_id;
+    if (!unit_id) {
+      return res.status(404).json({ error: "No unit assigned to clerk." });
+    }
+
+    // 1) Insert into students
+    const studentRes = await pool.query(
+      `INSERT INTO students
+        (unit_id, full_name, dob, gender, address, parent_name, parent_phone, admission_date, createdat, updatedat)
+       VALUES
+        ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+       RETURNING student_id`,
+      [
+        unit_id,
+        full_name,
+        dob,
+        gender,
+        address || null,
+        parent_name || null,
+        parent_phone || null,
+        admission_date || new Date().toISOString().slice(0, 10)
+      ]
+    );
+
+    const student_id = studentRes.rows[0].student_id;
+
+    // 2) Create first enrollment row for this student
+    const enrollRes = await pool.query(
+      `INSERT INTO enrollments
+        (student_id, academic_year, standard, division, roll_number, passed, createdat, updatedat)
+       VALUES
+        ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+       RETURNING *`,
+      [
+        student_id,
+        academic_year,
+        standard,
+        division || null,
+        roll_number || null,
+        null
+      ]
+    );
+
+    res.status(201).json({
+      success: true,
+      student_id,
+      enrollment: enrollRes.rows[0]
+    });
+  } catch (err) {
+    console.error("addStudent error:", err);
+    res.status(500).json({ error: "Failed to add student." });
+  }
+};
+// List teachers + their current class assignments for a given academic year
+exports.listTeachersForAllocation = async (req, res) => {
+try {
+const userId = req.user.id;
+const { academic_year } = req.query;
+
+if (!academic_year) {
+  return res.status(400).json({ error: "academic_year is required" });
+}
+// Clerk's unit
+const { rows: clerkRows } = await pool.query(
+"SELECT unit_id FROM clerks WHERE user_id = $1",
+[userId]
+);
+const unit_id = clerkRows[0]?.unit_id; // <-- FIX
+if (!unit_id) {
+return res.status(404).json({ error: "No unit assigned to clerk" });
+}
+
+// Teachers in this unit + their assignments for this year
+const { rows } = await pool.query(
+  `
+  SELECT 
+    st.staff_id,
+    st.full_name,
+    st.email,
+    st.phone,
+    st.subject,
+    tca.id AS assignment_id,
+    tca.academic_year,
+    tca.standard,
+    tca.division,
+    COALESCE(tca.done_for_year, false) AS done_for_year
+  FROM staff st
+  LEFT JOIN teacher_class_assignments tca
+    ON tca.staff_id = st.staff_id
+   AND tca.academic_year = $2
+  WHERE st.unit_id = $1
+    AND st.staff_type = 'teaching'
+  ORDER BY st.full_name ASC, tca.standard, tca.division
+  `,
+  [unit_id, academic_year]
+);
+
+res.json(rows);
+} catch (err) {
+console.error("listTeachersForAllocation error:", err);
+res.status(500).json({ error: "Failed to load teachers." });
+}
+};
+exports.allocateTeacherClass = async (req, res) => {
+try {
+const userId = req.user.id;
+const { staff_id, academic_year, standard, division } = req.body;
+
+if (!staff_id || !academic_year || !standard || !division) {
+  return res
+    .status(400)
+    .json({ error: "staff_id, academic_year, standard, division are required." });
+}
+
+// Clerk's unit
+const { rows: clerkRows } = await pool.query(
+"SELECT unit_id FROM clerks WHERE user_id = $1",
+[userId]
+);
+const unit_id = clerkRows[0]?.unit_id; // <-- FIX
+if (!unit_id) {
+return res.status(404).json({ error: "No unit assigned to clerk" });
+}
+const { rows: staffRows } = await pool.query(
+  "SELECT unit_id FROM staff WHERE staff_id = $1 AND staff_type = 'teaching'",
+  [staff_id]
+);
+if (!staffRows.length) {
+  return res.status(404).json({ error: "Teacher not found" });
+}
+if (staffRows[0].unit_id !== unit_id) {
+  return res.status(403).json({ error: "Teacher is not in this unit." });
+}
+
+const result = await pool.query(
+  `
+  INSERT INTO teacher_class_assignments
+    (staff_id, academic_year, standard, division, done_for_year, createdat, updatedat)
+  VALUES ($1,$2,$3,$4,false,NOW(),NOW())
+  ON CONFLICT (staff_id, academic_year, standard, division)
+  DO UPDATE SET updatedat = NOW(), done_for_year = FALSE
+  RETURNING *
+  `,
+  [staff_id, academic_year, standard, division]
+);
+
+res.status(201).json(result.rows);
+} catch (err) {
+console.error("allocateTeacherClass error:", err);
+res.status(500).json({ error: "Failed to allocate teacher." });
+}
+};
+// List PASSed students in clerk's unit for a given academic year
+exports.listPassedStudentsForAllocation = async (req, res) => {
+try {
+const userId = req.user.id;
+const { academic_year } = req.query;
+
+if (!academic_year) {
+  return res.status(400).json({ error: "academic_year is required" });
+}
+
+// Clerk's unit
+const { rows: clerkRows } = await pool.query(
+"SELECT unit_id FROM clerks WHERE user_id = $1",
+[userId]
+);
+const unit_id = clerkRows[0]?.unit_id; // <-- FIX
+if (!unit_id) {
+return res.status(404).json({ error: "No unit assigned to clerk" });
+}
+const { rows } = await pool.query(
+  `
+  SELECT
+    s.student_id,
+    s.full_name,
+    s.gender,
+    s.parent_name,
+    s.parent_phone,
+    e.enrollment_id,
+    e.academic_year,
+    e.standard,
+    e.division,
+    e.roll_number,
+    e.passed
+  FROM enrollments e
+  JOIN students s ON s.student_id = e.student_id
+  WHERE s.unit_id = $1
+    AND e.academic_year = $2
+    AND e.passed = TRUE
+  ORDER BY e.standard, e.division, e.roll_number, s.full_name
+  `,
+  [unit_id, academic_year]
+);
+
+res.json(rows);
+} catch (err) {
+console.error("listPassedStudentsForAllocation error:", err);
+res.status(500).json({ error: "Failed to load passed students." });
+}
+};
+
+
+// Promote a single student to next standard+division for next academic year
+exports.allocateStudentNextYear = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const {
+      student_id,
+      from_academic_year,
+      to_academic_year,
+      standard,
+      division,
+      roll_number
+    } = req.body;
+
+    if (!student_id || !from_academic_year || !to_academic_year || !standard || !division) {
+      return res.status(400).json({
+        error:
+          "student_id, from_academic_year, to_academic_year, standard, division are required."
+      });
+    }
+
+    // Clerk's unit and student belongs to this unit
+    const { rows: clerkRows } = await pool.query(
+      "SELECT unit_id FROM clerks WHERE user_id = $1",
+      [userId]
+    );
+    const unit_id = clerkRows[0]?.unit_id;
+    if (!unit_id) return res.status(404).json({ error: "No unit assigned to clerk" });
+
+    const { rows: studRows } = await pool.query(
+      "SELECT unit_id FROM students WHERE student_id = $1",
+      [student_id]
+    );
+    if (!studRows.length) return res.status(404).json({ error: "Student not found" });
+    if (studRows[0].unit_id !== unit_id) {
+      return res.status(403).json({ error: "Student not in this unit." });
+    }
+
+    // Ensure previous year enrollment exists and is passed
+    const { rows: prevEnrollRows } = await pool.query(
+      `
+      SELECT enrollment_id, passed
+      FROM enrollments
+      WHERE student_id = $1 AND academic_year = $2
+      `,
+      [student_id, from_academic_year]
+    );
+    if (!prevEnrollRows.length) {
+      return res
+        .status(400)
+        .json({ error: "Previous academic year enrollment not found for this student." });
+    }
+    if (!prevEnrollRows[0].passed) {
+      return res.status(400).json({ error: "Student is not marked as passed for previous year." });
+    }
+
+    // Avoid duplicate enrollment for the target year
+    const { rows: existingNext } = await pool.query(
+      `
+      SELECT enrollment_id
+      FROM enrollments
+      WHERE student_id = $1 AND academic_year = $2
+      `,
+      [student_id, to_academic_year]
+    );
+    if (existingNext.length) {
+      return res
+        .status(400)
+        .json({ error: "Enrollment for target academic year already exists for this student." });
+    }
+
+    // Create new enrollment row for next year
+    const { rows: newEnrollRows } = await pool.query(
+      `
+      INSERT INTO enrollments
+        (student_id, academic_year, standard, division, roll_number, passed, createdat, updatedat)
+      VALUES
+        ($1, $2, $3, $4, $5, NULL, NOW(), NOW())
+      RETURNING *
+      `,
+      [
+        student_id,
+        to_academic_year,
+        standard,
+        division,
+        roll_number || null
+      ]
+    );
+
+    res.status(201).json({
+      success: true,
+      enrollment: newEnrollRows[0]
+    });
+  } catch (err) {
+    console.error("allocateStudentNextYear error:", err);
+    res.status(500).json({ error: "Failed to allocate student for next year." });
   }
 };

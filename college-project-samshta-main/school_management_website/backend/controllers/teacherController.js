@@ -50,38 +50,8 @@ exports.createProfile = async (req, res) => {
   }
 };
 
-exports.addStudent = async (req, res) => {
-  try {
-    const { full_name, dob, gender, address, parent_name, parent_phone, admission_date, unit_id } = req.body;
-    const result = await pool.query(
-      `INSERT INTO students (full_name, dob, gender, address, parent_name, parent_phone, admission_date, unit_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
-      [full_name, dob, gender, address, parent_name, parent_phone, admission_date, unit_id]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to add student." });
-  }
-};
 
-exports.updateStudent = async (req, res) => {
-  try {
-    const studentId = req.params.student_id;
-    const {
-      full_name, dob, gender, address, parent_name, parent_phone, admission_date
-    } = req.body;
-    await pool.query(
-      `UPDATE students SET full_name=$1, dob=$2, gender=$3, address=$4,
-        parent_name=$5, parent_phone=$6, admission_date=$7
-       WHERE student_id=$8`,
-      [full_name, dob, gender, address, parent_name, parent_phone, admission_date, studentId]
-    );
-    res.json({ success: true });
-  } catch (err) {
-    console.error("Update failed:", err);
-    res.status(500).json({ error: "Update failed." });
-  }
-};
+
 
 exports.updateProfile = async (req, res) => {
   try {
@@ -119,46 +89,80 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
+// GET /api/teacher/students
+// Teacher sees only students in classes assigned in teacher_class_assignments
 exports.getMyStudents = async (req, res) => {
   try {
     const userId = req.user.id;
     const { academic_year } = req.query;
+
+    // Get teacher staff_id and unit_id
     const teacherResult = await pool.query(
-      'SELECT unit_id FROM staff WHERE user_id = $1 AND staff_type = \'teaching\'',
+      "SELECT staff_id, unit_id FROM staff WHERE user_id = $1 AND staff_type = 'teaching'",
       [userId]
     );
-    if (teacherResult.rows.length === 0) {
-      return res.status(404).json({ message: 'Teacher not found' });
+    if (!teacherResult.rows.length) {
+      return res.status(404).json({ message: "Teacher not found" });
     }
-    const unitId = teacherResult.rows[0].unit_id;
+    const { staff_id, unit_id } = teacherResult.rows[0];
 
-    let studentsResult;
-    if (academic_year === "all") {
-      studentsResult = await pool.query(`
-        SELECT s.student_id, s.full_name, s.dob, s.gender, s.address, s.parent_name, s.parent_phone, s.admission_date,
-               s.unit_id,
-               e.enrollment_id, e.standard, e.division, e.roll_number, e.academic_year, e.passed
-        FROM students s
-        JOIN enrollments e ON s.student_id = e.student_id
-        WHERE s.unit_id = $1
-        ORDER BY e.academic_year DESC, e.roll_number
-      `, [unitId]);
-    } else {
-      studentsResult = await pool.query(`
-        SELECT s.student_id, s.full_name, s.dob, s.gender, s.address, s.parent_name, s.parent_phone, s.admission_date,
-               s.unit_id,
-               e.enrollment_id, e.standard, e.division, e.roll_number, e.academic_year, e.passed
-        FROM students s
-        JOIN enrollments e ON s.student_id = e.student_id
-        WHERE s.unit_id = $1 AND e.academic_year = $2
-        ORDER BY e.roll_number
-      `, [unitId, academic_year]);
+    // Decide which academic year to use
+    let yearParam = academic_year;
+    if (!yearParam || yearParam === "all") {
+      const { rows: yRows } = await pool.query(
+        `SELECT DISTINCT academic_year
+         FROM teacher_class_assignments
+         WHERE staff_id = $1
+         ORDER BY academic_year DESC
+         LIMIT 1`,
+        [staff_id]
+      );
+      if (yRows.length) {
+        yearParam = yRows[0].academic_year;
+      } else {
+        // No assignments yet
+        return res.json([]);
+      }
     }
+
+    const params = [staff_id, unit_id, yearParam];
+
+    const query = `
+      SELECT
+        s.student_id,
+        s.full_name,
+        s.dob,
+        s.gender,
+        s.address,
+        s.parent_name,
+        s.parent_phone,
+        s.admission_date,
+        s.unit_id,
+        e.enrollment_id,
+        e.standard,
+        e.division,
+        e.roll_number,
+        e.academic_year,
+        e.passed,
+        e.percentage
+      FROM teacher_class_assignments tca
+      JOIN enrollments e
+        ON e.academic_year = tca.academic_year
+       AND e.standard = tca.standard
+       AND e.division = tca.division
+      JOIN students s
+        ON s.student_id = e.student_id
+      WHERE tca.staff_id = $1
+        AND s.unit_id = $2
+        AND e.academic_year = $3
+      ORDER BY e.standard, e.division, e.roll_number, s.full_name
+    `;
+
+    const studentsResult = await pool.query(query, params);
     res.json(studentsResult.rows);
   } catch (err) {
-    console.error('Error in getMyStudents:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error in getMyStudents:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -233,31 +237,18 @@ exports.onboard = async (req, res) => {
   }
 };
 
-exports.addEnrollment = async (req, res) => {
-  try {
-    const { student_id, academic_year, standard, division, roll_number, passed } = req.body;
-    const result = await pool.query(
-      `INSERT INTO enrollments (student_id, academic_year, standard, division, roll_number, passed)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [student_id, academic_year, standard, division, roll_number, passed ?? false]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    console.error("[ENROLLMENT ERROR]", err); 
-    res.status(500).json({ error: "Failed to add enrollment.", detail: err.message });
-  }
-};
+
 
 exports.updateEnrollment = async (req, res) => {
   try {
     const enrollmentId = req.params.enrollment_id;
-    const { standard, division, roll_number, passed } = req.body;
+    const { standard, division, roll_number, passed,percentage } = req.body;
     const result = await pool.query(
       `UPDATE enrollments
-       SET standard = $1, division = $2, roll_number = $3, passed = $4, updatedat = CURRENT_TIMESTAMP
-       WHERE enrollment_id = $5
+       SET standard = $1, division = $2, roll_number = $3, passed = $4,percentage=$5, updatedat = CURRENT_TIMESTAMP
+       WHERE enrollment_id = $6
        RETURNING *`,
-      [standard, division, roll_number, passed, enrollmentId]
+      [standard, division, roll_number, passed,percentage, enrollmentId]
     );
     res.json(result.rows[0]);
   } catch (err) {
@@ -277,4 +268,108 @@ exports.getUnits = async (req, res) => {
     console.error('Error fetching units:', err);
     res.status(500).json({ message: 'Failed to load schools' });
   }
+};
+// Mark teacher's assignments done for a year
+// exports.markYearDone = async (req, res) => {
+// try {
+// const userId = req.user.id;
+// const { academic_year } = req.body;
+
+
+// if (!academic_year) {
+//   return res.status(400).json({ message: "academic_year is required" });
+// }
+
+// const teacherResult = await pool.query(
+//   "SELECT staff_id FROM staff WHERE user_id = $1 AND staff_type = 'teaching'",
+//   [userId]
+// );
+// if (!teacherResult.rows.length) {
+//   return res.status(404).json({ message: "Teacher not found" });
+// }
+// const staff_id = teacherResult.rows.staff_id;
+
+// const result = await pool.query(
+//   `UPDATE teacher_class_assignments
+//      SET done_for_year = TRUE,
+//          updatedat = NOW()
+//    WHERE staff_id = $1
+//      AND academic_year = $2`,
+//   [staff_id, academic_year]
+// );
+
+// return res.json({ success: true, updated: result.rowCount });
+// } catch (err) {
+// console.error("markYearDone error:", err);
+// return res.status(500).json({ message: "Failed to mark year as done" });
+// }
+// };
+exports.markYearDone = async (req, res) => {
+try {
+const userId = req.user.id;
+const { academic_year } = req.body;
+if (!academic_year) {
+  return res.status(400).json({ message: "academic_year is required" });
+}
+
+const teacherResult = await pool.query(
+  "SELECT staff_id FROM staff WHERE user_id = $1 AND staff_type = 'teaching'",
+  [userId]
+);
+if (!teacherResult.rows.length) {
+  return res.status(404).json({ message: "Teacher not found" });
+}
+const staff_id = teacherResult.rows.staff_id;
+
+const result = await pool.query(
+  `UPDATE teacher_class_assignments
+     SET done_for_year = TRUE,
+         updatedat = NOW()
+   WHERE staff_id = $1
+     AND academic_year = $2`,
+  [staff_id, academic_year]
+);
+
+return res.json({ success: true, updated: result.rowCount });
+} catch (err) {
+console.error("markYearDone error:", err);
+return res.status(500).json({ message: "Failed to mark year as done" });
+}
+};
+
+exports.getMyClasses = async (req, res) => {
+try {
+const userId = req.user.id;
+const { academic_year } = req.query;
+
+
+const teacherResult = await pool.query(
+  "SELECT staff_id FROM staff WHERE user_id = $1 AND staff_type = 'teaching'",
+  [userId]
+);
+if (!teacherResult.rows.length) {
+  return res.status(404).json({ message: "Teacher not found" });
+}
+const staff_id = teacherResult.rows[0].staff_id;
+
+const params = [staff_id];
+let whereYear = "";
+if (academic_year) {
+  whereYear = "AND academic_year = $2";
+  params.push(academic_year);
+}
+
+const { rows } = await pool.query(
+  `SELECT DISTINCT academic_year, standard, division
+     FROM teacher_class_assignments
+    WHERE staff_id = $1 ${whereYear}
+    ORDER BY academic_year DESC, standard, division`,
+  params
+);
+
+res.json(rows);
+} catch (err) {
+console.error("getMyClasses error:", err);
+res.status(500).json({ message: "Failed to load classes" });
+}
 };

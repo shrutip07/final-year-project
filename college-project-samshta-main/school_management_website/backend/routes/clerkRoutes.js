@@ -17,7 +17,12 @@ const {
   getTeacherSalaryHistory,
     getTeacherSalaryGrid,
     payTeacherSalary,
-    getPendingSalaries
+    getPendingSalaries,
+    addStudent,
+    listTeachersForAllocation,
+  allocateTeacherClass,
+  listPassedStudentsForAllocation,
+  allocateStudentNextYear
 } = require('../controllers/clerkController');
 
 // Onboarding (create/update profile)
@@ -41,6 +46,38 @@ router.post('/teacher-salary', authenticateToken, authorizeRoles('clerk'), setTe
 router.get('/teacher-salary-grid', authenticateToken, authorizeRoles('clerk'), getTeacherSalaryGrid);
 router.post('/teacher-salary-pay', authenticateToken, authorizeRoles('clerk'), payTeacherSalary);
 router.get('/teacher-salary-pending', authenticateToken, authorizeRoles('clerk'), getPendingSalaries);
+router.post('/students', authenticateToken, authorizeRoles('clerk'), addStudent);
+router.get('/teachers-for-allocation',
+  authenticateToken,
+  authorizeRoles('clerk'),
+  listTeachersForAllocation
+);
 
+// 2) Allocate a teacher to a standard/division in a given year
+//    POST /api/clerk/allocate-teacher
+//    body: { staff_id, academic_year, standard, division }
+router.post('/allocate-teacher',
+  authenticateToken,
+  authorizeRoles('clerk'),
+  allocateTeacherClass
+);
 
+// 3) List passed students for allocation to next year
+//    GET /api/clerk/passed-students?academic_year=2024-25
+router.get('/passed-students',
+  authenticateToken,
+  authorizeRoles('clerk'),
+  listPassedStudentsForAllocation
+);
+
+// 4) Allocate (promote) a student to next year's standard/division
+//    POST /api/clerk/allocate-student-next-year
+//    body: { student_id, from_academic_year, to_academic_year, standard, division, roll_number }
+router.post('/allocate-student-next-year',
+  authenticateToken,
+  authorizeRoles('clerk'),
+  allocateStudentNextYear
+);
+
+module.exports = router;
 module.exports = router;

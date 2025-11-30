@@ -24,7 +24,7 @@ app.use('/api/clerk', clerkRoutes);
 
 
 // Register routes
-app.use('/api/clerk', clerkRoutes);
+//app.use('/api/clerk', clerkRoutes);
 // Add this route for frontend compatibility!
 app.get('/api/verify', verify);
 

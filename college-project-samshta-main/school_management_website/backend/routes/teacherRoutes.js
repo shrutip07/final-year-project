@@ -18,13 +18,26 @@ router.get(
 // Profile and onboarding routes
 router.put('/profile', authenticateToken, authorizeRoles('teacher'), teacherController.updateProfile);
 router.post('/onboard', authenticateToken, authorizeRoles('teacher'), teacherController.onboard);
-
-// STUDENT profile CRUD
-router.post('/student', authenticateToken, teacherController.addStudent);
-router.put('/student/:student_id', authenticateToken, teacherController.updateStudent);
+router.post(
+  "/year-done",
+  authenticateToken,
+  authorizeRoles("teacher"),
+  teacherController.markYearDone
+);
+router.get(
+"/classes",
+authenticateToken,
+authorizeRoles("teacher"),
+teacherController.getMyClasses
+);
+router.put(
+"/enrollment/:enrollment_id",
+authenticateToken,
+authorizeRoles("teacher"),
+teacherController.updateEnrollment
+);
 
 // ENROLLMENT CRUD (these were missing!)
-router.post('/enrollment', authenticateToken, teacherController.addEnrollment);   // <---------
-router.put('/enrollment/:enrollment_id', authenticateToken, teacherController.updateEnrollment); // <---------
+
 
 module.exports = router;

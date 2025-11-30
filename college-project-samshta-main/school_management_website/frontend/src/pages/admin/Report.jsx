@@ -8,7 +8,7 @@ const [loading, setLoading] = useState(false);
 const [pdfUrl, setPdfUrl] = useState("");
 useEffect(() => {
  const token = localStorage.getItem("token");
- axios.get("http://localhost:5050/api/admin/units", {
+ axios.get("http://localhost:5000/api/admin/units", {
  headers: { Authorization: `Bearer ${token}` },
  })
  .then(res => setUnits(res.data))
@@ -20,7 +20,7 @@ async function generateReport() {
  try {
  const token = localStorage.getItem("token");
  const res = await axios.get(
- `http://localhost:5050/api/report/class-summary/${unitId}`,
+ `http://localhost:5000/api/report/class-summary/${unitId}`,
  {
  headers: { Authorization: `Bearer ${token}` },
  responseType: "blob"
