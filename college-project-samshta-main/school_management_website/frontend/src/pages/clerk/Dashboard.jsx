@@ -6,6 +6,9 @@ import StudentFees from "./StudentFees";
 import TeacherSalaries from "./TeacherSalaries";
 import ChatWidget from "../../components/ChatWidget";
 import ClerkAddStudent from "./StudentAdd";
+import FireSafety from './FireSafety';
+import PhysicalSafety from './PhysicalSafety';
+
 export default function ClerkDashboard() {
   const [tab, setTab] = useState("dashboard");
   const [dashboard, setDashboard] = useState(null);
@@ -54,8 +57,12 @@ export default function ClerkDashboard() {
     { key: "dashboard", label: "Dashboard", icon: "bi-house" },
     { key: "profile", label: "Profile", icon: "bi-person" },
     { key: "fees", label: "Student Fees", icon: "bi-cash" },
+
     { key: "salaries", label: "Teacher Salaries", icon: "bi-currency-dollar" },
     { key: "addStudent", label: "Add Student", icon: "bi-person-plus" },
+    { key: "fire-safety", label: "Fire Safety", icon: "bi-fire" },
+    { key: "physical-safety", label: "Physical Safety", icon: "bi-shield" },
+
     { key: "logout", label: "Logout", icon: "bi-box-arrow-right" },
   ];
 
@@ -131,6 +138,8 @@ export default function ClerkDashboard() {
         {tab === "fees" && <StudentFees />}
         {tab === "salaries" && <TeacherSalaries />}
         {tab === "addStudent" && <ClerkAddStudent />}
+        {tab === "fire-safety" && <FireSafety />}  {/* <-- Add this line */}
+        {tab === "physical-safety" && <PhysicalSafety />} 
       </main>
       <ChatWidget />
     </div>

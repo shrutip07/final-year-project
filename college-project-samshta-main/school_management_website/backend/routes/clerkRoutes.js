@@ -10,21 +10,23 @@ const {
   getFeeMaster,
   setFeeMaster,
   getUnitDashboard,
-  listStudentsForFee,          // <-- ADD THIS LINE
+  listStudentsForFee,
   updateStudentFeeStatus,
   setTeacherSalary, 
   getAllTeacherSalaries,
   getTeacherSalaryHistory,
-    getTeacherSalaryGrid,
-    payTeacherSalary,
-    getPendingSalaries,
-    addStudent,
-    listTeachersForAllocation,
+  getTeacherSalaryGrid,
+  payTeacherSalary,
+  getPendingSalaries,
+  addStudent,
+  listTeachersForAllocation,
   allocateTeacherClass,
   listPassedStudentsForAllocation,
-  allocateStudentNextYear
+  allocateStudentNextYear,
+  getPhysicalSafetyInfo,
+  updatePhysicalSafetyInfo,
+  getPhysicalSafetyAnalytics
 } = require('../controllers/clerkController');
-
 // Onboarding (create/update profile)
 router.post('/onboard', authenticateToken, authorizeRoles('clerk'), onboard);
 router.get('/students-for-fee', authenticateToken, authorizeRoles('clerk'), listStudentsForFee);
@@ -33,6 +35,10 @@ router.post('/student-fee-status', authenticateToken, authorizeRoles('clerk'), u
 // Get clerk profile
 router.get('/me', authenticateToken, authorizeRoles('clerk'), getProfile);
 router.put('/me', authenticateToken, authorizeRoles('clerk'), updateProfile);
+// Physical safety info
+router.get('/physical-safety', authenticateToken, authorizeRoles('clerk'), getPhysicalSafetyInfo);
+router.put('/physical-safety', authenticateToken, authorizeRoles('clerk'), updatePhysicalSafetyInfo);
+router.get('/physical-safety/analytics', authenticateToken, authorizeRoles('clerk'), getPhysicalSafetyAnalytics);
 
 // Fee master (set fees for standard & year)
 router.get('/fee-master', authenticateToken, authorizeRoles('clerk'), getFeeMaster);
