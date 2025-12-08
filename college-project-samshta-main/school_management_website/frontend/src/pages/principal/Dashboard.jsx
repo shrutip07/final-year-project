@@ -22,6 +22,10 @@ export default function PrincipalDashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [profile, setProfile] = useState(null);
   const [students, setStudents] = useState([]);
+  const [selectedFy, setSelectedFy] = useState("2024-25");
+  const [fyMetrics, setFyMetrics] = useState(null);
+  const [selectedOverviewFy, setSelectedOverviewFy] = useState("2024-25");
+  const [overviewMetrics, setOverviewMetrics] = useState(null);
 
   // Loading and error
   const [loading, setLoading] = useState(true);
@@ -41,7 +45,7 @@ export default function PrincipalDashboard() {
     async function fetchAllData() {
       try {
         const token = localStorage.getItem("token");
-        const [profileRes, studentsRes, dashboardRes] = await Promise.all([
+        const [profileRes, studentsRes, dashboardRes, fyRes, overviewRes] = await Promise.all([
           axios.get("http://localhost:5000/api/principal/me", {
             headers: { Authorization: `Bearer ${token}` }
           }),
@@ -49,6 +53,12 @@ export default function PrincipalDashboard() {
             headers: { Authorization: `Bearer ${token}` }
           }),
           axios.get("http://localhost:5000/api/principal/dashboard-data", {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`http://localhost:5000/api/principal/finance-by-year?financial_year=${selectedFy}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`http://localhost:5000/api/principal/finance-by-year?financial_year=${selectedOverviewFy}`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
@@ -62,6 +72,8 @@ export default function PrincipalDashboard() {
         setProfile(profileRes.data);
         setStudents(studentsRes.data);
         setDashboardData(dashboardRes.data);
+        setFyMetrics(fyRes.data);
+        setOverviewMetrics(overviewRes.data);
       } catch (err) {
         if (err.response?.status === 404) {
           navigate("/principal/onboarding");
@@ -74,31 +86,271 @@ export default function PrincipalDashboard() {
     }
 
     fetchAllData();
-  }, [navigate, t]);
+  }, [navigate, t, selectedFy, selectedOverviewFy]);
 
   const renderDashboard = () => {
     if (!dashboardData) return null;
-    const { principal, unit, teacherCount, studentCount } = dashboardData;
+    const { principal, unit, teacherCount, studentCount, finance } = dashboardData || {};
 
     return (
       <div>
         <h2>{t("principal_dashboard")}</h2>
+
+        {/* Card 1: Principal Profile */}
         {principal && (
-          <div style={{ border: "1px solid #ccc", background: "#fafafa", padding: 18, marginBottom: 24, borderRadius: 6 }}>
-            <h3>{t("principal_profile")}</h3>
-            <p><b>{t("name")}:</b> {principal.full_name}</p>
-            <p><b>{t("email")}:</b> {principal.email}</p>
-            <p><b>{t("phone")}:</b> {principal.phone}</p>
-            <p><b>{t("qualification")}:</b> {principal.qualification}</p>
-            <p><b>{t("unit_id")}:</b> {principal.unit_id}</p>
+          <div style={{ 
+            border: "1px solid #e0e0e0", 
+            background: "#fff", 
+            padding: 20, 
+            marginBottom: 24, 
+            borderRadius: 8,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+          }}>
+            <h3 style={{ marginTop: 0, marginBottom: 16, color: "#212b36" }}>{t("principal_profile")}</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <p><b>{t("name")}:</b> {principal.full_name}</p>
+              <p><b>{t("email")}:</b> {principal.email}</p>
+              <p><b>{t("phone")}:</b> {principal.phone}</p>
+              <p><b>{t("qualification")}:</b> {principal.qualification}</p>
+            </div>
           </div>
         )}
+
+        {/* Card 2: Unit Details & Statistics */}
         {unit && (
-          <div style={{ border: "1px solid #ccc", background: "#fafafa", padding: 18, marginBottom: 24, borderRadius: 6 }}>
-            <h3>{t("unit_details")}</h3>
-            <div style={{ display: "flex", gap: 20 }}>
-              <div>{t("teachers")}: <strong>{teacherCount}</strong></div>
-              <div>{t("students")}: <strong>{studentCount}</strong></div>
+          <div style={{ 
+            border: "1px solid #e0e0e0", 
+            background: "#fff", 
+            padding: 20, 
+            marginBottom: 24, 
+            borderRadius: 8,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+          }}>
+            <h3 style={{ marginTop: 0, marginBottom: 16, color: "#212b36" }}>{t("unit_details")}</h3>
+            
+            {/* Key Statistics */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 20 }}>
+              <div style={{ padding: 12, background: "#e3f2fd", borderRadius: 6, textAlign: "center" }}>
+                <div style={{ fontSize: "12px", color: "#666", marginBottom: 6 }}>{t("teachers")}</div>
+                <div style={{ fontSize: "28px", fontWeight: "bold", color: "#0066cc" }}>{teacherCount || 0}</div>
+              </div>
+              <div style={{ padding: 12, background: "#e8f5e9", borderRadius: 6, textAlign: "center" }}>
+                <div style={{ fontSize: "12px", color: "#666", marginBottom: 6 }}>{t("students")}</div>
+                <div style={{ fontSize: "28px", fontWeight: "bold", color: "#00aa00" }}>{studentCount || 0}</div>
+              </div>
+              <div style={{ padding: 12, background: "#f3e5f5", borderRadius: 6, textAlign: "center" }}>
+                <div style={{ fontSize: "12px", color: "#666", marginBottom: 6 }}>{t("teacher_ratio")}</div>
+                <div style={{ fontSize: "28px", fontWeight: "bold", color: "#7b1fa2" }}>
+                  {studentCount && teacherCount ? (studentCount / teacherCount).toFixed(1) : 0}
+                </div>
+              </div>
+            </div>
+
+            {/* School Information */}
+            <div style={{ borderTop: "1px solid #eee", paddingTop: 16 }}>
+              <h4 style={{ marginTop: 0, marginBottom: 12, color: "#333", fontSize: "14px" }}>{t("school_information")}</h4>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, fontSize: "13px" }}>
+                <div><b>{t("unit_name")}:</b> {unit[0]?.unit_name || "-"}</div>
+                <div><b>{t("school_shift")}:</b> {unit[0]?.school_shift || "-"}</div>
+                
+                <div><b>SEMIS No:</b> {unit[0]?.semis_no || "-"}</div>
+                <div><b>DCF No:</b> {unit[0]?.dcf_no || "-"}</div>
+                
+                <div><b>NMMS No:</b> {unit[0]?.nmms_no || "-"}</div>
+                <div><b>{t("standard_range")}:</b> {unit[0]?.standard_range || "-"}</div>
+                
+                <div><b>{t("type_of_management")}:</b> {unit[0]?.type_of_management || "-"}</div>
+                <div><b>{t("school_jurisdiction")}:</b> {unit[0]?.school_jurisdiction || "-"}</div>
+
+                <div><b>{t("competent_authority")}:</b> {unit[0]?.competent_authority_name || "-"}</div>
+                <div><b>{t("authority_number")}:</b> {unit[0]?.authority_number || "-"}</div>
+
+                <div><b>{t("authority_zone")}:</b> {unit[0]?.authority_zone || "-"}</div>
+                <div><b>Scholarship Code:</b> {unit[0]?.scholarship_code || "-"}</div>
+
+                <div><b>First Grant Year:</b> {unit[0]?.first_grant_in_aid_year || "-"}</div>
+                <div><b>Kendrashala Name:</b> {unit[0]?.kendrashala_name || "-"}</div>
+
+                <div><b>Info Authority:</b> {unit[0]?.info_authority_name || "-"}</div>
+                <div><b>Appellate Authority:</b> {unit[0]?.appellate_authority_name || "-"}</div>
+
+                <div><b>Midday Meal Org:</b> {unit[0]?.midday_meal_org_name || "-"}</div>
+                <div><b>Midday Meal Contact:</b> {unit[0]?.midday_meal_org_contact || "-"}</div>
+              </div>
+            </div>
+
+            {/* Headmistress Information */}
+            <div style={{ borderTop: "1px solid #eee", paddingTop: 16, marginTop: 16 }}>
+              <h4 style={{ marginTop: 0, marginBottom: 12, color: "#333", fontSize: "14px" }}>{t("headmistress_info")}</h4>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, fontSize: "13px" }}>
+                <div><b>{t("headmistress_name")}:</b> {unit[0]?.headmistress_name || "-"}</div>
+                <div><b>{t("headmistress_email")}:</b> {unit[0]?.headmistress_email || "-"}</div>
+                
+                <div><b>{t("headmistress_phone")}:</b> {unit[0]?.headmistress_phone || "-"}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Card 3: Finance Overview - Selectable Financial Year */}
+        {overviewMetrics && (
+          <div style={{ 
+            border: "1px solid #e0e0e0", 
+            background: "#fff", 
+            padding: 20, 
+            marginBottom: 24, 
+            borderRadius: 8,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h3 style={{ marginTop: 0, marginBottom: 0, color: "#212b36" }}>{t("finance_overview")}</h3>
+              <select
+                value={selectedOverviewFy}
+                onChange={(e) => setSelectedOverviewFy(e.target.value)}
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 6,
+                  border: "1px solid #ddd",
+                  fontSize: "13px",
+                  fontWeight: 500
+                }}
+              >
+                <option value="2023-24">2023-24</option>
+                <option value="2024-25">2024-25</option>
+                <option value="2025-26">2025-26</option>
+              </select>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+              <div style={{ padding: 12, background: "#e8f5e9", borderRadius: 6 }}>
+                <div style={{ fontSize: "13px", color: "#333", fontWeight: 500 }}>{t("total_budget")}</div>
+                <div style={{ fontSize: "12px", color: "#666", marginBottom: 6 }}>
+                  {t("expected_fee_master")}
+                </div>
+                <div style={{ fontSize: "24px", fontWeight: "bold", color: "#2e7d32" }}>
+                  ₹ {(overviewMetrics.feesCollectedFy || 0).toLocaleString('en-IN')}
+                </div>
+              </div>
+              <div style={{ padding: 12, background: "#fff3e0", borderRadius: 6 }}>
+                <div style={{ fontSize: "13px", color: "#333", fontWeight: 500 }}>{t("total_spent")}</div>
+                <div style={{ fontSize: "12px", color: "#666", marginBottom: 6 }}>
+                  {t("teacher_salary_paid")}
+                </div>
+                <div style={{ fontSize: "24px", fontWeight: "bold", color: "#f57c00" }}>
+                  ₹ {(overviewMetrics.salarySpentFy || 0).toLocaleString('en-IN')}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Card 4: Finance - Balance & Collection Status (Selectable Year) */}
+        {overviewMetrics && (
+          <div style={{ 
+            border: "1px solid #e0e0e0", 
+            background: "#fff", 
+            padding: 20, 
+            marginBottom: 24, 
+            borderRadius: 8,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h3 style={{ marginTop: 0, marginBottom: 0, color: "#212b36" }}>{t("budget_summary")}</h3>
+              <select
+                value={selectedOverviewFy}
+                onChange={(e) => setSelectedOverviewFy(e.target.value)}
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: 6,
+                  border: "1px solid #ddd",
+                  fontSize: "13px",
+                  fontWeight: 500
+                }}
+              >
+                <option value="2023-24">2023-24</option>
+                <option value="2024-25">2024-25</option>
+                <option value="2025-26">2025-26</option>
+              </select>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+              <div style={{ padding: 12, background: "#e8f7e6", borderRadius: 6 }}>
+                <div style={{ fontSize: "13px", color: "#333", fontWeight: 500 }}>{t("fees_collected")}</div>
+                <div style={{ fontSize: "12px", color: "#666", marginBottom: 6 }}>
+                  {t("actual_fees_collected")}
+                </div>
+                <div style={{ fontSize: "24px", fontWeight: "bold", color: "#2e7d32" }}>
+                  ₹ {(overviewMetrics.feesCollectedFy || 0).toLocaleString('en-IN')}
+                </div>
+              </div>
+              <div style={{ padding: 12, background: "#f3e5f5", borderRadius: 6 }}>
+                <div style={{ fontSize: "13px", color: "#333", fontWeight: 500 }}>{t("pending_fees")}</div>
+                <div style={{ fontSize: "12px", color: "#666", marginBottom: 6 }}>
+                  {t("fees_yet_to_collect")}
+                </div>
+                <div style={{ fontSize: "24px", fontWeight: "bold", color: "#7b1fa2" }}>
+                  ₹ {(overviewMetrics.salarySpentFy || 0).toLocaleString('en-IN')}
+                </div>
+              </div>
+            </div>
+            <div style={{ marginTop: 16, padding: 12, background: "#f5f5f5", borderRadius: 6 }}>
+              <div style={{ fontSize: "13px", fontWeight: 500, marginBottom: 6 }}>
+                {t("balance")} ({t("collected_minus_spent")})
+              </div>
+              <div style={{ fontSize: "12px", color: "#666", marginBottom: 8 }}>
+                ₹{(overviewMetrics.feesCollectedFy || 0).toLocaleString('en-IN')} - ₹{(overviewMetrics.salarySpentFy || 0).toLocaleString('en-IN')} = 
+              </div>
+              <div style={{ 
+                fontSize: "28px", 
+                fontWeight: "bold", 
+                color: ((overviewMetrics.feesCollectedFy || 0) - (overviewMetrics.salarySpentFy || 0)) >= 0 ? "#2e7d32" : "#d32f2f"
+              }}>
+                ₹ {((overviewMetrics.feesCollectedFy || 0) - (overviewMetrics.salarySpentFy || 0)).toLocaleString('en-IN')}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Card 5: Financial Year Metrics */}
+        {fyMetrics && (
+          <div style={{ 
+            border: "1px solid #e0e0e0", 
+            background: "#fff", 
+            padding: 20, 
+            marginBottom: 24, 
+            borderRadius: 8,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+          }}>
+            <div style={{ marginBottom: 16 }}>
+              <h4 style={{ marginTop: 0, marginBottom: 8, color: "#212b36" }}>
+                {t("financial_year")} {fyMetrics.financial_year}
+              </h4>
+              <select
+                value={selectedFy}
+                onChange={(e) => setSelectedFy(e.target.value)}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: 6,
+                  border: "1px solid #ddd",
+                  fontSize: "14px"
+                }}
+              >
+                <option value="2023-24">2023-24</option>
+                <option value="2024-25">2024-25</option>
+                <option value="2025-26">2025-26</option>
+              </select>
+            </div>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+              <div style={{ padding: 16, background: "#e3f2fd", borderRadius: 8, flex: 1, minWidth: 200 }}>
+                <div style={{ fontSize: "14px", color: "#333", marginBottom: 8 }}>{t("fees_collected_in_fy")}</div>
+                <div style={{ fontSize: "22px", fontWeight: "bold", color: "#1565c0" }}>
+                  ₹{Number(fyMetrics.feesCollectedFy || 0).toLocaleString('en-IN')}
+                </div>
+              </div>
+              <div style={{ padding: 16, background: "#fff3e0", borderRadius: 8, flex: 1, minWidth: 200 }}>
+                <div style={{ fontSize: "14px", color: "#333", marginBottom: 8 }}>{t("salary_spent_in_fy")}</div>
+                <div style={{ fontSize: "22px", fontWeight: "bold", color: "#f57c00" }}>
+                  ₹{Number(fyMetrics.salarySpentFy || 0).toLocaleString('en-IN')}
+                </div>
+              </div>
             </div>
           </div>
         )}

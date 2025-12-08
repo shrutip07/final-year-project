@@ -18,6 +18,12 @@ router.put('/:principal_id', authenticateToken, principalController.updateProfil
 router.get('/teachers', authenticateToken, principalController.getTeachers);
 
 router.get('/dashboard-data', authenticateToken, principalController.getDashboardData);
+router.get(
+  "/finance-by-year",
+  authenticateToken,
+  authorizeRoles("principal"),
+  principalController.getFinanceByYear
+);
 router.get('/analytics', authenticateToken, authorizeRoles('principal'), principalController.getAnalytics);
 
 // Add this new route

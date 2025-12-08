@@ -247,50 +247,211 @@ exports.getAnalytics = async (req, res) => {
 
 
 // New handler: Get Data for principal dashboard with profile, unit info, and counts
+function getCurrentAcademicYear() {
+const now = new Date();
+const year = now.getFullYear();
+const month = now.getMonth(); // 0 = Jan
+if (month >= 3) {
+return `${year}-${(year + 1).toString().slice(-2)}`;
+} else {
+return `${year - 1}-${year.toString().slice(-2)}`;
+}
+}
+
+// simple fiscal year like "2025-26"
+function getCurrentFiscalYear() {
+return getCurrentAcademicYear();
+}
+
 exports.getDashboardData = async (req, res) => {
+try {
+const userId = req.user.id;
+const currentAy = getCurrentAcademicYear();
+const currentFy = getCurrentFiscalYear();
+
+// 1) Principal profile
+const principalRes = await pool.query(
+  "SELECT * FROM principal WHERE user_id = $1",
+  [userId]
+);
+if (principalRes.rows.length === 0) {
+  return res.status(404).json({ message: "Principal profile not found" });
+}
+const principal = principalRes.rows[0];
+const unitId = principal.unit_id;
+
+// 2) Unit info
+const unitRes = await pool.query(
+  `SELECT 
+     unit_id, semis_no, dcf_no, nmms_no, scholarship_code,
+     first_grant_in_aid_year, type_of_management, school_jurisdiction,
+     competent_authority_name, authority_number, authority_zone,
+     kendrashala_name, info_authority_name, appellate_authority_name,
+     midday_meal_org_name, midday_meal_org_contact, standard_range,
+     headmistress_name, headmistress_phone, headmistress_email, school_shift
+   FROM unit
+   WHERE unit_id = $1`,
+  [unitId]
+);
+const unit = unitRes.rows || null;
+
+// 3) Teacher count
+const teacherCountRes = await pool.query(
+  "SELECT COUNT(*) FROM staff WHERE unit_id = $1 AND staff_type = $2",
+  [unitId, "teaching"]
+);
+const teacherCount = parseInt(teacherCountRes.rows[0].count, 10);
+
+// 4) Student count
+const studentCountRes = await pool.query(
+  "SELECT COUNT(*) FROM students WHERE unit_id = $1",
+  [unitId]
+);
+const studentCount = parseInt(studentCountRes.rows[0].count, 10);
+
+// 5) Fees metrics
+
+// Expected fees for this academic year = sum of fee_amount from fee_master
+const expectedFeesRes = await pool.query(
+  `SELECT COALESCE(SUM(fee_amount), 0) AS total
+   FROM fee_master
+   WHERE unit_id = $1 AND academic_year = $2`,
+  [unitId, currentAy]
+);
+const expectedFees = Number(expectedFeesRes.rows[0].total) || 0;
+
+// Collected fees for this academic year = sum of paid_amount from student_fees
+const collectedFeesRes = await pool.query(
+  `SELECT COALESCE(SUM(paid_amount), 0) AS total
+   FROM student_fees
+   WHERE unit_id = $1 AND academic_year = $2`,
+  [unitId, currentAy]
+);
+const totalFeesCollected = Number(collectedFeesRes.rows[0].total) || 0;
+
+const totalFeesPending = Math.max(expectedFees - totalFeesCollected, 0);
+
+// 6) Salary metrics from salary_payments
+const now = new Date();
+const currentMonth = now.getMonth() + 1;
+const currentYear = now.getFullYear();
+// salary paid this month
+const salaryMonthRes = await pool.query(
+  `SELECT COALESCE(SUM(amount), 0) AS total
+   FROM salary_payments
+   WHERE unit_id = $1 AND year = $2 AND month = $3`,
+  [unitId, currentYear, currentMonth]
+);
+const totalSalaryPaidThisMonth =
+  Number(salaryMonthRes.rows[0].total) || 0;
+
+// total salary paid in current academic year
+const salaryAyRes = await pool.query(
+  `SELECT COALESCE(SUM(amount), 0) AS total
+   FROM salary_payments
+   WHERE unit_id = $1 AND year = $2`,
+  [unitId, currentYear] // simple: assume AY mostly in same calendar year
+);
+const totalSalaryPaidThisYear =
+  Number(salaryAyRes.rows[0].total) || 0;
+
+// 7) Calculate finance metrics from collected/expected data
+// total_budget = expected fees from fee_master
+// total_spent = salary paid this year (actual expense)
+const totalBudget = expectedFees;
+const totalSpent = totalSalaryPaidThisYear;
+const balance = totalFeesCollected - totalSpent;
+
+res.json({
+  principal,
+  unit,
+  teacherCount,
+  studentCount,
+  finance: {
+    academicYear: currentAy,
+    total_budget: totalBudget,
+    total_spent: totalSpent,
+    balance: balance,
+    expectedFees,
+    totalFeesCollected,
+    totalFeesPending,
+    totalSalaryPaidThisMonth,
+    totalSalaryPaidThisYear
+  }
+});
+} catch (err) {
+console.error("Error fetching dashboard data:", err);
+res.status(500).json({ message: "Server error" });
+}
+};
+
+// helper: convert FY string "2024-25" to start/end dates if needed later
+function getFyDateRange(financialYear) {
+  // financialYear example: "2024-25"
+  const startYear = parseInt(financialYear.split("-")[0], 10);
+  const start = new Date(startYear, 3, 1);   // 1 April
+  const end = new Date(startYear + 1, 2, 31, 23, 59, 59); // 31 March next year
+  return { start, end };
+}
+
+// Fees collected and salary spent in a given financial year
+exports.getFinanceByYear = async (req, res) => {
   try {
     const userId = req.user.id;
+    const { financial_year } = req.query; // e.g. "2024-25"
 
-    // Fetch principal profile
-    const principalRes = await pool.query('SELECT * FROM principal WHERE user_id = $1', [userId]);
+    if (!financial_year) {
+      return res
+        .status(400)
+        .json({ message: "financial_year query param is required" });
+    }
+
+    // principal -> unit_id
+    const principalRes = await pool.query(
+      "SELECT * FROM principal WHERE user_id = $1",
+      [userId]
+    );
     if (principalRes.rows.length === 0) {
-      return res.status(404).json({ message: 'Principal profile not found' });
+      return res.status(404).json({ message: "Principal profile not found" });
     }
     const principal = principalRes.rows[0];
     const unitId = principal.unit_id;
 
-    // Fetch unit info columns
-    const unitRes = await pool.query(
-      `SELECT 
-        unit_id, semis_no, dcf_no, nmms_no, scholarship_code,
-        first_grant_in_aid_year, type_of_management, school_jurisdiction,
-        competent_authority_name, authority_number, authority_zone,
-        kendrashala_name, info_authority_name, appellate_authority_name,
-        midday_meal_org_name, midday_meal_org_contact, standard_range,
-        headmistress_name, headmistress_phone, headmistress_email, school_shift
-       FROM unit WHERE unit_id = $1`,
-      [unitId]
+    // 1) Total fees collected in this financial year
+    // assuming academic_year in student_fees uses same format as financial_year ("2024-25")
+    const feesRes = await pool.query(
+      `SELECT COALESCE(SUM(paid_amount), 0) AS total
+       FROM student_fees
+       WHERE unit_id = $1 AND academic_year = $2`,
+      [unitId, financial_year]
     );
-    const unit = unitRes.rows[0] || null;
+    const feesCollectedFy = Number(feesRes.rows[0].total) || 0;
 
-    // Fetch teacher count
-    const teacherCountRes = await pool.query(
-      'SELECT COUNT(*) FROM staff WHERE unit_id = $1 AND staff_type = $2',
-      [unitId, 'teaching']
+    // 2) Total salary spent in this financial year
+    // salary_payments has "year" and "month" integers
+    const startYear = parseInt(financial_year.split("-")[0], 10);
+    const endYear = startYear + 1;
+
+    const salaryRes = await pool.query(
+      `SELECT COALESCE(SUM(amount), 0) AS total
+       FROM salary_payments
+       WHERE unit_id = $1
+         AND (
+               (year = $2 AND month >= 4)      -- Apr..Dec of startYear
+            OR (year = $3 AND month <= 3)      -- Jan..Mar of endYear
+         )`,
+      [unitId, startYear, endYear]
     );
-    const teacherCount = parseInt(teacherCountRes.rows[0].count, 10);
+    const salarySpentFy = Number(salaryRes.rows[0].total) || 0;
 
-    // Fetch student count
-    const studentCountRes = await pool.query(
-      'SELECT COUNT(*) FROM students WHERE unit_id = $1',
-      [unitId]
-    );
-    const studentCount = parseInt(studentCountRes.rows[0].count, 10);
-
-    res.json({ principal, unit, teacherCount, studentCount });
-
+    return res.json({
+      unitId,
+      financial_year,
+      feesCollectedFy,
+      salarySpentFy
+    });
   } catch (err) {
-    console.error('Error fetching dashboard data:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error in getFinanceByYear:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };

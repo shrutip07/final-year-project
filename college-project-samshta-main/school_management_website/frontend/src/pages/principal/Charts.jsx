@@ -4,24 +4,36 @@
 //   PieChart, Pie, Tooltip, Legend, ResponsiveContainer, Cell,
 //   BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line
 // } from "recharts";
+// import { useTranslation } from "react-i18next";
 
 // const GENDER_COLORS = ["#278BCD", "#E9B949"];
 // const PASS_COLORS = ["#56C596", "#F37272"];
 // const COLORS = ["#278BCD", "#E9B949", "#56C596", "#F37272", "#6d69fa", "#f2bb8e"];
+
+// const cardStyle = {
+//   background: "#fff",
+//   padding: 20,
+//   borderRadius: 8,
+//   border: "1px solid #e0e0e0",
+//   boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+// };
+
+// const titleStyle = {
+//   fontSize: 16,
+//   fontWeight: 600,
+//   marginBottom: 16,
+//   color: "#212b36"
+// };
 
 // function formatNumber(n) {
 //   return n && !isNaN(n) ? n.toLocaleString() : n;
 // }
 
 // export default function Charts({ unitId }) {
+//   const { t } = useTranslation();
 //   const [loading, setLoading] = useState(true);
 //   const [analytics, setAnalytics] = useState(null);
-
-//   // Payments/year state
-//   const [selectedFiscalYear, setSelectedFiscalYear] = useState("");
-
-//   // Academic year for gender/pass pies
-//   const [currentYear, setCurrentYear] = useState(""); // <-- always call at top
+//   const [selectedYear, setSelectedYear] = useState("");
 
 //   // Fetch analytics
 //   useEffect(() => {
@@ -34,217 +46,351 @@
 //       })
 //       .then(res => {
 //         setAnalytics(res.data);
-//         // default fiscal year for payments
-//         const fiscalYears = [...new Set(res.data.payments.map(p => p.fiscal_year))];
-//         setSelectedFiscalYear(fiscalYears[fiscalYears.length - 1] || "");
+//         // Set default year here directly once
+//         const allYears = [
+//           ...new Set([
+//             ...(res.data.allStudents?.map(s => s.academic_year) || []),
+//             ...(res.data.payments?.map(p => p.fiscal_year) || [])
+//           ])
+//         ]
+//           .filter(Boolean)
+//           .sort()
+//           .reverse();
+
+//         if (allYears.length > 0) {
+//           setSelectedYear(allYears[0]);
+//         }
+
 //         setLoading(false);
 //       })
-//       .catch(() => setLoading(false));
+//       .catch(err => {
+//         console.error("Failed to fetch analytics:", err);
+//         setLoading(false);
+//       });
 //   }, [unitId]);
 
-//   // Get all academic years (using useMemo so available on every render)
-//   const allStudents = analytics?.allStudents || [];
-//   const yearsList = useMemo(
-//     () => Array.from(new Set(allStudents.map(s => s.academic_year).filter(Boolean))).sort().reverse(),
-//     [allStudents]
-//   );
+//   // All years for dropdown (sorted descending) - MUST BE BEFORE EARLY RETURN
+//   const allYears = useMemo(() => {
+//     if (!analytics) return [];
+//     const years = [
+//       ...new Set([
+//         ...(analytics.allStudents?.map(s => s.academic_year) || []),
+//         ...(analytics.payments?.map(p => p.fiscal_year) || [])
+//       ])
+//     ]
+//       .filter(Boolean)
+//       .sort()
+//       .reverse();
+//     return years.length > 0 ? years : ["2024-25"];
+//   }, [analytics]);
 
-//   // Set currentYear *after* data loads & when years change!
-//   useEffect(() => {
-//     if (yearsList.length > 0 && (!currentYear || !yearsList.includes(currentYear))) {
-//       setCurrentYear(yearsList[0]);
-//     }
-//     // eslint-disable-next-line
-//   }, [yearsList]);
+//   // ========== TREND DATA (All Past Years) - MUST BE BEFORE EARLY RETURN
+//   // Salary paid trend across all financial years
+//   const salaryTrendData = useMemo(() => {
+//     if (!analytics?.payments || analytics.payments.length === 0) return [];
+//     const yearMap = {};
+//     analytics.payments.forEach(p => {
+//       if (!yearMap[p.fiscal_year]) {
+//         yearMap[p.fiscal_year] = 0;
+//       }
+//       yearMap[p.fiscal_year] += Number(p.total) || 0;
+//     });
+//     return Object.keys(yearMap)
+//       .sort()
+//       .map(year => ({
+//         year,
+//         salary: Math.round(yearMap[year])
+//       }));
+//   }, [analytics]);
 
-//   if (loading || !analytics) return <div>Loading charts...</div>;
+//   // Fees collected trend across all academic years
+//   const feesTrendData = useMemo(() => {
+//     if (!analytics?.allStudents || analytics.allStudents.length === 0) return [];
+//     const yearMap = {};
+//     analytics.allStudents.forEach(s => {
+//       if (!yearMap[s.academic_year]) {
+//         yearMap[s.academic_year] = 0;
+//       }
+//       yearMap[s.academic_year] += 5000;
+//     });
+//     return Object.keys(yearMap)
+//       .sort()
+//       .map(year => ({
+//         year,
+//         fees: Math.round(yearMap[year])
+//       }));
+//   }, [analytics]);
 
 //   // Students by class
-//   const studentsByClass = analytics.studentsByClass.map(row => ({
-//     standard: row.standard,
-//     count: parseInt(row.count, 10)
-//   }));
+//   const studentsByClass = useMemo(() => {
+//     return analytics?.studentsByClass?.map(row => ({
+//       standard: row.standard,
+//       count: parseInt(row.count, 10)
+//     })) || [];
+//   }, [analytics]);
 
 //   // Admissions per year
-//   const admissionsData = analytics.admissions.map(row => ({
-//     year: String(row.year),
-//     count: parseInt(row.count, 10)
-//   }));
+//   const admissionsData = useMemo(() => {
+//     return analytics?.admissions?.map(row => ({
+//       year: String(row.year),
+//       count: parseInt(row.count, 10)
+//     })) || [];
+//   }, [analytics]);
 
-//   // Students and gender/pass for the current academic year
-//   const yearStudents = allStudents.filter(s => s.academic_year === currentYear);
-//   const genderData = [
+//   // Students for selected year
+//   const yearStudents = useMemo(() => {
+//     return analytics?.allStudents?.filter(s => s.academic_year === selectedYear) || [];
+//   }, [analytics, selectedYear]);
+
+//   const genderData = useMemo(() => [
 //     { name: "Male", value: yearStudents.filter(s => s.gender?.toLowerCase() === "male").length },
 //     { name: "Female", value: yearStudents.filter(s => s.gender?.toLowerCase() === "female").length }
-//   ];
-//   const passData = [
+//   ], [yearStudents]);
+
+//   const passData = useMemo(() => [
 //     { name: "Passed", value: yearStudents.filter(s => s.passed === true).length },
 //     { name: "Failed", value: yearStudents.filter(s => s.passed === false).length }
-//   ];
+//   ], [yearStudents]);
 
-//   // Budget vs Expense bar chart
-//   const budgetYearMap = {};
-//   analytics.budgets.forEach(b => {
-//     budgetYearMap[b.fiscal_year] = b;
-//   });
-//   const budgetVsExpense = Object.keys(budgetYearMap).map(year => ({
-//     year,
-//     Budget: Number(budgetYearMap[year].income || 0),
-//     Expenses: Number(budgetYearMap[year].expenses || 0),
-//     Surplus: Number(budgetYearMap[year].surplus || 0)
-//   }));
+//   // Payments by category for selected year
+//   const expenseCategories = useMemo(() => {
+//     return analytics?.payments
+//       ?.filter(p => p.fiscal_year === selectedYear)
+//       .map((p, i) => ({ ...p, total: Number(p.total) })) || [];
+//   }, [analytics, selectedYear]);
 
-//   // Payments pie chart by fiscal year
-//   const fiscalYears = [...new Set(analytics.payments.map(p => p.fiscal_year))];
-//   const expenseCategories = analytics.payments
-//     .filter(p => p.fiscal_year === selectedFiscalYear)
-//     .map((p, i) => ({ ...p, total: Number(p.total) }));
+//   // Budget vs Expense
+//   const budgetVsExpense = useMemo(() => {
+//     return analytics?.budgets?.map(b => ({
+//       year: b.fiscal_year,
+//       Budget: Number(b.income || 0),
+//       Expenses: Number(b.expenses || 0),
+//       Surplus: Number(b.surplus || 0)
+//     })) || [];
+//   }, [analytics]);
+
+//   const fiscalYears = useMemo(() => {
+//     return [...new Set(analytics?.payments?.map(p => p.fiscal_year) || [])];
+//   }, [analytics]);
+
+//   // NOW the early return - after all hooks
+//   if (loading || !analytics) return <div style={{ padding: 24 }}>{t("loading")}...</div>;
 
 //   return (
 //     <div style={{ padding: 24 }}>
 //       <div style={{
 //         display: "flex", justifyContent: "space-between",
-//         alignItems: "center", marginBottom: 24
+//         alignItems: "center", marginBottom: 32
 //       }}>
-//         <h2>Unit Dashboard</h2>
+//         <h2>{t("charts")}</h2>
+//         <div>
+//           <label style={{ marginRight: 12, fontWeight: 500 }}>{t("financial_year_label")}</label>
+//           <select
+//             value={selectedYear}
+//             onChange={(e) => setSelectedYear(e.target.value)}
+//             style={{
+//               padding: "8px 12px",
+//               borderRadius: 6,
+//               border: "1px solid #ddd",
+//               fontSize: 14,
+//               fontWeight: 500
+//             }}
+//           >
+//             {allYears.map(year => (
+//               <option value={year} key={year}>{year}</option>
+//             ))}
+//           </select>
+//         </div>
 //       </div>
-//       <div style={{
-//         display: "grid", gridTemplateColumns: "repeat(3, 1fr)",
-//         gridGap: 32
-//       }}>
-//         {/* STUDENTS BY CLASS */}
-//         <div style={{ background: "#23242a", padding: 20, borderRadius: 12 }}>
-//           <h4>Students by Class</h4>
-//           <ResponsiveContainer width="100%" height={210}>
-//             <BarChart data={studentsByClass}>
-//               <CartesianGrid strokeDasharray="3 3" stroke="#313355" />
-//               <XAxis dataKey="standard"/>
-//               <YAxis/>
-//               <Tooltip/>
-//               <Bar dataKey="count" fill="#14b8a6"/>
-//             </BarChart>
-//           </ResponsiveContainer>
-//         </div>
 
-//         {/* Student Admissions by Year */}
-//         <div style={{ background: "#23242a", padding: 20, borderRadius: 12 }}>
-//           <h4>Admissions per Year</h4>
-//           <ResponsiveContainer width="100%" height={210}>
-//             <LineChart data={admissionsData}>
-//               <CartesianGrid strokeDasharray="3 3" stroke="#313355" />
-//               <XAxis dataKey="year"/>
-//               <YAxis/>
-//               <Tooltip/>
-//               <Line type="monotone" dataKey="count" stroke="#38bdf8" />
-//             </LineChart>
-//           </ResponsiveContainer>
-//         </div>
+//       {/* SECTION 1: TREND CHARTS (All Past Years) */}
+//       <div style={{ marginBottom: 48 }}>
+//         <h3 style={{ marginBottom: 24, color: "#212b36" }}>{t("financial_trends")}</h3>
+//         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+//           {/* Salary Trend */}
+//           <div style={cardStyle}>
+//             <div style={titleStyle}>{t("salary_trend")}</div>
+//             <ResponsiveContainer width="100%" height={280}>
+//               <LineChart data={salaryTrendData}>
+//                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+//                 <XAxis dataKey="year" />
+//                 <YAxis />
+//                 <Tooltip 
+//                   formatter={(value) => `₹${formatNumber(value)}`}
+//                   contentStyle={{ background: "#fff", border: "1px solid #ccc", borderRadius: 6 }}
+//                 />
+//                 <Legend />
+//                 <Line 
+//                   type="monotone" 
+//                   dataKey="salary" 
+//                   stroke="#f57c00" 
+//                   strokeWidth={2}
+//                   dot={{ fill: "#f57c00", r: 5 }}
+//                   activeDot={{ r: 7 }}
+//                   name={t("salary_paid")}
+//                 />
+//               </LineChart>
+//             </ResponsiveContainer>
+//           </div>
 
-//         {/* Budget vs Expenses */}
-//         <div style={{ background: "#23242a", padding: 20, borderRadius: 12 }}>
-//           <h4>Budget vs. Expenses</h4>
-//           <ResponsiveContainer width="100%" height={210}>
-//             <BarChart data={budgetVsExpense}>
-//               <CartesianGrid strokeDasharray="3 3" stroke="#313355" />
-//               <XAxis dataKey="year"/>
-//               <YAxis/>
-//               <Tooltip/>
-//               <Legend/>
-//               <Bar dataKey="Budget" fill="#38bdf8"/>
-//               <Bar dataKey="Expenses" fill="#fbbf24"/>
-//             </BarChart>
-//           </ResponsiveContainer>
+//           {/* Fees Trend */}
+//           <div style={cardStyle}>
+//             <div style={titleStyle}>{t("fees_trend")}</div>
+//             <ResponsiveContainer width="100%" height={280}>
+//               <LineChart data={feesTrendData}>
+//                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+//                 <XAxis dataKey="year" />
+//                 <YAxis />
+//                 <Tooltip 
+//                   formatter={(value) => `₹${formatNumber(value)}`}
+//                   contentStyle={{ background: "#fff", border: "1px solid #ccc", borderRadius: 6 }}
+//                 />
+//                 <Legend />
+//                 <Line 
+//                   type="monotone" 
+//                   dataKey="fees" 
+//                   stroke="#2e7d32" 
+//                   strokeWidth={2}
+//                   dot={{ fill: "#2e7d32", r: 5 }}
+//                   activeDot={{ r: 7 }}
+//                   name={t("fees_collected")}
+//                 />
+//               </LineChart>
+//             </ResponsiveContainer>
+//           </div>
 //         </div>
+//       </div>
 
-//         {/* Gender distribution pie */}
-//         <div style={{ background: "#23242a", padding: 20, borderRadius: 12 }}>
-//           <h4>
-//             Students by Gender&nbsp;
-//             <select
-//               style={{maxWidth:120, background:"#23242a", color:"#fff"}}
-//               value={currentYear}
-//               onChange={e => setCurrentYear(e.target.value)}
-//             >
-//               {yearsList.map(year => (
-//                 <option value={year} key={year}>{year}</option>
-//               ))}
-//             </select>
-//           </h4>
-//           <ResponsiveContainer width="100%" height={210}>
-//             <PieChart>
-//               <Pie
-//                 data={genderData}
-//                 dataKey="value"
-//                 nameKey="name"
-//                 cx="50%"
-//                 cy="52%"
-//                 outerRadius={80}
-//                 label={({name, value}) => `${value}`}
-//                 labelLine={false}
-//               >
-//                 {genderData.map((entry, idx) => (
-//                   <Cell key={entry.name} fill={GENDER_COLORS[idx % GENDER_COLORS.length]} />
-//                 ))}
-//               </Pie>
-//               <Legend verticalAlign="bottom" iconType="circle" />
-//               <Tooltip/>
-//             </PieChart>
-//           </ResponsiveContainer>
+//       {/* SECTION 2: HISTORICAL CHARTS (All Years) */}
+//       <div style={{ marginBottom: 48 }}>
+//         <h3 style={{ marginBottom: 24, color: "#212b36" }}>{t("historical_analysis")}</h3>
+//         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+//           {/* Students by Class */}
+//           <div style={cardStyle}>
+//             <div style={titleStyle}>{t("students_by_class")}</div>
+//             <ResponsiveContainer width="100%" height={280}>
+//               <BarChart data={studentsByClass}>
+//                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+//                 <XAxis dataKey="standard"/>
+//                 <YAxis/>
+//                 <Tooltip contentStyle={{ background: "#fff", border: "1px solid #ccc", borderRadius: 6 }} />
+//                 <Bar dataKey="count" fill="#0066cc" radius={[6, 6, 0, 0]} />
+//               </BarChart>
+//             </ResponsiveContainer>
+//           </div>
+
+//           {/* Admissions per Year */}
+//           <div style={cardStyle}>
+//             <div style={titleStyle}>{t("admissions_per_year")}</div>
+//             <ResponsiveContainer width="100%" height={280}>
+//               <BarChart data={admissionsData}>
+//                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+//                 <XAxis dataKey="year"/>
+//                 <YAxis/>
+//                 <Tooltip contentStyle={{ background: "#fff", border: "1px solid #ccc", borderRadius: 6 }} />
+//                 <Bar dataKey="count" fill="#00aa00" radius={[6, 6, 0, 0]} />
+//               </BarChart>
+//             </ResponsiveContainer>
+//           </div>
+
+//           {/* Budget vs Expenses */}
+//           <div style={cardStyle}>
+//             <div style={titleStyle}>{t("budget_vs_expenses")}</div>
+//             <ResponsiveContainer width="100%" height={280}>
+//               <BarChart data={budgetVsExpense}>
+//                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+//                 <XAxis dataKey="year"/>
+//                 <YAxis/>
+//                 <Tooltip contentStyle={{ background: "#fff", border: "1px solid #ccc", borderRadius: 6 }} />
+//                 <Legend />
+//                 <Bar dataKey="Budget" fill="#0066cc" radius={[6, 6, 0, 0]}/>
+//                 <Bar dataKey="Expenses" fill="#f57c00" radius={[6, 6, 0, 0]}/>
+//               </BarChart>
+//             </ResponsiveContainer>
+//           </div>
 //         </div>
+//       </div>
 
-//         {/* Pass/Fail pie */}
-//         <div style={{ background: "#23242a", padding: 20, borderRadius: 12 }}>
-//           <h4>Pass/Fail Distribution</h4>
-//           <ResponsiveContainer width="100%" height={210}>
-//             <PieChart>
-//               <Pie
-//                 data={passData}
-//                 dataKey="value"
-//                 nameKey="name"
-//                 cx="50%"
-//                 cy="52%"
-//                 outerRadius={80}
-//                 label={({name, value}) => `${value}`}
-//                 labelLine={false}
-//               >
-//                 {passData.map((entry, idx) => (
-//                   <Cell key={entry.name} fill={PASS_COLORS[idx % PASS_COLORS.length]} />
-//                 ))}
-//               </Pie>
-//               <Legend verticalAlign="bottom" iconType="circle" />
-//               <Tooltip/>
-//             </PieChart>
-//           </ResponsiveContainer>
-//         </div>
+//       {/* SECTION 3: CURRENT YEAR CHARTS (Uses Common Dropdown) */}
+//       <div>
+//         <h3 style={{ marginBottom: 24, color: "#212b36" }}>{t("year_specific")} {selectedYear}</h3>
+//         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+//           {/* Gender Distribution */}
+//           <div style={cardStyle}>
+//             <div style={titleStyle}>{t("students_by_gender")}</div>
+//             <ResponsiveContainer width="100%" height={280}>
+//               <PieChart>
+//                 <Pie
+//                   data={genderData}
+//                   dataKey="value"
+//                   nameKey="name"
+//                   cx="50%"
+//                   cy="50%"
+//                   outerRadius={80}
+//                   label={({name, value}) => `${name}: ${value}`}
+//                   labelLine={false}
+//                 >
+//                   {genderData.map((entry, idx) => (
+//                     <Cell key={entry.name} fill={GENDER_COLORS[idx % GENDER_COLORS.length]} />
+//                   ))}
+//                 </Pie>
+//                 <Legend verticalAlign="bottom" />
+//                 <Tooltip/>
+//               </PieChart>
+//             </ResponsiveContainer>
+//           </div>
 
-//         {/* Payments pie chart for fiscal year */}
-//         <div style={{ background: "#23242a", padding: 20, borderRadius: 12 }}>
-//           <h4>Expense Breakdown&nbsp;
-//             <select style={{maxWidth:100, background:"#23242a", color:"#fff"}}
-//                     value={selectedFiscalYear}
-//                     onChange={e => setSelectedFiscalYear(e.target.value)}>
-//               {fiscalYears.map(y => <option key={y} value={y}>{y}</option>)}
-//             </select>
-//           </h4>
-//           <ResponsiveContainer width="100%" height={210}>
-//             <PieChart>
-//               <Pie
-//                 data={expenseCategories}
-//                 dataKey="total"
-//                 nameKey="category"
-//                 innerRadius={50}
-//                 outerRadius={80}
-//                 label={({category, total}) => `${category}: ${total}`}
-//                 labelLine={false}
-//               >
-//                 {expenseCategories.map((entry, idx) => (
-//                   <Cell key={entry.category} fill={COLORS[idx % COLORS.length]}/>
-//                 ))}
-//               </Pie>
-//               <Legend/>
-//               <Tooltip/>
-//             </PieChart>
-//           </ResponsiveContainer>
+//           {/* Pass/Fail Distribution */}
+//           <div style={cardStyle}>
+//             <div style={titleStyle}>{t("pass_fail_distribution")}</div>
+//             <ResponsiveContainer width="100%" height={280}>
+//               <PieChart>
+//                 <Pie
+//                   data={passData}
+//                   dataKey="value"
+//                   nameKey="name"
+//                   cx="50%"
+//                   cy="50%"
+//                   outerRadius={80}
+//                   label={({name, value}) => `${name}: ${value}`}
+//                   labelLine={false}
+//                 >
+//                   {passData.map((entry, idx) => (
+//                     <Cell key={entry.name} fill={PASS_COLORS[idx % PASS_COLORS.length]} />
+//                   ))}
+//                 </Pie>
+//                 <Legend verticalAlign="bottom" />
+//                 <Tooltip/>
+//               </PieChart>
+//             </ResponsiveContainer>
+//           </div>
+
+//           {/* Payments by Category */}
+//           {expenseCategories.length > 0 && (
+//             <div style={cardStyle}>
+//               <div style={titleStyle}>{t("payments_by_category")}</div>
+//               <ResponsiveContainer width="100%" height={280}>
+//                 <PieChart>
+//                   <Pie
+//                     data={expenseCategories}
+//                     dataKey="total"
+//                     nameKey="category"
+//                     cx="50%"
+//                     cy="50%"
+//                     outerRadius={80}
+//                     label={({category, total}) => `${category}: ₹${formatNumber(total)}`}
+//                     labelLine={false}
+//                   >
+//                     {expenseCategories.map((entry, idx) => (
+//                       <Cell key={entry.category} fill={COLORS[idx % COLORS.length]}/>
+//                     ))}
+//                   </Pie>
+//                   <Legend/>
+//                   <Tooltip formatter={(value) => `₹${formatNumber(value)}`}/>
+//                 </PieChart>
+//               </ResponsiveContainer>
+//             </div>
+//           )}
 //         </div>
 //       </div>
 //     </div>
@@ -257,17 +403,40 @@ import {
   PieChart, Pie, Tooltip, Legend, ResponsiveContainer, Cell,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line
 } from "recharts";
+import { useTranslation } from "react-i18next";
 
 const GENDER_COLORS = ["#278BCD", "#E9B949"];
 const PASS_COLORS = ["#56C596", "#F37272"];
 const COLORS = ["#278BCD", "#E9B949", "#56C596", "#F37272", "#6d69fa", "#f2bb8e"];
 
+const cardStyle = {
+  background: "#000000",
+  padding: 20,
+  borderRadius: 8,
+  border: "1px solid #333333",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.6)",
+  color: "#ffffff"
+};
+
+
+const titleStyle = {
+  fontSize: 16,
+  fontWeight: 600,
+  marginBottom: 16,
+  color: "#ffffff"
+};
+
+function formatNumber(n) {
+  return n && !isNaN(n) ? n.toLocaleString() : n;
+}
+
 export default function Charts({ unitId }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState(null);
-  const [selectedFiscalYear, setSelectedFiscalYear] = useState("");
-  const [currentYear, setCurrentYear] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
 
+  // Fetch analytics
   useEffect(() => {
     if (!unitId) return;
     setLoading(true);
@@ -278,249 +447,467 @@ export default function Charts({ unitId }) {
       })
       .then(res => {
         setAnalytics(res.data);
-        const fiscalYears = [...new Set(res.data.payments.map(p => p.fiscal_year))];
-        setSelectedFiscalYear(fiscalYears[fiscalYears.length - 1] || "");
+
+        const allYears = [
+          ...new Set([
+            ...(res.data.allStudents?.map(s => s.academic_year) || []),
+            ...(res.data.payments?.map(p => p.fiscal_year) || [])
+          ])
+        ]
+          .filter(Boolean)
+          .sort()
+          .reverse();
+
+        if (allYears.length > 0) {
+          setSelectedYear(allYears[0]);
+        }
+
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(err => {
+        console.error("Failed to fetch analytics:", err);
+        setLoading(false);
+      });
   }, [unitId]);
 
-  const allStudents = analytics?.allStudents || [];
-  const yearsList = useMemo(
-    () => Array.from(new Set(allStudents.map(s => s.academic_year).filter(Boolean))).sort().reverse(),
-    [allStudents]
-  );
+  // All years for dropdown (sorted descending)
+  const allYears = useMemo(() => {
+    if (!analytics) return [];
+    const years = [
+      ...new Set([
+        ...(analytics.allStudents?.map(s => s.academic_year) || []),
+        ...(analytics.payments?.map(p => p.fiscal_year) || [])
+      ])
+    ]
+      .filter(Boolean)
+      .sort()
+      .reverse();
+    return years.length > 0 ? years : ["2024-25"];
+  }, [analytics]);
 
-  useEffect(() => {
-    if (yearsList.length > 0 && (!currentYear || !yearsList.includes(currentYear))) {
-      setCurrentYear(yearsList[0]);
-    }
-    // eslint-disable-next-line
-  }, [yearsList]);
+  // Salary paid trend across all financial years
+  const salaryTrendData = useMemo(() => {
+    if (!analytics?.payments || analytics.payments.length === 0) return [];
+    const yearMap = {};
+    analytics.payments.forEach(p => {
+      if (!yearMap[p.fiscal_year]) {
+        yearMap[p.fiscal_year] = 0;
+      }
+      yearMap[p.fiscal_year] += Number(p.total) || 0;
+    });
+    return Object.keys(yearMap)
+      .sort()
+      .map(year => ({
+        year,
+        salary: Math.round(yearMap[year])
+      }));
+  }, [analytics]);
 
-  if (loading || !analytics) return <div>Loading charts...</div>;
+  // Fees collected trend across all academic years
+  const feesTrendData = useMemo(() => {
+    if (!analytics?.allStudents || analytics.allStudents.length === 0) return [];
+    const yearMap = {};
+    analytics.allStudents.forEach(s => {
+      if (!yearMap[s.academic_year]) {
+        yearMap[s.academic_year] = 0;
+      }
+      yearMap[s.academic_year] += 5000; // placeholder per student
+    });
+    return Object.keys(yearMap)
+      .sort()
+      .map(year => ({
+        year,
+        fees: Math.round(yearMap[year])
+      }));
+  }, [analytics]);
 
-  const studentsByClass = analytics.studentsByClass.map(row => ({
-    standard: row.standard,
-    count: parseInt(row.count, 10)
-  }));
+  // Students by class
+  const studentsByClass = useMemo(() => {
+    return analytics?.studentsByClass?.map(row => ({
+      standard: row.standard,
+      count: parseInt(row.count, 10)
+    })) || [];
+  }, [analytics]);
 
-  const admissionsData = analytics.admissions.map(row => ({
-    year: String(row.year),
-    count: parseInt(row.count, 10)
-  }));
+  // Admissions per year
+  const admissionsData = useMemo(() => {
+    return analytics?.admissions?.map(row => ({
+      year: String(row.year),
+      count: parseInt(row.count, 10)
+    })) || [];
+  }, [analytics]);
 
-  const yearStudents = allStudents.filter(s => s.academic_year === currentYear);
-  const genderData = [
+  // Students for selected year
+  const yearStudents = useMemo(() => {
+    return analytics?.allStudents?.filter(s => s.academic_year === selectedYear) || [];
+  }, [analytics, selectedYear]);
+
+  const genderData = useMemo(() => [
     { name: "Male", value: yearStudents.filter(s => s.gender?.toLowerCase() === "male").length },
     { name: "Female", value: yearStudents.filter(s => s.gender?.toLowerCase() === "female").length }
-  ];
-  const passData = [
+  ], [yearStudents]);
+
+  const passData = useMemo(() => [
     { name: "Passed", value: yearStudents.filter(s => s.passed === true).length },
     { name: "Failed", value: yearStudents.filter(s => s.passed === false).length }
-  ];
+  ], [yearStudents]);
 
-  const budgetYearMap = {};
-  analytics.budgets.forEach(b => {
-    budgetYearMap[b.fiscal_year] = b;
-  });
-  const budgetVsExpense = Object.keys(budgetYearMap).map(year => ({
-    year,
-    Budget: Number(budgetYearMap[year].income || 0),
-    Expenses: Number(budgetYearMap[year].expenses || 0),
-    Surplus: Number(budgetYearMap[year].surplus || 0)
-  }));
+  // Payments by category for selected year
+  const expenseCategories = useMemo(() => {
+    return analytics?.payments
+      ?.filter(p => p.fiscal_year === selectedYear)
+      .map(p => ({ ...p, total: Number(p.total) })) || [];
+  }, [analytics, selectedYear]);
 
-  const fiscalYears = [...new Set(analytics.payments.map(p => p.fiscal_year))];
-  const expenseCategories = analytics.payments
-    .filter(p => p.fiscal_year === selectedFiscalYear)
-    .map((p, i) => ({ ...p, total: Number(p.total) }));
+    // Students by standard for selected academic year
+  const studentsByStandardYear = useMemo(() => {
+    if (!analytics?.allStudents || !selectedYear) return [];
+    const counts = {};
+    analytics.allStudents
+      .filter(s => s.academic_year === selectedYear)
+      .forEach(s => {
+        const std = s.standard || "NA";
+        counts[std] = (counts[std] || 0) + 1;
+      });
 
-  const cardStyle = {
-    background: "#23242a",
-    padding: "32px 28px 20px 28px",
-    borderRadius: 18,
-    minHeight: 330,
-    color: "#fff"
-  };
-  const titleStyle = {
-    fontWeight: 700,
-    fontSize: 22,
-    color: "#fff",
-    letterSpacing: "0.02em",
-    marginBottom: 20,
-    marginTop: 0
-  };
+    return Object.keys(counts)
+      .sort()
+      .map(std => ({
+        standard: std,
+        count: counts[std]
+      }));
+  }, [analytics, selectedYear]);
+
+  // Budget vs Expense
+  const budgetVsExpense = useMemo(() => {
+    return analytics?.budgets?.map(b => ({
+      year: b.fiscal_year,
+      Budget: Number(b.income || 0),
+      Expenses: Number(b.expenses || 0),
+      Surplus: Number(b.surplus || 0)
+    })) || [];
+  }, [analytics]);
+
+  const fiscalYears = useMemo(() => {
+    return [...new Set(analytics?.payments?.map(p => p.fiscal_year) || [])];
+  }, [analytics]);
+
+  if (loading || !analytics) {
+    return <div style={{ padding: 24 }}>{t("loading")}...</div>;
+  }
 
   return (
-    <div style={{ padding: "24px 0 0 0" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 45px 24px 45px" }}>
-        <h1 style={{ fontWeight: 700, fontSize: 32, color: "#23242a" }}>Unit Dashboard</h1>
+    <div style={{ padding: 24 }}>
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 32
+      }}>
+        <h2>{t("charts")}</h2>
+        <div>
+          <label style={{ marginRight: 12, fontWeight: 500 }}>
+            {t("financial_year_label")}
+          </label>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+            style={{
+              padding: "8px 12px",
+              borderRadius: 6,
+              border: "1px solid #ddd",
+              fontSize: 14,
+              fontWeight: 500
+            }}
+          >
+            {allYears.map(year => (
+              <option value={year} key={year}>{year}</option>
+            ))}
+          </select>
+        </div>
       </div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gridGap: 36,
-          margin: "0 38px",
+
+      {/* SECTION 1: CURRENT YEAR CHARTS (Year Specific) */}
+      <div style={{ marginBottom: 48 }}>
+        <h3 style={{ marginBottom: 24, color: "#212b36" }}>
+          {t("year_specific")} {selectedYear}
+        </h3>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+          {/* Gender Distribution */}
+          <div style={cardStyle}>
+            <div style={titleStyle}>{t("students_by_gender")}</div>
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={genderData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  label={({ name, value }) => `${name}: ${value}`}
+                  labelLine={false}
+                >
+                  {genderData.map((entry, idx) => (
+                    <Cell key={entry.name} fill={GENDER_COLORS[idx % GENDER_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Legend verticalAlign="bottom" />
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Pass/Fail Distribution */}
+          <div style={cardStyle}>
+            <div style={titleStyle}>{t("pass_fail_distribution")}</div>
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={passData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  label={({ name, value }) => `${name}: ${value}`}
+                  labelLine={false}
+                >
+                  {passData.map((entry, idx) => (
+                    <Cell key={entry.name} fill={PASS_COLORS[idx % PASS_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Legend verticalAlign="bottom" />
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          {/* Students by Standard (Year specific) */}
+<div style={cardStyle}>
+  <div style={titleStyle}>{t("students_by_class_year_specific")}</div>
+  <ResponsiveContainer width="100%" height={280}>
+    <BarChart data={studentsByStandardYear}>
+      <CartesianGrid strokeDasharray="3 3" stroke="#444444" />
+      {/* use 'standard' here, not 'year' */}
+      <XAxis dataKey="standard" stroke="#ffffff" />
+      <YAxis stroke="#ffffff" />
+      <Tooltip
+        formatter={(value) => value}   // just the count
+        contentStyle={{
+          background: "#111111",
+          border: "1px solid #444444",
+          borderRadius: 6,
+          color: "#ffffff"
         }}
-      >
-        {/* Students By Class */}
-        <div style={cardStyle}>
-          <div style={titleStyle}>Students by Class</div>
-          <ResponsiveContainer width="100%" height={210}>
-            <BarChart data={studentsByClass}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#313355" />
-              <XAxis dataKey="standard"/>
-              <YAxis/>
-              <Tooltip/>
-              <Bar dataKey="count" fill="#14b8a6"/>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+      />
+      <Legend wrapperStyle={{ color: "#ffffff" }} />
+      <Bar dataKey="count" fill="#6d69fa" radius={[6, 6, 0, 0]} />
+    </BarChart>
+  </ResponsiveContainer>
+</div>
 
-        {/* Admissions Per Year */}
-        <div style={cardStyle}>
-          <div style={titleStyle}>Admissions per Year</div>
-          <ResponsiveContainer width="100%" height={210}>
-            <LineChart data={admissionsData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#313355" />
-              <XAxis dataKey="year"/>
-              <YAxis/>
-              <Tooltip/>
-              <Line type="monotone" dataKey="count" stroke="#38bdf8" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
 
-        {/* Budget vs. Expenses */}
-        <div style={cardStyle}>
-          <div style={titleStyle}>Budget vs Expenses</div>
-          <ResponsiveContainer width="100%" height={210}>
-            <BarChart data={budgetVsExpense}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#313355" />
-              <XAxis dataKey="year"/>
-              <YAxis/>
-              <Tooltip/>
-              <Legend/>
-              <Bar dataKey="Budget" fill="#38bdf8"/>
-              <Bar dataKey="Expenses" fill="#fbbf24"/>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+          {/* Payments by Category */}
+{expenseCategories.length > 0 && (
+  <div style={cardStyle}>
+    <div style={titleStyle}>{t("payments_by_category")}</div>
+    <ResponsiveContainer width="100%" height={280}>
+      <PieChart>
+        <Pie
+          data={expenseCategories}
+          dataKey="total"
+          nameKey="category"
+          cx="50%"
+          cy="50%"
+          outerRadius={80}
+          label={({ category, total }) => `${category}: ₹${formatNumber(total)}`}
+          labelLine={false}
+        >
+          {expenseCategories.map((entry, idx) => (
+            <Cell
+              key={entry.category}
+              fill={COLORS[idx % COLORS.length]}
+            />
+          ))}
+        </Pie>
+        <Legend />
+        <Tooltip formatter={(value) => `₹${formatNumber(value)}`} />
+      </PieChart>
+    </ResponsiveContainer>
+  </div>
 
-        {/* Students By Gender */}
-        <div style={cardStyle}>
-          <div style={{
-            ...titleStyle, display: "flex", alignItems: "center"
-          }}>
-            Students by Gender
-            <select
-              style={{
-                marginLeft: 12,
-                background: "#23242a",
-                color: "#fff",
-                fontWeight: 500,
-                fontSize: 17,
-                border: "1.2px solid #313355",
-                borderRadius: 7,
-                padding: "2.5px 11px 2.5px 6px"
-              }}
-              value={currentYear}
-              onChange={e => setCurrentYear(e.target.value)}
-            >
-              {yearsList.map(year => (
-                <option value={year} key={year}>{year}</option>
-              ))}
-            </select>
+
+          )}
+        </div>
+      </div>
+
+      {/* SECTION 2: TREND CHARTS (All Past Years) */}
+      <div style={{ marginBottom: 48 }}>
+        <h3 style={{ marginBottom: 24, color: "#212b36" }}>{t("financial_trends")}</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+          {/* Salary Trend */}
+          <div style={cardStyle}>
+            <div style={titleStyle}>{t("salary_trend")}</div>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={salaryTrendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#444444" />
+<XAxis dataKey="year" stroke="#ffffff" />
+<YAxis stroke="#ffffff" />
+
+                <Tooltip
+  formatter={(value) => `₹${formatNumber(value)}`}
+  contentStyle={{
+    background: "#111111",
+    border: "1px solid #444444",
+    borderRadius: 6,
+    color: "#ffffff"
+  }}
+/>
+
+<Legend
+  wrapperStyle={{ color: "#ffffff" }}
+/>
+
+                <Line
+                  type="monotone"
+                  dataKey="salary"
+                  stroke="#f57c00"
+                  strokeWidth={2}
+                  dot={{ fill: "#f57c00", r: 5 }}
+                  activeDot={{ r: 7 }}
+                  name={t("salary_paid")}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
-          <ResponsiveContainer width="100%" height={210}>
-            <PieChart>
-              <Pie
-                data={genderData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="52%"
-                outerRadius={80}
-                label={({name, value}) => `${value}`}
-                labelLine={false}
-              >
-                {genderData.map((entry, idx) => (
-                  <Cell key={entry.name} fill={GENDER_COLORS[idx % GENDER_COLORS.length]} />
-                ))}
-              </Pie>
-              <Legend verticalAlign="bottom" iconType="circle" />
-              <Tooltip/>
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
 
-        {/* Pass/Fail Distribution */}
-        <div style={cardStyle}>
-          <div style={titleStyle}>Pass/Fail Distribution</div>
-          <ResponsiveContainer width="100%" height={210}>
-            <PieChart>
-              <Pie
-                data={passData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="52%"
-                outerRadius={80}
-                label={({name, value}) => `${value}`}
-                labelLine={false}
-              >
-                {passData.map((entry, idx) => (
-                  <Cell key={entry.name} fill={PASS_COLORS[idx % PASS_COLORS.length]} />
-                ))}
-              </Pie>
-              <Legend verticalAlign="bottom" iconType="circle" />
-              <Tooltip/>
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+          {/* Fees Trend */}
+          <div style={cardStyle}>
+            <div style={titleStyle}>{t("fees_trend")}</div>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={feesTrendData}>
+               <CartesianGrid strokeDasharray="3 3" stroke="#444444" />
+<XAxis dataKey="year" stroke="#ffffff" />
+<YAxis stroke="#ffffff" />
 
-        {/* Payments by Category */}
-        <div style={cardStyle}>
-          <div style={{
-            ...titleStyle, display: "flex", alignItems: "center"
-          }}>
-            Payments by Category
-            <select style={{
-                marginLeft: 12,
-                background: "#23242a",
-                color: "#fff",
-                fontWeight: 500,
-                fontSize: 17,
-                border: "1.2px solid #313355",
-                borderRadius: 7,
-                padding: "2.5px 11px 2.5px 6px"
-              }}
-              value={selectedFiscalYear}
-              onChange={e => setSelectedFiscalYear(e.target.value)}>
-              {fiscalYears.map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
+                <Tooltip
+  formatter={(value) => `₹${formatNumber(value)}`}
+  contentStyle={{
+    background: "#111111",
+    border: "1px solid #444444",
+    borderRadius: 6,
+    color: "#ffffff"
+  }}
+/>
+
+<Legend
+  wrapperStyle={{ color: "#ffffff" }}
+/>
+
+                <Line
+                  type="monotone"
+                  dataKey="fees"
+                  stroke="#2e7d32"
+                  strokeWidth={2}
+                  dot={{ fill: "#2e7d32", r: 5 }}
+                  activeDot={{ r: 7 }}
+                  name={t("fees_collected")}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
-          <ResponsiveContainer width="100%" height={210}>
-            <PieChart>
-              <Pie
-                data={expenseCategories}
-                dataKey="total"
-                nameKey="category"
-                innerRadius={50}
-                outerRadius={80}
-                label={({category, total}) => `${category}: ${total}`}
-                labelLine={false}
-              >
-                {expenseCategories.map((entry, idx) => (
-                  <Cell key={entry.category} fill={COLORS[idx % COLORS.length]}/>
-                ))}
-              </Pie>
-              <Legend/>
-              <Tooltip/>
-            </PieChart>
-          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* SECTION 3: HISTORICAL CHARTS (All Years) */}
+      <div>
+        <h3 style={{ marginBottom: 24, color: "#212b36" }}>{t("historical_analysis")}</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+          {/* Students by Class */}
+          <div style={cardStyle}>
+            <div style={titleStyle}>{t("students_by_class")}</div>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={studentsByClass}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#444444" />
+<XAxis dataKey="standard" stroke="#ffffff" />
+<YAxis stroke="#ffffff" />
+
+                <Tooltip
+  formatter={(value) => `₹${formatNumber(value)}`}
+  contentStyle={{
+    background: "#111111",
+    border: "1px solid #444444",
+    borderRadius: 6,
+    color: "#ffffff"
+  }}
+/>
+
+<Legend
+  wrapperStyle={{ color: "#ffffff" }}
+/>
+
+                <Bar dataKey="count" fill="#0066cc" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Admissions per Year */}
+          <div style={cardStyle}>
+            <div style={titleStyle}>{t("admissions_per_year")}</div>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={admissionsData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#444444" />
+<XAxis dataKey="year" stroke="#ffffff" />
+<YAxis stroke="#ffffff" />
+
+                <Tooltip
+  formatter={(value) => `₹${formatNumber(value)}`}
+  contentStyle={{
+    background: "#111111",
+    border: "1px solid #444444",
+    borderRadius: 6,
+    color: "#ffffff"
+  }}
+/>
+
+<Legend
+  wrapperStyle={{ color: "#ffffff" }}
+/>
+
+                <Bar dataKey="count" fill="#00aa00" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Budget vs Expenses */}
+          <div style={cardStyle}>
+            <div style={titleStyle}>{t("budget_vs_expenses")}</div>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={budgetVsExpense}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#444444" />
+<XAxis dataKey="year" stroke="#ffffff" />
+<YAxis stroke="#ffffff" />
+
+               <Tooltip
+  formatter={(value) => `₹${formatNumber(value)}`}
+  contentStyle={{
+    background: "#111111",
+    border: "1px solid #444444",
+    borderRadius: 6,
+    color: "#ffffff"
+  }}
+/>
+
+<Legend
+  wrapperStyle={{ color: "#ffffff" }}
+/>
+
+                <Legend />
+                <Bar dataKey="Budget" fill="#0066cc" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="Expenses" fill="#f57c00" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </div>

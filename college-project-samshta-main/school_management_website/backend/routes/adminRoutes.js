@@ -14,4 +14,18 @@ router.get('/units/:unitId/teachers', authenticateToken, authorizeRoles('admin')
 router.get('/units/:unitId/students', authenticateToken, authorizeRoles('admin'), adminController.getUnitStudents);
 router.get('/units/:unitId', authenticateToken, authorizeRoles('admin'), adminController.getUnitById);
 router.get('/units/:unitId/analytics', authenticateToken, authorizeRoles('admin'), adminController.getUnitAnalytics);
+router.get(
+  "/units/:unitId/dashboard-data",
+  authenticateToken,
+  authorizeRoles("admin"),
+  adminController.getUnitDashboardData
+);
+
+router.get(
+  "/units/:unitId/finance-by-year",
+  authenticateToken,
+  authorizeRoles("admin"),
+  adminController.getUnitFinanceByYear
+);
+
 module.exports = router;
