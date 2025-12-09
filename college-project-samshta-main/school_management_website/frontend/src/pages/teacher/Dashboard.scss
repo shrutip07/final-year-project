@@ -1,14 +1,18 @@
-// Teacher Dashboard - White + Blue Theme
-$primary-blue: #0B63E5;
-$secondary-blue: #1D9BF0;
+$primary-blue: #003366;        // admin --primary-color
+$secondary-blue: #002244;      // admin --primary-dark
 $bg-white: #FFFFFF;
-$text-dark: #0A2540;
-$text-light: #6B7280;
+$text-dark: #1F2937;           // admin --text-primary
+$text-light: #6C757D;
 $border-color: #E5E7EB;
-$bg-light: #F9FAFB;
+$bg-light: #F8F9FA;            // similar to admin gray-100
 $shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 $shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+.teacher-main-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
 .teacher-dashboard-container {
   display: flex;
@@ -196,13 +200,232 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
     }
   }
 }
+/* tighten the top spacing in teacher pages */
+.page-header.page-header-tight {
+  margin-bottom: 16px;
+}
 
+/* Students card – soft shadow + breathing space */
 .teacher-students-card {
   background: $bg-white;
   border-radius: 12px;
-  padding: 24px;
-  box-shadow: $shadow-sm;
+  padding: 0; // header/body handle their own padding
+  box-shadow: $shadow-md;
   border: 1px solid $border-color;
+  margin-top: 8px;
+
+  .card-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid $border-color;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+
+    h3 {
+      margin: 0;
+      color: $text-dark;
+      font-size: 20px;
+      font-weight: 600;
+    }
+  }
+
+  .card-body {
+    padding: 20px 24px 24px 24px;
+  }
+}
+
+/* small badge with total students count */
+.students-count-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #e0edff;
+  color: #0b63e5;
+}
+
+/* filter row – year + search grouped nicely */
+.students-filter-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+
+  .filter-group {
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .filter-group-search {
+    flex: 1;
+  }
+}
+
+/* table look & feel */
+.teacher-students-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background: #eff6ff; // soft blue
+  }
+
+  thead th {
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    color: $text-dark;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #dbeafe;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #e5e7eb;
+    transition: background 0.15s ease;
+  }
+
+  tbody tr:nth-child(even) {
+    background: #f9fbff; // very light blue
+  }
+
+  tbody tr:hover {
+    background: #eef2ff;
+  }
+
+  tbody td {
+    padding: 9px 12px;
+    font-size: 14px;
+    color: $text-dark;
+    vertical-align: top;
+  }
+
+  /* center some columns for better scanning */
+  th:nth-child(1),
+  th:nth-child(3),
+  th:nth-child(4),
+  th:nth-child(12),
+  td:nth-child(1),
+  td:nth-child(3),
+  td:nth-child(4),
+  td:nth-child(12) {
+    text-align: center;
+  }
+
+  /* keep address from stretching too wide */
+  td:nth-child(9) {
+    max-width: 220px;
+    word-break: break-word;
+  }
+}
+
+/* soft badges for "Passed" column */
+.badge-soft {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-soft-success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-soft-danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* action buttons inside Actions column */
+.students-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.students-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0b63e5;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+
+  i {
+    font-size: 14px;
+  }
+
+  &:hover {
+    background: #e5efff;
+  }
+}
+
+/* make active sidebar tab pop more */
+.teacher-nav-link.active {
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(15, 23, 42, 0.18);
+  font-weight: 600;
+
+  i {
+    color: #ffffff;
+  }
+}
+
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .teacher-students-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+      background: #eff6ff;            // soft blue header
+    }
+
+    thead th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      color: #0b1f3b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #dbeafe; // light blue border
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #e5e7eb;
+      transition: background 0.2s ease;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f9fbff;            // very light blue row
+    }
+
+    tbody tr:hover {
+      background: #eef2ff;            // hover blue
+    }
+
+    tbody td {
+      padding: 10px 12px;
+      font-size: 14px;
+      color: #0a2540;
+    }
 
   .card-header {
     display: flex;
@@ -456,10 +679,53 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
 }
 
 // Onboarding Page
+/* Teacher Onboarding layout */
 .teacher-onboarding-page {
   min-height: 100vh;
-  background: $bg-light;
-  padding: 32px 16px;
+  background: #f3f4f6;
+  padding: 40px 0 64px;
+}
+
+.teacher-onboarding-page .onboarding-shell {
+  width: min(960px, 100% - 48px);
+  margin: 0 auto;
+}
+
+/* Make all inputs/selects full width in this page */
+.teacher-onboarding-page .teacher-profile-card .form-control,
+.teacher-onboarding-page .teacher-profile-card .form-select {
+  width: 100%;
+  max-width: 100%;   /* override any previous max-width */
+}
+
+/* Optional: card styling */
+.teacher-onboarding-page .teacher-profile-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px 32px 40px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+.back-to-login-btn {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 6px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease,
+    box-shadow 0.15s ease;
+}
+
+.back-to-login-btn:hover {
+  background: #f3f4f6;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
 }
 
 // Form Styles
@@ -540,5 +806,190 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
     flex: 1;
     padding: 32px;
     overflow-y: auto;
+  }
+}
+.teacher-charts-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* optional if not already in Dashboard.scss */
+.teacher-main-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* rest of your existing styles: */
+
+.page-header {
+  margin-bottom: 24px;
+
+  h2 {
+    margin: 0;
+    color: $text-dark;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  .page-subtitle {
+    margin-top: 4px;
+    font-size: 14px;
+    color: $text-light;
+  }
+}
+
+.charts-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+
+  label {
+    font-weight: 600;
+    color: $text-dark;
+    font-size: 14px;
+  }
+
+  .form-control {
+    width: 220px;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: $text-dark;
+    background: white;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-blue;
+      box-shadow: 0 0 0 3px rgba(11, 99, 229, 0.1);
+    }
+  }
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  background: $bg-white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: $shadow-sm;
+  border: 1px solid $border-color;
+
+  h4 {
+    margin: 0 0 20px 0;
+    color: $text-dark;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+  }
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px 0;
+  color: $text-light;
+  font-size: 14px;
+}
+.teacher-onboarding-page {
+  min-height: 100vh;
+  background: #f3f4f6;
+  padding: 48px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.onboarding-shell {
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+.onboarding-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.onboarding-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.onboarding-subtitle {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.teacher-profile-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px 32px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e5e7eb;
+}
+
+.teacher-profile-card .form-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.teacher-profile-card .form-control,
+.teacher-profile-card .form-select {
+  border-radius: 10px;
+  border-color: #d1d5db;
+}
+
+.teacher-profile-card .form-control:focus,
+.teacher-profile-card .form-select:focus {
+  box-shadow: 0 0 0 1px #2563eb33;
+  border-color: #2563eb;
+}
+
+.form-actions .save-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 1.5rem;
+  font-weight: 600;
+  background: #003366; /* Primary Blue */
+  color: #ffffff;
+  width: 100%;
+  transition: 0.15s ease-in-out;
+}
+
+.form-actions .save-btn:hover {
+  background: #1D9BF0; /* Secondary Blue */
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(11, 99, 229, 0.25);
+}
+
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+}
+
+@media (max-width: 768px) {
+  .teacher-onboarding-page {
+    padding: 32px 12px;
+  }
+
+  .teacher-profile-card {
+    padding: 20px 18px;
+    border-radius: 12px;
   }
 }

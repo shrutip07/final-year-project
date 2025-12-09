@@ -1,0 +1,314 @@
+// src/pages/clerk/ClerkDashboard.scss
+
+// --- shared tokens (copied from your Dashboard.scss) ---
+$primary-blue: #003366;
+$secondary-blue: #002244;
+$bg-white: #ffffff;
+$text-dark: #1f2937;
+$text-light: #6c757d;
+$border-color: #e5e7eb;
+$bg-light: #f8f9fa;
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+// --- layout ---
+.clerk-dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background: $bg-light;
+}
+
+.clerk-main-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Sidebar */
+.clerk-sidebar {
+  width: 280px;
+  background: $bg-white;
+  border-right: 1px solid $border-color;
+  display: flex;
+  flex-direction: column;
+  box-shadow: $shadow-sm;
+
+  @media (max-width: 768px) {
+    width: 240px;
+  }
+}
+
+.clerk-sidebar-header {
+  padding: 24px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid $border-color;
+  background: linear-gradient(135deg, $primary-blue 0%, $secondary-blue 100%);
+  color: white;
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.clerk-sidebar-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.clerk-sidebar-nav {
+  flex: 1;
+  padding: 16px 8px;
+  overflow-y: auto;
+}
+
+.clerk-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 4px;
+  border: none;
+  background: transparent;
+  color: $text-dark;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+
+  i {
+    font-size: 18px;
+    width: 20px;
+    text-align: center;
+  }
+
+  &:hover {
+    background: $bg-light;
+    color: $primary-blue;
+  }
+
+  &.active {
+    background: $primary-blue;
+    color: white;
+    box-shadow: 0 6px 12px rgba(15, 23, 42, 0.18);
+
+    &:hover {
+      background: $secondary-blue;
+    }
+  }
+
+  &.logout-btn {
+    color: #dc2626;
+
+    &:hover {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+  }
+}
+
+.clerk-sidebar-footer {
+  padding: 16px 8px;
+  border-top: 1px solid $border-color;
+}
+
+/* Main Content */
+.clerk-main-content {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+  background: $bg-light;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+}
+
+/* Page header reused from teacher */
+.page-header {
+  margin-bottom: 24px;
+
+  &.page-header-tight {
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    margin: 0;
+    color: $text-dark;
+    font-size: 24px;
+    font-weight: 600;
+  }
+}
+
+/* Dashboard card */
+.clerk-unit-card {
+  background: $bg-white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: $shadow-sm;
+  border: 1px solid $border-color;
+}
+
+/* Table styling – same feel as students/teacher tables */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.clerk-unit-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    width: 260px;
+    padding: 10px 12px;
+    text-align: left;
+    background: #eff6ff;
+    border-bottom: 1px solid $border-color;
+    font-weight: 600;
+    font-size: 13px;
+    color: $text-dark;
+    text-transform: capitalize;
+  }
+
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid $border-color;
+    font-size: 14px;
+    color: $text-dark;
+  }
+
+  tr:nth-child(even) td {
+    background: #f9fbff;
+  }
+
+  tr:hover td {
+    background: #eef2ff;
+  }
+}
+
+/* Loading state */
+.loading-state {
+  text-align: center;
+  padding: 40px;
+  color: $text-light;
+  font-size: 14px;
+}
+/* Clerk salary page layout */
+.clerk-salary-page {
+  .teacher-students-card {
+    margin-top: 16px;
+  }
+}
+
+/* Assignment table a bit narrower */
+.salary-assign-table {
+  th,
+  td {
+    vertical-align: middle;
+  }
+}
+
+/* Monthly grid */
+.salary-grid-wrapper {
+  overflow-x: auto;
+}
+
+.salary-payments-table {
+  th,
+  td {
+    text-align: center;
+    vertical-align: top;
+    font-size: 13px;
+  }
+
+  .teacher-col {
+    position: sticky;
+    left: 0;
+    background: #ffffff;
+    text-align: left;
+    min-width: 160px;
+    z-index: 2;
+  }
+
+  .amount-col {
+    min-width: 140px;
+  }
+
+  .action-col {
+    min-width: 110px;
+  }
+}
+
+.salary-month-header {
+  background: #eff6ff;
+  border-bottom: 1px solid #dbeafe;
+  text-align: center;
+
+  .salary-month-sub {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+}
+
+.salary-status-cell {
+  min-width: 110px;
+}
+
+.salary-remarks {
+  color: #6b7280;
+}
+
+/* History popover */
+.salary-history-popover {
+  margin-top: 6px;
+  padding: 8px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.salary-history-title {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #374151;
+}
+
+/* Legend pills */
+.salary-legend {
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.legend-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.legend-paid {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.legend-pending {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
