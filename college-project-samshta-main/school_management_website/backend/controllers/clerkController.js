@@ -357,6 +357,105 @@ exports.getAllTeacherSalaries = async (req, res) => {
   }
 };
 
+// GET: Fetch record for clerk's unit
+exports.getPhysicalSafetyInfo = async (req, res) => {
+  const userId = req.user.id;
+  const { rows: unitRows } = await pool.query('SELECT unit_id FROM clerks WHERE user_id = $1', [userId]);
+  const unit_id = unitRows[0]?.unit_id;
+  if (!unit_id) return res.status(404).json({ error: "No unit assigned" });
+
+  const { rows } = await pool.query('SELECT * FROM physical_safety WHERE unit_id = $1', [unit_id]);
+  res.json(rows[0] || {});
+};
+
+// PUT: Update or insert record for clerk's unit
+exports.updatePhysicalSafetyInfo = async (req, res) => {
+  const userId = req.user.id;
+  const { rows: unitRows } = await pool.query('SELECT unit_id FROM clerks WHERE user_id = $1', [userId]);
+  const unit_id = unitRows[0]?.unit_id;
+  if (!unit_id) return res.status(404).json({ error: "No unit assigned" });
+
+  // All fields destructured from req.body (adapt to your form)
+  const {
+    building_compliance_certificate, building_compliance_date,
+    stairs_count, stairs_condition, ramps_count, ramps_condition,
+    handrails_count, handrails_condition, playground_status,
+    drinking_water_outlets, last_water_quality_test,
+    toilets_boys, toilets_girls, last_sanitation_check,
+    lighting_status, ventilation_status,
+    hazardous_storage_details, hazardous_last_checked
+  } = req.body;
+
+  const { rows } = await pool.query(`
+    INSERT INTO physical_safety (
+      unit_id, building_compliance_certificate, building_compliance_date,
+      stairs_count, stairs_condition, ramps_count, ramps_condition,
+      handrails_count, handrails_condition, playground_status,
+      drinking_water_outlets, last_water_quality_test,
+      toilets_boys, toilets_girls, last_sanitation_check,
+      lighting_status, ventilation_status,
+      hazardous_storage_details, hazardous_last_checked, updated_at
+    )
+    VALUES (
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+      $11, $12, $13, $14, $15, $16, $17, $18, $19, CURRENT_TIMESTAMP
+    )
+    ON CONFLICT (unit_id) DO UPDATE SET
+      building_compliance_certificate = $2,
+      building_compliance_date = $3,
+      stairs_count = $4,
+      stairs_condition = $5,
+      ramps_count = $6,
+      ramps_condition = $7,
+      handrails_count = $8,
+      handrails_condition = $9,
+      playground_status = $10,
+      drinking_water_outlets = $11,
+      last_water_quality_test = $12,
+      toilets_boys = $13,
+      toilets_girls = $14,
+      last_sanitation_check = $15,
+      lighting_status = $16,
+      ventilation_status = $17,
+      hazardous_storage_details = $18,
+      hazardous_last_checked = $19,
+      updated_at = CURRENT_TIMESTAMP
+    RETURNING *`,
+    [
+      unit_id, building_compliance_certificate, building_compliance_date,
+      stairs_count, stairs_condition, ramps_count, ramps_condition,
+      handrails_count, handrails_condition, playground_status,
+      drinking_water_outlets, last_water_quality_test,
+      toilets_boys, toilets_girls, last_sanitation_check,
+      lighting_status, ventilation_status,
+      hazardous_storage_details, hazardous_last_checked
+    ]
+  );
+  res.json(rows[0]);
+};
+exports.getPhysicalSafetyAnalytics = async (req, res) => {
+  const userId = req.user.id;
+  const { rows: unitRows } = await pool.query('SELECT unit_id FROM clerks WHERE user_id = $1', [userId]);
+  const unit_id = unitRows[0]?.unit_id;
+  if (!unit_id) return res.status(404).json({ error: "No unit assigned" });
+
+  // Get physical safety record
+  const { rows } = await pool.query('SELECT * FROM physical_safety WHERE unit_id = $1', [unit_id]);
+  const data = rows[0];
+  if (!data) return res.json({});
+
+  res.json({
+    stairs: data.stairs_count ?? 0,
+    ramps: data.ramps_count ?? 0,
+    handrails: data.handrails_count ?? 0,
+    drinking_water_outlets: data.drinking_water_outlets ?? 0,
+    toilets_boys: data.toilets_boys ?? 0,
+    toilets_girls: data.toilets_girls ?? 0,
+    last_water_quality_test: data.last_water_quality_test ?? null,
+    last_sanitation_check: data.last_sanitation_check ?? null
+  });
+};
+
 // Get full salary history for a teacher
 exports.getTeacherSalaryHistory = async (req, res) => {
   try {
