@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
+import "./Dashboard.scss";
 import ChatWidget from "../../components/ChatWidget";
 import AdminLayout from "../../components/admin/AdminLayout";
 import AdminCard from "../../components/admin/AdminCard";
@@ -131,26 +132,37 @@ export default function Tables() {
       schoolName={selectedUnitData?.kendrashala_name}
       semisId={selectedUnitData?.semis_no}
     >
-      <div className="tables-page">
-        <AdminCard header={"Select School / Unit"} className="mb-4">
-          <div className="row align-items-center">
-            <div className="col-md-8">
-              <p className="text-muted small mb-2">View teachers, students and filled form responses by selecting a school.</p>
-              <select
-                className="form-select"
-                value={selectedUnit}
-                onChange={(e) => handleUnitChange(e.target.value)}
-              >
-                <option value="">{t("select_a_school")}</option>
-                {(units || []).map((unit) => (
-                  <option key={unit.unit_id} value={unit.unit_id}>
-                    {unit.kendrashala_name || `School ${unit.unit_id}`} - SEMIS: {unit.semis_no}
-                  </option>
-                ))}
-              </select>
+        <div className="tables-page">
+          <AdminCard header={
+            <div className="d-flex align-items-center gap-2">
+              <i className="bi bi-building-gear text-primary"></i>
+              <span>Unit Configuration & Selection</span>
             </div>
-          </div>
-        </AdminCard>
+          } className="mb-4">
+            <div className="row align-items-center">
+              <div className="col-md-8">
+                <p className="text-muted small mb-3">
+                  <i className="bi bi-info-circle me-1"></i>
+                  Analyze institutional data across your network by selecting a specific unit below.
+                </p>
+                <div className="d-flex align-items-center gap-3">
+                  <select
+                    className="form-select border-primary-subtle"
+                    value={selectedUnit}
+                    onChange={(e) => handleUnitChange(e.target.value)}
+                    style={{ fontWeight: '500', padding: '0.6rem 1rem' }}
+                  >
+                    <option value="">{t("select_a_school")}</option>
+                    {(units || []).map((unit) => (
+                      <option key={unit.unit_id} value={unit.unit_id}>
+                        {unit.kendrashala_name || `School ${unit.unit_id}`} | SEMIS: {unit.semis_no}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </AdminCard>
 
         {selectedUnit && (
           <div className="mt-4">
@@ -166,20 +178,28 @@ export default function Tables() {
 
             {/* Teachers Tab */}
             {selectedTab === "teachers" && (
-              <AdminCard header={"Teachers Directory"}>
+              <AdminCard header={
+                <div className="d-flex align-items-center gap-2">
+                  <i className="bi bi-people-fill text-primary"></i>
+                  <span>Staff Directory</span>
+                </div>
+              }>
                 <TableContainer
-                  title={"Teachers"}
+                  title={""}
                   toolbar={
                     <Toolbar
                       left={
-                        <input
-                          type="text"
-                          className="form-control form-control-sm"
-                          placeholder="Search teachers..."
-                          value={searchTeachers}
-                          onChange={(e) => setSearchTeachers(e.target.value)}
-                          style={{ maxWidth: 250 }}
-                        />
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-search text-muted"></i>
+                          <input
+                            type="text"
+                            className="form-control form-control-sm border-0 bg-light"
+                            placeholder="Search teachers..."
+                            value={searchTeachers}
+                            onChange={(e) => setSearchTeachers(e.target.value)}
+                            style={{ minWidth: 250 }}
+                          />
+                        </div>
                       }
                     />
                   }
@@ -194,8 +214,8 @@ export default function Tables() {
                       description={"No teachers found for this school."}
                     />
                   ) : (
-                    <div className="table-responsive">
-                      <table className="table table-striped table-hover table-bordered table-sm">
+                    <div className="table-responsive professional-table">
+                      <table className="table table-hover align-middle">
                         <thead>
                           <tr>
                             <th>{t("name")}</th>
@@ -215,12 +235,25 @@ export default function Tables() {
                             )
                             .map((teacher) => (
                               <tr key={teacher.staff_id}>
-                                <td>{teacher.full_name}</td>
-                                <td>{teacher.email}</td>
+                                <td>
+                                  <div className="d-flex align-items-center gap-2">
+                                    <div className="avatar-circle">
+                                      {teacher.full_name ? teacher.full_name.charAt(0).toUpperCase() : "T"}
+                                    </div>
+                                    <span className="fw-semibold">{teacher.full_name}</span>
+                                  </div>
+                                </td>
+                                <td><span className="text-primary small">{teacher.email}</span></td>
                                 <td>{teacher.phone}</td>
-                                <td>{teacher.subject}</td>
-                                <td>{teacher.qualification}</td>
-                                <td>{new Date(teacher.joining_date).toLocaleDateString()}</td>
+                                <td><span className="erp-badge badge-designation">{teacher.subject}</span></td>
+                                <td><span className="erp-badge badge-qualification">{teacher.qualification}</span></td>
+                                <td>
+                                  <span className="text-muted small">
+                                    {new Date(teacher.joining_date).toLocaleDateString(undefined, {
+                                      year: 'numeric', month: 'short', day: 'numeric'
+                                    })}
+                                  </span>
+                                </td>
                               </tr>
                             ))}
                         </tbody>
@@ -233,20 +266,28 @@ export default function Tables() {
 
             {/* Students Tab */}
             {selectedTab === "students" && (
-              <AdminCard header={"Students Enrollment"}>
+              <AdminCard header={
+                <div className="d-flex align-items-center gap-2">
+                  <i className="bi bi-mortarboard-fill text-success"></i>
+                  <span>Student Enrollment</span>
+                </div>
+              }>
                 <TableContainer
-                  title={"Students"}
+                  title={""}
                   toolbar={
                     <Toolbar
                       left={
-                        <input
-                          type="text"
-                          className="form-control form-control-sm"
-                          placeholder="Search students..."
-                          value={searchStudents}
-                          onChange={(e) => setSearchStudents(e.target.value)}
-                          style={{ maxWidth: 250 }}
-                        />
+                        <div className="d-flex align-items-center gap-2">
+                          <i className="bi bi-search text-muted"></i>
+                          <input
+                            type="text"
+                            className="form-control form-control-sm border-0 bg-light"
+                            placeholder="Search students..."
+                            value={searchStudents}
+                            onChange={(e) => setSearchStudents(e.target.value)}
+                            style={{ minWidth: 250 }}
+                          />
+                        </div>
                       }
                     />
                   }
@@ -261,8 +302,8 @@ export default function Tables() {
                       description={"No student records found for this school."}
                     />
                   ) : (
-                    <div className="table-responsive">
-                      <table className="table table-striped table-hover table-bordered table-sm">
+                    <div className="table-responsive professional-table">
+                      <table className="table table-hover align-middle">
                         <thead>
                           <tr>
                             <th>{t("roll_number")}</th>
@@ -282,9 +323,16 @@ export default function Tables() {
                             )
                             .map((student) => (
                               <tr key={student.student_id}>
-                                <td>{student.roll_number}</td>
-                                <td>{student.full_name}</td>
-                                <td>{student.standard}</td>
+                                <td><span className="fw-bold text-dark">{student.roll_number}</span></td>
+                                <td>
+                                  <div className="d-flex align-items-center gap-2">
+                                    <div className="avatar-circle student">
+                                      {student.full_name ? student.full_name.charAt(0).toUpperCase() : "S"}
+                                    </div>
+                                    <span className="fw-semibold">{student.full_name}</span>
+                                  </div>
+                                </td>
+                                <td><span className="erp-badge badge-year">{student.standard}</span></td>
                                 <td>{student.division}</td>
                                 <td>{student.parent_name}</td>
                                 <td>{student.parent_phone}</td>
@@ -300,11 +348,16 @@ export default function Tables() {
 
             {/* Filled Forms Tab */}
             {selectedTab === "forms" && (
-              <AdminCard header={"Form Responses"}>
-                <TableContainer title={"Submissions"}>
+              <AdminCard header={
+                <div className="d-flex align-items-center gap-2">
+                  <i className="bi bi-file-earmark-check-fill text-info"></i>
+                  <span>Form Responses Registry</span>
+                </div>
+              }>
+                <TableContainer title={""}>
                   {filteredForms && filteredForms.length > 0 ? (
-                    <div className="table-responsive">
-                      <table className="table table-striped table-hover table-bordered table-sm">
+                    <div className="table-responsive professional-table">
+                      <table className="table table-hover align-middle">
                         <thead>
                           <tr>
                             {filteredKeys.map((col) => (
@@ -317,9 +370,15 @@ export default function Tables() {
                             <tr key={idx}>
                               {filteredKeys.map((col) => (
                                 <td key={col}>
-                                  {row[col] !== null && row[col] !== undefined
-                                    ? String(row[col])
-                                    : ""}
+                                  {col.toLowerCase().includes("date") || col.toLowerCase().includes("at") 
+                                    ? <span className="text-muted small">
+                                        {row[col] ? new Date(row[col]).toLocaleDateString(undefined, {
+                                          year: 'numeric', month: 'short', day: 'numeric'
+                                        }) : "-"}
+                                      </span>
+                                    : row[col] !== null && row[col] !== undefined
+                                      ? String(row[col])
+                                      : "-"}
                                 </td>
                               ))}
                             </tr>
