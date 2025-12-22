@@ -574,87 +574,93 @@ export default function AdminDashboard() {
     );
   }
 
-  function DynamicDropdownTable({ tableName, data }) {
-    const [visibleCols, setVisibleCols] = useState(() =>
-      data.length ? Object.keys(data[0]) : []
-    );
-    const [selectShow, setSelectShow] = useState(false);
-    useEffect(() => {
-      if (data.length) setVisibleCols(Object.keys(data[0]));
-    }, [data]);
-    if (!data.length)
+    function DynamicDropdownTable({ tableName, data }) {
+      const [visibleCols, setVisibleCols] = useState(() =>
+        data.length ? Object.keys(data[0]) : []
+      );
+      const [selectShow, setSelectShow] = useState(false);
+      useEffect(() => {
+        if (data.length) setVisibleCols(Object.keys(data[0]));
+      }, [data]);
+      if (!data.length)
+        return (
+          <EmptyState title="No Records" description={`No ${tableName.toLowerCase()} data available for this unit.`} />
+        );
+      const cols = Object.keys(data[0]);
+      function handleToggle(col) {
+        setVisibleCols((prev) =>
+          prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
+        );
+      }
       return (
-        <div className="mb-4 text-muted">No {tableName} data available</div>
-      );
-    const cols = Object.keys(data[0]);
-    function handleToggle(col) {
-      setVisibleCols((prev) =>
-        prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
-      );
-    }
-    return (
-      <div className="dynamic-table-wrapper">
-        <div className="dynamic-table-header d-flex justify-content-between align-items-center mb-3">
-          <h5 className="mb-0">{tableName}</h5>
-          <div className="position-relative">
-            <button
-              className="btn btn-outline-secondary btn-sm"
-              onClick={() => setSelectShow((s) => !s)}
-            >
-              <i className="bi bi-columns-gap me-1"></i> Columns
-            </button>
-            {selectShow && (
-              <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
-                {cols.map((col) => (
-                  <div key={col} className="form-check mb-1">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id={`col-check-table-${tableName}-${col}`}
-                      checked={visibleCols.includes(col)}
-                      onChange={() => handleToggle(col)}
-                    />
-                    <label
-                      className="form-check-label small"
-                      htmlFor={`col-check-table-${tableName}-${col}`}
-                    >
-                      {toLabel(col)}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="table-responsive">
-          <table className="table table-striped table-bordered table-hover">
-            <thead>
-              <tr>
-                {cols
-                  .filter((col) => visibleCols.includes(col))
-                  .map((col) => (
-                    <th key={col}>{toLabel(col)}</th>
-                  ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((row, i) => (
-                <tr key={tableName + "-row-" + i}>
+        <TableContainer 
+          title=""
+          toolbar={
+            <Toolbar 
+              left={<span className="text-muted small uppercase fw-bold">{data.length} Total Records</span>}
+              right={
+                <div className="position-relative">
+                  <button
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={() => setSelectShow((s) => !s)}
+                  >
+                    <i className="bi bi-columns-gap me-1"></i> Columns
+                  </button>
+                  {selectShow && (
+                    <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
+                      {cols.map((col) => (
+                        <div key={col} className="form-check mb-1">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            id={`col-check-table-${tableName}-${col}`}
+                            checked={visibleCols.includes(col)}
+                            onChange={() => handleToggle(col)}
+                          />
+                          <label
+                            className="form-check-label small"
+                            htmlFor={`col-check-table-${tableName}-${col}`}
+                          >
+                            {toLabel(col)}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              }
+            />
+          }
+        >
+          <div className="table-responsive">
+            <table className="table table-striped table-hover table-sm">
+              <thead>
+                <tr>
                   {cols
                     .filter((col) => visibleCols.includes(col))
                     .map((col) => (
-                      <td key={col}>
-                        {row[col] != null ? row[col].toString() : ""}
-                      </td>
+                      <th key={col}>{toLabel(col)}</th>
                     ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  }
+              </thead>
+              <tbody>
+                {data.map((row, i) => (
+                  <tr key={tableName + "-row-" + i}>
+                    {cols
+                      .filter((col) => visibleCols.includes(col))
+                      .map((col) => (
+                        <td key={col}>
+                          {row[col] != null ? row[col].toString() : "-"}
+                        </td>
+                      ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </TableContainer>
+      );
+    }
 
   const renderUnitDetails = () =>
     unitDetails ? (
@@ -953,7 +959,10 @@ export default function AdminDashboard() {
                      </table>
                    </div>
                  )}
-               </向
+                  </TableContainer>
+              </AdminCard>
+            </div>
+          )}
 
         {/* TAB CONTENT - Generic tables */}
         {["payments", "banks", "cases"].includes(selectedSchoolTab) && (

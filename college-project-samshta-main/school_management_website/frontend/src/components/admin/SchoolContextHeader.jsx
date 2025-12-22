@@ -13,22 +13,28 @@ export default function SchoolContextHeader({
   return (
     <div className="school-context-header">
       <div className="header-top">
-        <div className="school-branding">
-          <h1>{schoolName}</h1>
-          <div className="school-meta">
-            <span className="meta-item">
-              <i className="bi bi-hash"></i> SEMIS No: {semisNo}
-            </span>
-            <span className="meta-item">
-              <i className="bi bi-person-badge"></i> Headmaster: {headmasterName}
-            </span>
+        <div className="branding-section">
+          <div className="school-branding">
+            <h1>{schoolName}</h1>
+            <div className="school-meta">
+              <span className="meta-item">
+                <i className="bi bi-hash"></i> SEMIS No: {semisNo}
+              </span>
+              <span className="meta-item">
+                <i className="bi bi-person-badge"></i> Headmaster: {headmasterName}
+              </span>
+            </div>
+          </div>
+          <div className="ay-selector-wrapper">
+             <span className="ay-label">Academic Year</span>
+             <select className="form-select ay-select-sm">
+                <option>AY 2024-25</option>
+                <option>AY 2023-24</option>
+             </select>
           </div>
         </div>
+
         <div className="header-actions-row">
-           <select className="form-select academic-year-select-sm">
-              <option>AY 2024-25</option>
-              <option>AY 2023-24</option>
-           </select>
            <button className="back-btn-new" onClick={onBack}>
              <i className="bi bi-arrow-left"></i> Back to Units
            </button>

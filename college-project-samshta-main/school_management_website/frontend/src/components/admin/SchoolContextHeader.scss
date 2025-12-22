@@ -5,54 +5,83 @@
   margin-bottom: 24px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 
-  .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
 
-    .school-branding {
-      h1 {
-        font-size: 28px;
-        font-weight: 800;
-        color: #0f172a;
-        margin-bottom: 8px;
-      }
-
-      .school-meta {
+      .branding-section {
         display: flex;
-        gap: 20px;
-        color: #64748b;
-        font-size: 14px;
+        flex-direction: column;
+        gap: 16px;
 
-        .meta-item {
+        .ay-selector-wrapper {
           display: flex;
           align-items: center;
-          gap: 6px;
-          
-          i {
-            color: #3b82f6;
+          gap: 12px;
+          background: #f8fafc;
+          padding: 8px 16px;
+          border-radius: 8px;
+          border: 1px solid #e2e8f0;
+          width: fit-content;
+
+          .ay-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+
+          .ay-select-sm {
+            border: none;
+            background: transparent;
+            font-weight: 700;
+            color: #1e293b;
+            padding: 0;
+            width: auto;
+            cursor: pointer;
+            &:focus {
+              box-shadow: none;
+            }
+          }
+        </div>
+      }
+
+      .school-branding {
+        h1 {
+          font-size: 28px;
+          font-weight: 800;
+          color: #0f172a;
+          margin-bottom: 8px;
+        }
+
+        .school-meta {
+          display: flex;
+          gap: 20px;
+          color: #64748b;
+          font-size: 14px;
+
+          .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            
+            i {
+              color: #3b82f6;
+            }
           }
         }
       }
-    }
 
-    .header-actions-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      .header-actions-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-top: 4px;
 
-      .academic-year-select-sm {
-        width: 140px;
-        font-weight: 600;
-        font-size: 13px;
-        height: 38px;
-        border-radius: 8px;
-        border: 1px solid #e2e8f0;
-        background-color: #f8fafc;
-      }
-
-      .back-btn-new {
+        .back-btn-new {
         background: #1e293b;
         color: #fff;
         border: none;

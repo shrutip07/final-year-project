@@ -12,9 +12,9 @@ export default function TopGreetingBar({ role, schoolName, semisId }) {
   const userName = localStorage.getItem("full_name") || userEmail.split("@")[0];
 
   const toggleLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'mr' : 'en';
-    i18n.changeLanguage(newLang);
-    localStorage.setItem("appLanguage", newLang);
+    const nextLang = i18n.language === 'en' ? 'mr' : 'en';
+    i18n.changeLanguage(nextLang);
+    localStorage.setItem("appLanguage", nextLang);
   };
 
   const handleLogout = () => {
