@@ -25,16 +25,16 @@ export default function SchoolContextHeader({
               </span>
             </div>
           </div>
-          <div className="ay-selector-wrapper">
-             <span className="ay-label">Academic Year</span>
-             <select className="form-select ay-select-sm">
-                <option>AY 2024-25</option>
-                <option>AY 2023-24</option>
-             </select>
-          </div>
         </div>
 
         <div className="header-actions-row">
+           <div className="ay-selector-wrapper">
+              <span className="ay-label">Academic Year</span>
+              <select className="form-select ay-select-sm">
+                 <option>AY 2024-25</option>
+                 <option>AY 2023-24</option>
+              </select>
+           </div>
            <button className="back-btn-new" onClick={onBack}>
              <i className="bi bi-arrow-left"></i> Back to Units
            </button>

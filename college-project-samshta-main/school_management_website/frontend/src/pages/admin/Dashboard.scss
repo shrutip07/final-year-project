@@ -298,8 +298,75 @@
   border: 1px solid var(--gray-200);
 }
 
-.table {
-  margin-bottom: 0;
-  thead th { background: var(--gray-100); color: var(--gray-700); font-weight: 600; border-bottom: 1px solid var(--gray-200); }
-  tbody td { vertical-align: middle; }
+.overview-info-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    .value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+  }
+}
+
+.finance-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+
+  .finance-item {
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    color: #fff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+    .label { font-size: 11px; font-weight: 700; opacity: 0.9; text-transform: uppercase; margin-bottom: 8px; }
+    .value { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+    .sub { font-size: 12px; opacity: 0.8; }
+
+    &.budget { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    &.collected { background: linear-gradient(135deg, #10b981, #059669); }
+    &.pending { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    &.spent { background: linear-gradient(135deg, #ef4444, #dc2626); }
+  }
+}
+
+.tab-pane-content {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ERP Professional Polish */
+.main-content {
+  background-color: #f1f5f9;
+}
+
+.admin-card {
+  border: none;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }

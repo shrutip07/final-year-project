@@ -574,35 +574,35 @@ export default function AdminDashboard() {
     );
   }
 
-  function DynamicDropdownTable({ tableName, data }) {
-    const [visibleCols, setVisibleCols] = useState(() =>
-      data.length ? Object.keys(data[0]) : []
-    );
-    const [selectShow, setSelectShow] = useState(false);
-    useEffect(() => {
-      if (data.length) setVisibleCols(Object.keys(data[0]));
-    }, [data]);
-    if (!data.length)
+    function DynamicDropdownTable({ tableName, data }) {
+      const [visibleCols, setVisibleCols] = useState(() =>
+        data.length ? Object.keys(data[0]) : []
+      );
+      const [selectShow, setSelectShow] = useState(false);
+      useEffect(() => {
+        if (data.length) setVisibleCols(Object.keys(data[0]));
+      }, [data]);
+      if (!data.length)
+        return (
+          <div className="mb-4 text-muted">No {tableName} data available</div>
+        );
+      const cols = Object.keys(data[0]);
+      function handleToggle(col) {
+        setVisibleCols((prev) =>
+          prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
+        );
+      }
       return (
-        <div className="mb-4 text-muted">No {tableName} data available</div>
-      );
-    const cols = Object.keys(data[0]);
-    function handleToggle(col) {
-      setVisibleCols((prev) =>
-        prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
-      );
-    }
-    return (
-      <div className="dynamic-table-wrapper">
-        <div className="dynamic-table-header d-flex justify-content-between align-items-center mb-3">
-          <h5 className="mb-0">{tableName}</h5>
-          <div className="position-relative">
-            <button
-              className="btn btn-outline-secondary btn-sm"
-              onClick={() => setSelectShow((s) => !s)}
-            >
-              <i className="bi bi-columns-gap me-1"></i> Columns
-            </button>
+        <div className="dynamic-table-wrapper">
+          <div className="dynamic-table-toolbar d-flex justify-content-end mb-3">
+            <div className="position-relative">
+              <button
+                className="btn btn-outline-secondary btn-sm"
+                onClick={() => setSelectShow((s) => !s)}
+              >
+                <i className="bi bi-columns-gap me-1"></i> Selection Columns
+              </button>
+
             {selectShow && (
               <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
                 {cols.map((col) => (
@@ -719,24 +719,26 @@ export default function AdminDashboard() {
                        <span className="sub-label">Financial Snapshot</span>
                      </div>
                    </div>
+                   
+                   <div className="overview-info-strip mt-4">
+                      <div className="info-item">
+                        <span className="label">Unit ID:</span>
+                        <span className="value">{unitDetails.unit_id || "-"}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="label">SEMIS No:</span>
+                        <span className="value">{unitDetails.semis_no || "-"}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="label">Standards:</span>
+                        <span className="value">{unitDetails.standard_range || "-"}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="label">Shift:</span>
+                        <span className="value">{unitDetails.school_shift || "-"}</span>
+                      </div>
+                   </div>
                 </AdminCard>
-                <div className="mt-4">
-                  <AdminCard header="School Identity">
-                    <div className="profile-details-grid">
-                      {[
-                        ["unit_id", "Unit ID"],
-                        ["semis_no", "SEMIS No"],
-                        ["standard_range", "Standard Range"],
-                        ["school_shift", "School Shift"],
-                      ].map(([key, label]) => (
-                        <div key={key} className="profile-row">
-                          <span className="field-label">{label}</span>
-                          <span className="field-value">{unitDetails[key] || "-"}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </AdminCard>
-                </div>
               </div>
             </div>
           </div>
@@ -813,8 +815,9 @@ export default function AdminDashboard() {
                            className="btn btn-sm btn-outline-secondary"
                            onClick={() => setTeachersShowColDropdown(!teachersShowColDropdown)}
                          >
-                           <i className="bi bi-columns-gap me-1"></i> Columns
-                         </button>
+                             <i className="bi bi-columns-gap me-1"></i> Selection Columns
+                           </button>
+
                          {teachersShowColDropdown && (
                            <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
                              {teacherFields.map(([key, label]) => (

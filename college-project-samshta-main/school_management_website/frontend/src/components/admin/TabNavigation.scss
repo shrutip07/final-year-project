@@ -2,10 +2,11 @@
   display: flex;
   background: #fff;
   border-radius: 12px;
-  padding: 8px;
+  padding: 6px;
   margin-bottom: 24px;
-  gap: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  gap: 4px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 1px solid #f1f5f9;
   overflow-x: auto;
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
@@ -13,30 +14,37 @@
   .tab-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
+    gap: 10px;
+    padding: 8px 18px;
     border-radius: 8px;
     border: none;
     background: transparent;
-    color: #64748b;
+    color: #475569;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13.5px;
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
     i {
       font-size: 16px;
+      color: #64748b;
+      transition: color 0.2s;
     }
 
     &:hover {
-      background: #f1f5f9;
-      color: #1e293b;
+      background: #f8fafc;
+      color: #0f172a;
+      
+      i {
+        color: #0f172a;
+      }
     }
 
     &.active {
-      background: #1e293b;
+      background: #0f172a;
       color: #fff;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
       i {
         color: #fff;
