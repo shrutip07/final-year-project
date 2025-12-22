@@ -574,93 +574,87 @@ export default function AdminDashboard() {
     );
   }
 
-    function DynamicDropdownTable({ tableName, data }) {
-      const [visibleCols, setVisibleCols] = useState(() =>
-        data.length ? Object.keys(data[0]) : []
-      );
-      const [selectShow, setSelectShow] = useState(false);
-      useEffect(() => {
-        if (data.length) setVisibleCols(Object.keys(data[0]));
-      }, [data]);
-      if (!data.length)
-        return (
-          <EmptyState title="No Records" description={`No ${tableName.toLowerCase()} data available for this unit.`} />
-        );
-      const cols = Object.keys(data[0]);
-      function handleToggle(col) {
-        setVisibleCols((prev) =>
-          prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
-        );
-      }
+  function DynamicDropdownTable({ tableName, data }) {
+    const [visibleCols, setVisibleCols] = useState(() =>
+      data.length ? Object.keys(data[0]) : []
+    );
+    const [selectShow, setSelectShow] = useState(false);
+    useEffect(() => {
+      if (data.length) setVisibleCols(Object.keys(data[0]));
+    }, [data]);
+    if (!data.length)
       return (
-        <TableContainer 
-          title=""
-          toolbar={
-            <Toolbar 
-              left={<span className="text-muted small uppercase fw-bold">{data.length} Total Records</span>}
-              right={
-                <div className="position-relative">
-                  <button
-                    className="btn btn-outline-secondary btn-sm"
-                    onClick={() => setSelectShow((s) => !s)}
-                  >
-                    <i className="bi bi-columns-gap me-1"></i> Columns
-                  </button>
-                  {selectShow && (
-                    <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
-                      {cols.map((col) => (
-                        <div key={col} className="form-check mb-1">
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            id={`col-check-table-${tableName}-${col}`}
-                            checked={visibleCols.includes(col)}
-                            onChange={() => handleToggle(col)}
-                          />
-                          <label
-                            className="form-check-label small"
-                            htmlFor={`col-check-table-${tableName}-${col}`}
-                          >
-                            {toLabel(col)}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              }
-            />
-          }
-        >
-          <div className="table-responsive">
-            <table className="table table-striped table-hover table-sm">
-              <thead>
-                <tr>
+        <div className="mb-4 text-muted">No {tableName} data available</div>
+      );
+    const cols = Object.keys(data[0]);
+    function handleToggle(col) {
+      setVisibleCols((prev) =>
+        prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
+      );
+    }
+    return (
+      <div className="dynamic-table-wrapper">
+        <div className="dynamic-table-header d-flex justify-content-between align-items-center mb-3">
+          <h5 className="mb-0">{tableName}</h5>
+          <div className="position-relative">
+            <button
+              className="btn btn-outline-secondary btn-sm"
+              onClick={() => setSelectShow((s) => !s)}
+            >
+              <i className="bi bi-columns-gap me-1"></i> Columns
+            </button>
+            {selectShow && (
+              <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
+                {cols.map((col) => (
+                  <div key={col} className="form-check mb-1">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      id={`col-check-table-${tableName}-${col}`}
+                      checked={visibleCols.includes(col)}
+                      onChange={() => handleToggle(col)}
+                    />
+                    <label
+                      className="form-check-label small"
+                      htmlFor={`col-check-table-${tableName}-${col}`}
+                    >
+                      {toLabel(col)}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="table-responsive">
+          <table className="table table-striped table-bordered table-hover">
+            <thead>
+              <tr>
+                {cols
+                  .filter((col) => visibleCols.includes(col))
+                  .map((col) => (
+                    <th key={col}>{toLabel(col)}</th>
+                  ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((row, i) => (
+                <tr key={tableName + "-row-" + i}>
                   {cols
                     .filter((col) => visibleCols.includes(col))
                     .map((col) => (
-                      <th key={col}>{toLabel(col)}</th>
+                      <td key={col}>
+                        {row[col] != null ? row[col].toString() : ""}
+                      </td>
                     ))}
                 </tr>
-              </thead>
-              <tbody>
-                {data.map((row, i) => (
-                  <tr key={tableName + "-row-" + i}>
-                    {cols
-                      .filter((col) => visibleCols.includes(col))
-                      .map((col) => (
-                        <td key={col}>
-                          {row[col] != null ? row[col].toString() : "-"}
-                        </td>
-                      ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </TableContainer>
-      );
-    }
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
 
   const renderUnitDetails = () =>
     unitDetails ? (
@@ -959,10 +953,7 @@ export default function AdminDashboard() {
                      </table>
                    </div>
                  )}
-                  </TableContainer>
-              </AdminCard>
-            </div>
-          )}
+               </向
 
         {/* TAB CONTENT - Generic tables */}
         {["payments", "banks", "cases"].includes(selectedSchoolTab) && (
@@ -980,52 +971,61 @@ export default function AdminDashboard() {
 
   const renderDashboardMain = () => (
     <div className="dashboard-main-view">
-      <div className="dashboard-hero-title">
-        <h3>School Overview</h3>
-        <p>Manage and monitor all units under your administrative control</p>
-      </div>
-
-      <div className="school-grid">
-        {safeUnits.length === 0 ? (
-          <div className="col-12 text-center py-5">
-            <div className="spinner-border text-primary" role="status"></div>
-            <p className="mt-2 text-muted">Loading schools...</p>
-          </div>
-        ) : (
-          safeUnits.map((unit, idx) => (
-            <div
-              key={unit.unit_id}
-              className="school-card-pro"
-              onClick={() => handleUnitCardClick(unit.unit_id)}
-            >
-              <div className="card-accent-line"></div>
-              <span className="card-index-pill">#{idx + 1}</span>
-
-              <div className="unit-tag">UNIT: {unit.unit_id}</div>
-
-              <h5 className="school-display-name">
-                {unit.unit_name}
-              </h5>
-
-              <div className="card-stats-row">
-                <div className="stat-item-mini">
-                  <i className="bi bi-people"></i>
-                  <span>{unit.staff_count || 0} Staff</span>
-                </div>
-                <div className="stat-item-mini">
-                  <i className="bi bi-mortarboard"></i>
-                  <span>{unit.student_count || 0} Students</span>
-                </div>
-              </div>
-
-              <div className="card-action-bar">
-                <span>View Full Admin Controls</span>
-                <i className="bi bi-arrow-right"></i>
-              </div>
+      <AdminCard header={"School Overview"}>
+        <div className="row school-grid">
+          {safeUnits.length === 0 ? (
+            <div className="col-12 text-center py-5">
+              <div className="spinner-border text-primary" role="status"></div>
+              <p className="mt-2 text-muted">Loading schools...</p>
             </div>
-          ))
-        )}
-      </div>
+          ) : (
+              safeUnits.map((unit, idx) => (
+                <div key={unit.unit_id} className="col-md-4 col-sm-6 mb-4">
+                  <div className="school-card-pro" onClick={() => handleUnitCardClick(unit.unit_id)}>
+                     <div className="card-accent"></div>
+                     <div className="card-header-pro">
+                       <div className="school-symbol">
+                         <i className="bi bi-building"></i>
+                       </div>
+                       <span className="school-idx">#{idx + 1}</span>
+                     </div>
+                     <div className="card-body-pro">
+                       <h5 className="school-name-text" title={unit.kendrashala_name || `School ${unit.unit_id}`}>
+                         {unit.kendrashala_name || `School ${unit.unit_id}`}
+                       </h5>
+                       <div className="school-id-tag">UNIT: {unit.unit_id}</div>
+                       
+                       <div className="school-stats-row">
+                         <div className="stat-item">
+                           <div className="stat-icon staff">
+                             <i className="bi bi-people-fill"></i>
+                           </div>
+                           <div className="stat-info">
+                             <span className="stat-count">{unit.staff_count || 0}</span>
+                             <span className="stat-label">Staff</span>
+                           </div>
+                         </div>
+                         <div className="stat-item">
+                           <div className="stat-icon students">
+                             <i className="bi bi-mortarboard-fill"></i>
+                           </div>
+                           <div className="stat-info">
+                             <span className="stat-count">{unit.student_count || 0}</span>
+                             <span className="stat-label">Students</span>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                     <div className="card-footer-pro">
+                       <span>View Details</span>
+                       <i className="bi bi-chevron-right"></i>
+                     </div>
+                  </div>
+                </div>
+              ))
+          )}
+        </div>
+      </AdminCard>
     </div>
   );
 
