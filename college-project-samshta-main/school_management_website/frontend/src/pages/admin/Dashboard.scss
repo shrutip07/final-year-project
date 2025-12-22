@@ -283,13 +283,48 @@
 .metric-box {
   padding: 1.25rem;
   border-radius: 12px;
-  background: var(--gray-100);
+  background: var(--white);
   border: 1px solid var(--gray-200);
   display: flex;
   flex-direction: column;
-  .label { font-size: 0.75rem; font-weight: 700; color: var(--gray-500); text-transform: uppercase; }
-  .value { font-size: 1.75rem; font-weight: 800; color: var(--primary-color); margin: 0.25rem 0; }
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+  }
+
+  .label { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+  .value { font-size: 2rem; font-weight: 800; color: var(--text-primary); margin: 0; }
+  .sub-label { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; }
+
+  &.metric-staff {
+    border-left: 5px solid #6366f1;
+    .value { color: #4338ca; }
+  }
+  &.metric-students {
+    border-left: 5px solid #10b981;
+    .value { color: #059669; }
+  }
+  &.metric-ratio {
+    border-left: 5px solid #f59e0b;
+    .value { color: #b45309; }
+  }
+  &.metric-fees {
+    border-left: 5px solid #ec4899;
+    background: linear-gradient(to bottom right, #ffffff, #fdf2f8);
+    .value { color: #be185d; }
+  }
+
   &.highlight { background: var(--primary-50); border-color: var(--primary-100); }
+}
+
+.dynamic-table-toolbar {
+  background: #f8fafc;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
 .table-responsive {

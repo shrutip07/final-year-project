@@ -594,13 +594,14 @@ export default function AdminDashboard() {
       }
       return (
         <div className="dynamic-table-wrapper">
-          <div className="dynamic-table-toolbar d-flex justify-content-end mb-3">
+          <div className="dynamic-table-toolbar d-flex justify-content-between align-items-center mb-3">
+            <h6 className="mb-0 text-muted">{tableName} Log</h6>
             <div className="position-relative">
               <button
                 className="btn btn-outline-secondary btn-sm"
                 onClick={() => setSelectShow((s) => !s)}
               >
-                <i className="bi bi-columns-gap me-1"></i> Selection Columns
+                <i className="bi bi-columns-gap me-1"></i> Columns
               </button>
 
             {selectShow && (
@@ -696,15 +697,15 @@ export default function AdminDashboard() {
               <div className="col-md-12">
                 <AdminCard header="Unit Overview Summary">
                    <div className="metrics-grid">
-                     <div className="metric-box">
+                     <div className="metric-box metric-staff">
                        <span className="label">TOTAL STAFF</span>
                        <span className="value">{unitDetails.teachers?.length ?? 0}</span>
                      </div>
-                     <div className="metric-box">
+                     <div className="metric-box metric-students">
                        <span className="label">TOTAL STUDENTS</span>
                        <span className="value">{unitDetails.students?.length ?? 0}</span>
                      </div>
-                     <div className="metric-box">
+                     <div className="metric-box metric-ratio">
                        <span className="label">RATIO</span>
                        <span className="value">
                          {unitDetails.students?.length && unitDetails.teachers?.length
@@ -713,7 +714,7 @@ export default function AdminDashboard() {
                        </span>
                        <span className="sub-label">Student/Teacher</span>
                      </div>
-                     <div className="metric-box highlight">
+                     <div className="metric-box metric-fees highlight">
                        <span className="label">COLLECTED FEES</span>
                        <span className="value">₹{(overviewMetrics?.feesCollectedFy ?? 0).toLocaleString()}</span>
                        <span className="sub-label">Financial Snapshot</span>
@@ -794,53 +795,56 @@ export default function AdminDashboard() {
         {/* TAB CONTENT - Teachers */}
         {selectedSchoolTab === "teachers" && (
           <div className="tab-pane-content">
-            <AdminCard header="Staff Directory">
-               <TableContainer
-                 title=""
-                 toolbar={
-                   <Toolbar
-                     left={
+          <AdminCard header="Staff Directory">
+             <TableContainer
+               title=""
+               toolbar={
+                 <Toolbar
+                   left={
+                     <div className="d-flex align-items-center gap-2">
+                       <i className="bi bi-search text-muted"></i>
                        <input
                          type="text"
-                         className="form-control form-control-sm"
+                         className="form-control form-control-sm border-0 bg-light"
                          placeholder="Search teachers..."
-                         style={{ maxWidth: 250 }}
+                         style={{ minWidth: 250 }}
                          value={teacherSearch}
                          onChange={(e) => setTeacherSearch(e.target.value)}
                        />
-                     }
-                     right={
-                       <div className="position-relative">
-                         <button
-                           className="btn btn-sm btn-outline-secondary"
-                           onClick={() => setTeachersShowColDropdown(!teachersShowColDropdown)}
-                         >
-                             <i className="bi bi-columns-gap me-1"></i> Selection Columns
-                           </button>
+                     </div>
+                   }
+                   right={
+                     <div className="position-relative">
+                       <button
+                         className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2"
+                         onClick={() => setTeachersShowColDropdown(!teachersShowColDropdown)}
+                       >
+                           <i className="bi bi-columns-gap"></i> Columns
+                         </button>
 
-                         {teachersShowColDropdown && (
-                           <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
-                             {teacherFields.map(([key, label]) => (
-                               <div key={key} className="form-check mb-1">
-                                 <input
-                                   className="form-check-input"
-                                   type="checkbox"
-                                   id={`col-check-teacher-${key}`}
-                                   checked={teacherVisibleColumns.includes(key)}
-                                   onChange={() => handleTeacherColumnToggle(key)}
-                                 />
-                                 <label className="form-check-label small" htmlFor={`col-check-teacher-${key}`}>
-                                   {label}
-                                 </label>
-                               </div>
-                             ))}
-                           </div>
-                         )}
-                       </div>
-                     }
-                   />
-                 }
-               >
+                       {teachersShowColDropdown && (
+                         <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
+                           {teacherFields.map(([key, label]) => (
+                             <div key={key} className="form-check mb-1">
+                               <input
+                                 className="form-check-input"
+                                 type="checkbox"
+                                 id={`col-check-teacher-${key}`}
+                                 checked={teacherVisibleColumns.includes(key)}
+                                 onChange={() => handleTeacherColumnToggle(key)}
+                               />
+                               <label className="form-check-label small" htmlFor={`col-check-teacher-${key}`}>
+                                 {label}
+                               </label>
+                             </div>
+                           ))}
+                         </div>
+                       )}
+                     </div>
+                   }
+                 />
+               }
+             >
                  {filteredTeachers.length === 0 ? (
                    <EmptyState title="No Records" description="No teacher records found for this unit." />
                  ) : (
@@ -873,61 +877,68 @@ export default function AdminDashboard() {
         {/* TAB CONTENT - Students */}
         {selectedSchoolTab === "students" && (
           <div className="tab-pane-content">
-            <AdminCard header="Student Enrollment">
-               <TableContainer
-                 title=""
-                 toolbar={
-                   <Toolbar
-                     left={
-                       <div className="d-flex gap-2">
+          <AdminCard header="Student Enrollment">
+             <TableContainer
+               title=""
+               toolbar={
+                 <Toolbar
+                   left={
+                     <div className="d-flex align-items-center gap-3">
+                       <div className="d-flex align-items-center gap-2">
+                         <i className="bi bi-search text-muted"></i>
                          <input
                            type="text"
-                           className="form-control form-control-sm"
+                           className="form-control form-control-sm border-0 bg-light"
                            placeholder="Search students..."
+                           style={{ minWidth: 200 }}
                            value={studentSearch}
                            onChange={(e) => setStudentSearch(e.target.value)}
                          />
+                       </div>
+                       <div className="d-flex align-items-center gap-2">
+                         <span className="small text-muted fw-bold text-nowrap">Academic Year:</span>
                          <select
                            value={studentsYear}
                            onChange={(e) => setStudentsYear(e.target.value)}
-                           className="form-select form-select-sm w-auto"
+                           className="form-select form-select-sm w-auto border-0 bg-light"
                          >
                            <option value="">All Years</option>
                            {allStudentYears.map(y => <option key={y} value={y}>{y}</option>)}
                          </select>
                        </div>
-                     }
-                     right={
-                        <div className="position-relative">
-                          <button
-                            className="btn btn-sm btn-outline-secondary"
-                            onClick={() => setStudentsShowColDropdown(!studentsShowColDropdown)}
-                          >
-                            <i className="bi bi-columns-gap me-1"></i> Columns
-                          </button>
-                          {studentsShowColDropdown && (
-                            <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
-                              {studentFields.map(([key, label]) => (
-                                <div key={key} className="form-check mb-1">
-                                  <input
-                                    className="form-check-input"
-                                    type="checkbox"
-                                    id={`col-check-student-${key}`}
-                                    checked={studentVisibleColumns.includes(key)}
-                                    onChange={() => handleStudentColumnToggle(key)}
-                                  />
-                                  <label className="form-check-label small" htmlFor={`col-check-student-${key}`}>
-                                    {label}
-                                  </label>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                     }
-                   />
-                 }
-               >
+                     </div>
+                   }
+                   right={
+                      <div className="position-relative">
+                        <button
+                          className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2"
+                          onClick={() => setStudentsShowColDropdown(!studentsShowColDropdown)}
+                        >
+                          <i className="bi bi-columns-gap"></i> Columns
+                        </button>
+                        {studentsShowColDropdown && (
+                          <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
+                            {studentFields.map(([key, label]) => (
+                              <div key={key} className="form-check mb-1">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  id={`col-check-student-${key}`}
+                                  checked={studentVisibleColumns.includes(key)}
+                                  onChange={() => handleStudentColumnToggle(key)}
+                                />
+                                <label className="form-check-label small" htmlFor={`col-check-student-${key}`}>
+                                  {label}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                   }
+                 />
+               }
+             >
                  {filteredStudents.length === 0 ? (
                    <EmptyState title="No Records" description="No student records found." />
                  ) : (
