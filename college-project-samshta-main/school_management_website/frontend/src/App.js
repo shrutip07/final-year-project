@@ -103,6 +103,11 @@ function App() {
             <AdminDashboard />
           </ProtectedRoute>
         } />
+        <Route path="/admin/charts" element={
+          <ProtectedRoute role="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
         <Route path="/admin/tables" element={
           <ProtectedRoute role="admin">
             <Tables />
