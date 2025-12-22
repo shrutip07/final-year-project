@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ChatWidget from "../../components/ChatWidget";
-import PageHeader from '../../components/admin/PageHeader';
-import AdminCard from '../../components/admin/AdminCard';
-import EmptyState from '../../components/admin/EmptyState';
+import AdminLayout from "../../components/admin/AdminLayout";
+import AdminCard from "../../components/admin/AdminCard";
+import EmptyState from "../../components/admin/EmptyState";
 
 export default function Report() {
 	const [units, setUnits] = useState([]);
@@ -20,7 +20,6 @@ export default function Report() {
 			.catch(() => {});
 	}, []);
 
-	// generateReport optionally accepts a unit id; if not provided uses state
 	async function generateReport(unitIdArg) {
 		const targetId = unitIdArg || unitId;
 		if (!targetId) return alert("Select a school");
@@ -43,63 +42,75 @@ export default function Report() {
 	}
 
 	return (
-		<div className="dashboard-container">
-			<main className="main-content">
-				<PageHeader title={"Generate School Reports"} subtitle={"Select a school to download a full report"} />
+    <AdminLayout activeSidebarTab="reports">
+      <div className="reports-page">
+        <AdminCard header="Generate School Reports">
+          <p className="text-muted small mb-4">Select a school to download or preview a full report</p>
+          <div className="row align-items-end">
+            <div className="col-md-8 mb-3 mb-md-0">
+              <label className="form-label small fw-bold">Select School</label>
+              <select className="form-select" value={unitId} onChange={e => setUnitId(e.target.value)}>
+                <option value="">Select</option>
+                {units.map(u => (
+                  <option key={u.unit_id} value={u.unit_id}>
+                    {u.kendrashala_name || u.name || `Unit ${u.unit_id}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-4">
+              <button className="btn btn-primary w-100" onClick={() => generateReport()} disabled={loading || !unitId}>
+                {loading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-file-earmark-pdf me-2"></i>}
+                Generate Report
+              </button>
+            </div>
+          </div>
+        </AdminCard>
 
-				<div className="page-inner">
-					<div className="report-controls mb-3">
-						<label className="form-label">Select School</label>
-						<select className="form-select" value={unitId} onChange={e => setUnitId(e.target.value)}>
-							<option value="">Select</option>
-							{units.map(u => (
-								<option key={u.unit_id} value={u.unit_id}>
-									{u.kendrashala_name || u.name || `Unit ${u.unit_id}`}
-								</option>
-							))}
-						</select>
-						<div className="mt-2" style={{ display: 'flex', justifyContent: 'flex-end' }}>
-							<button className="btn btn-primary" onClick={() => generateReport()}>{loading ? 'Generating...' : 'Generate Report'}</button>
-						</div>
-					</div>
+        {units.length === 0 ? (
+          <div className="mt-4"><EmptyState title="No schools found" description="No units available." /></div>
+        ) : (
+          <div className="row mt-4">
+            {units.map(u => (
+              <div key={u.unit_id} className="col-md-6 col-lg-4 mb-4">
+                <AdminCard className="h-100">
+                  <div className="d-flex flex-column h-100">
+                    <h5 className="mb-3">{u.kendrashala_name || u.name || `Unit ${u.unit_id}`}</h5>
+                    <div className="d-flex gap-3 mb-4">
+                      <div className="p-2 bg-light rounded text-center flex-fill">
+                        <div className="fw-bold">{u.staff_count ?? u.teacher_count ?? '0'}</div>
+                        <div className="small text-muted" style={{ fontSize: '10px' }}>STAFF</div>
+                      </div>
+                      <div className="p-2 bg-light rounded text-center flex-fill">
+                        <div className="fw-bold">{u.student_count ?? u.students ?? '0'}</div>
+                        <div className="small text-muted" style={{ fontSize: '10px' }}>STUDENTS</div>
+                      </div>
+                    </div>
+                    <button className="btn btn-outline-primary btn-sm mt-auto" onClick={() => generateReport(u.unit_id)}>
+                      Download Report
+                    </button>
+                  </div>
+                </AdminCard>
+              </div>
+            ))}
+          </div>
+        )}
 
-					<div className="report-grid">
-						{units && units.length === 0 && (
-							<EmptyState title={"No schools found"} description={"No units available to generate reports."} />
-						)}
-
-						{units && units.map(u => (
-							<AdminCard key={u.unit_id} className="report-card">
-								<div className="report-card-body">
-									<h4 className="report-school">{u.kendrashala_name || u.name || `Unit ${u.unit_id}`}</h4>
-									<div className="report-meta">
-										<div><strong>{u.staff_count ?? u.teacher_count ?? '—'}</strong><div className="meta-label">Staff</div></div>
-										<div><strong>{u.student_count ?? u.students ?? '—'}</strong><div className="meta-label">Students</div></div>
-									</div>
-									<div className="report-actions">
-										<button className="btn btn-primary" onClick={() => generateReport(u.unit_id)}>Download Report</button>
-									</div>
-								</div>
-							</AdminCard>
-						))}
-					</div>
-
-					{pdfUrl && (
-						<div className="mt-4">
-							<h4>Preview</h4>
-							<iframe
-								src={pdfUrl}
-								width="100%"
-								height="600px"
-								title="PDF Preview"
-								style={{ border: "1px solid #ccc" }}
-							/>
-						</div>
-					)}
-				</div>
-
-				<ChatWidget />
-			</main>
-		</div>
+        {pdfUrl && (
+          <div className="mt-4">
+            <AdminCard header="Report Preview">
+              <iframe
+                src={pdfUrl}
+                width="100%"
+                height="600px"
+                title="PDF Preview"
+                style={{ border: "1px solid #e2e8f0", borderRadius: '8px' }}
+              />
+            </AdminCard>
+          </div>
+        )}
+      </div>
+      <ChatWidget />
+    </AdminLayout>
 	);
 }

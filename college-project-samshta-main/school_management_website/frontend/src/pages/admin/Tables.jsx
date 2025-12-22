@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
 import ChatWidget from "../../components/ChatWidget";
-import PageHeader from "../../components/admin/PageHeader";
+import AdminLayout from "../../components/admin/AdminLayout";
 import AdminCard from "../../components/admin/AdminCard";
 import TableContainer from "../../components/admin/TableContainer";
 import EmptyState from "../../components/admin/EmptyState";
 import Toolbar from "../../components/admin/Toolbar";
+import TabNavigation from "../../components/admin/TabNavigation";
 
 export default function Tables() {
   const { t } = useTranslation();
   const { unitId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [units, setUnits] = useState([]);
   const [selectedUnit, setSelectedUnit] = useState(unitId || "");
@@ -104,13 +104,11 @@ export default function Tables() {
     }
   };
 
-  if (loading && (!units || !units.length))
-    return <div className="text-center mt-5">{t("loading")}...</div>;
-  if (error) return <div className="alert alert-danger m-5">{error}</div>;
+  const selectedUnitData = units.find(u => String(u.unit_id) === String(selectedUnit));
 
   const filteredForms = selectedUnit
     ? filledForms.filter(
-        (f) => f.unit_id === Number(selectedUnit) || f.unit_id === selectedUnit
+        (f) => String(f.unit_id) === String(selectedUnit)
       )
     : filledForms;
 
@@ -127,109 +125,48 @@ export default function Tables() {
         )
       : [];
 
-  const sidebarItems = [
-    { key: "dashboard", label: t("dashboard"), icon: "bi-speedometer2", path: "/admin" },
-    { key: "tables", label: t("tables"), icon: "bi-table", path: "/admin/tables" },
-    { key: "charts", label: t("charts"), icon: "bi-bar-chart-fill", path: "/admin/charts" },
-    { key: "budgets", label: t("budgets"), icon: "bi-wallet2", path: "/admin/budgets" },
-    { key: "notifications", label: t("notifications"), icon: "bi-bell-fill", path: "/admin/notifications" },
-    { key: "reports", label: "Reports", icon: "bi-file-earmark-text", path: "/admin/reports" },
-  ];
-
-  const isActive = (path) => {
-    if (path === "/admin") {
-      return location.pathname === "/admin" || location.pathname === "/admin/";
-    }
-    return location.pathname.startsWith(path);
-  };
-
   return (
-    <div className="dashboard-container">
-      <div className="sidebar">
-        <div className="sidebar-header">
-          <div className="app-icon">
-            <i className="bi bi-buildings-fill"></i>
-          </div>
-          <h3>{t("admin_panel") || "Admin Panel"}</h3>
-        </div>
-        <nav className="sidebar-nav">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.key}
-              className={`nav-link ${isActive(item.path) ? "active" : ""}`}
-              onClick={() => navigate(item.path)}
-            >
-              <i className={`bi ${item.icon}`}></i>
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar-footer">
-          <button
-            className="nav-link"
-            onClick={() => {
-              localStorage.removeItem("token");
-              navigate("/login");
-            }}
-          >
-            <i className="bi bi-box-arrow-left"></i>
-            <span>{t("logout")}</span>
-          </button>
-        </div>
-      </div>
-
-      <main className="main-content">
-        <PageHeader
-          title={"School Data Tables"}
-          subtitle={
-            "View teachers, students and filled form responses for the selected school or unit."
-          }
-        />
-
+    <AdminLayout 
+      activeSidebarTab="tables" 
+      schoolName={selectedUnitData?.kendrashala_name}
+      semisId={selectedUnitData?.semis_no}
+    >
+      <div className="tables-page">
         <AdminCard header={"Select School / Unit"} className="mb-4">
-          <div>
-            <select
-              className="form-select"
-              value={selectedUnit}
-              onChange={(e) => handleUnitChange(e.target.value)}
-            >
-              <option value="">{t("select_a_school")}</option>
-              {(units || []).map((unit) => (
-                <option key={unit.unit_id} value={unit.unit_id}>
-                  {t("school")} {unit.unit_id} - SEMIS: {unit.semis_no}
-                </option>
-              ))}
-            </select>
+          <div className="row align-items-center">
+            <div className="col-md-8">
+              <p className="text-muted small mb-2">View teachers, students and filled form responses by selecting a school.</p>
+              <select
+                className="form-select"
+                value={selectedUnit}
+                onChange={(e) => handleUnitChange(e.target.value)}
+              >
+                <option value="">{t("select_a_school")}</option>
+                {(units || []).map((unit) => (
+                  <option key={unit.unit_id} value={unit.unit_id}>
+                    {unit.kendrashala_name || `School ${unit.unit_id}`} - SEMIS: {unit.semis_no}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </AdminCard>
 
         {selectedUnit && (
-          <>
-            {/* Tabs Navigation */}
-            <div className="tables-tabs">
-              <button
-                className={`tab-button ${selectedTab === "teachers" ? "active" : ""}`}
-                onClick={() => setSelectedTab("teachers")}
-              >
-                Teachers
-              </button>
-              <button
-                className={`tab-button ${selectedTab === "students" ? "active" : ""}`}
-                onClick={() => setSelectedTab("students")}
-              >
-                Students
-              </button>
-              <button
-                className={`tab-button ${selectedTab === "forms" ? "active" : ""}`}
-                onClick={() => setSelectedTab("forms")}
-              >
-                Filled Forms
-              </button>
-            </div>
+          <div className="mt-4">
+            <TabNavigation 
+              tabs={[
+                { id: "teachers", label: "Teachers", icon: "bi-people" },
+                { id: "students", label: "Students", icon: "bi-mortarboard" },
+                { id: "forms", label: "Filled Forms", icon: "bi-file-earmark-check" },
+              ]}
+              activeTab={selectedTab}
+              onTabChange={setSelectedTab}
+            />
 
             {/* Teachers Tab */}
             {selectedTab === "teachers" && (
-              <AdminCard header={"Teachers"} className="mb-4 section-card">
+              <AdminCard header={"Teachers Directory"}>
                 <TableContainer
                   title={"Teachers"}
                   toolbar={
@@ -237,14 +174,13 @@ export default function Tables() {
                       left={
                         <input
                           type="text"
-                          className="form-control"
+                          className="form-control form-control-sm"
                           placeholder="Search teachers..."
                           value={searchTeachers}
                           onChange={(e) => setSearchTeachers(e.target.value)}
-                          style={{ maxWidth: 300 }}
+                          style={{ maxWidth: 250 }}
                         />
                       }
-                      right={null}
                     />
                   }
                 >
@@ -254,42 +190,42 @@ export default function Tables() {
                     )
                   ).length === 0 ? (
                     <EmptyState
-                      title={"No teachers found"}
-                      description={
-                        "Teachers for this school will appear here once added."
-                      }
+                      title={"No records found"}
+                      description={"No teachers found for this school."}
                     />
                   ) : (
-                    <table className="table table-striped table-hover table-bordered">
-                      <thead>
-                        <tr>
-                          <th>{t("name")}</th>
-                          <th>{t("email")}</th>
-                          <th>{t("phone")}</th>
-                          <th>{t("subject")}</th>
-                          <th>{t("qualification")}</th>
-                          <th>{t("joining_date")}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(teachers || [])
-                          .filter((teacher) =>
-                            Object.values(teacher).some((val) =>
-                              String(val).toLowerCase().includes(searchTeachers.toLowerCase())
+                    <div className="table-responsive">
+                      <table className="table table-striped table-hover table-bordered table-sm">
+                        <thead>
+                          <tr>
+                            <th>{t("name")}</th>
+                            <th>{t("email")}</th>
+                            <th>{t("phone")}</th>
+                            <th>{t("subject")}</th>
+                            <th>{t("qualification")}</th>
+                            <th>{t("joining_date")}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(teachers || [])
+                            .filter((teacher) =>
+                              Object.values(teacher).some((val) =>
+                                String(val).toLowerCase().includes(searchTeachers.toLowerCase())
+                              )
                             )
-                          )
-                          .map((teacher) => (
-                            <tr key={teacher.staff_id}>
-                              <td>{teacher.full_name}</td>
-                              <td>{teacher.email}</td>
-                              <td>{teacher.phone}</td>
-                              <td>{teacher.subject}</td>
-                              <td>{teacher.qualification}</td>
-                              <td>{new Date(teacher.joining_date).toLocaleDateString()}</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
+                            .map((teacher) => (
+                              <tr key={teacher.staff_id}>
+                                <td>{teacher.full_name}</td>
+                                <td>{teacher.email}</td>
+                                <td>{teacher.phone}</td>
+                                <td>{teacher.subject}</td>
+                                <td>{teacher.qualification}</td>
+                                <td>{new Date(teacher.joining_date).toLocaleDateString()}</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
                   )}
                 </TableContainer>
               </AdminCard>
@@ -297,7 +233,7 @@ export default function Tables() {
 
             {/* Students Tab */}
             {selectedTab === "students" && (
-              <AdminCard header={"Students"} className="mb-4 section-card">
+              <AdminCard header={"Students Enrollment"}>
                 <TableContainer
                   title={"Students"}
                   toolbar={
@@ -305,14 +241,13 @@ export default function Tables() {
                       left={
                         <input
                           type="text"
-                          className="form-control"
+                          className="form-control form-control-sm"
                           placeholder="Search students..."
                           value={searchStudents}
                           onChange={(e) => setSearchStudents(e.target.value)}
-                          style={{ maxWidth: 300 }}
+                          style={{ maxWidth: 250 }}
                         />
                       }
-                      right={null}
                     />
                   }
                 >
@@ -322,42 +257,42 @@ export default function Tables() {
                     )
                   ).length === 0 ? (
                     <EmptyState
-                      title={"No students found"}
-                      description={
-                        "Students will appear here after they are added for this school."
-                      }
+                      title={"No records found"}
+                      description={"No student records found for this school."}
                     />
                   ) : (
-                    <table className="table table-striped table-hover table-bordered">
-                      <thead>
-                        <tr>
-                          <th>{t("roll_number")}</th>
-                          <th>{t("name")}</th>
-                          <th>{t("standard")}</th>
-                          <th>{t("division")}</th>
-                          <th>{t("parent_name")}</th>
-                          <th>{t("parent_phone")}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(students || [])
-                          .filter((student) =>
-                            Object.values(student).some((val) =>
-                              String(val).toLowerCase().includes(searchStudents.toLowerCase())
+                    <div className="table-responsive">
+                      <table className="table table-striped table-hover table-bordered table-sm">
+                        <thead>
+                          <tr>
+                            <th>{t("roll_number")}</th>
+                            <th>{t("name")}</th>
+                            <th>{t("standard")}</th>
+                            <th>{t("division")}</th>
+                            <th>{t("parent_name")}</th>
+                            <th>{t("parent_phone")}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(students || [])
+                            .filter((student) =>
+                              Object.values(student).some((val) =>
+                                String(val).toLowerCase().includes(searchStudents.toLowerCase())
+                              )
                             )
-                          )
-                          .map((student) => (
-                            <tr key={student.student_id}>
-                              <td>{student.roll_number}</td>
-                              <td>{student.full_name}</td>
-                              <td>{student.standard}</td>
-                              <td>{student.division}</td>
-                              <td>{student.parent_name}</td>
-                              <td>{student.parent_phone}</td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
+                            .map((student) => (
+                              <tr key={student.student_id}>
+                                <td>{student.roll_number}</td>
+                                <td>{student.full_name}</td>
+                                <td>{student.standard}</td>
+                                <td>{student.division}</td>
+                                <td>{student.parent_name}</td>
+                                <td>{student.parent_phone}</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
                   )}
                 </TableContainer>
               </AdminCard>
@@ -365,23 +300,15 @@ export default function Tables() {
 
             {/* Filled Forms Tab */}
             {selectedTab === "forms" && (
-              <AdminCard header={"Filled Forms Data"} className="mb-4 section-card">
-                <TableContainer
-                  title={"Filled Forms Data"}
-                  toolbar={
-                    <Toolbar
-                      left={<span>Response Data</span>}
-                      right={null}
-                    />
-                  }
-                >
+              <AdminCard header={"Form Responses"}>
+                <TableContainer title={"Submissions"}>
                   {filteredForms && filteredForms.length > 0 ? (
-                    <div style={{ overflowX: "auto" }}>
-                      <table className="table table-striped table-hover table-bordered">
+                    <div className="table-responsive">
+                      <table className="table table-striped table-hover table-bordered table-sm">
                         <thead>
                           <tr>
                             {filteredKeys.map((col) => (
-                              <th key={col}>{col}</th>
+                              <th key={col}>{col.replace(/_/g, ' ').toUpperCase()}</th>
                             ))}
                           </tr>
                         </thead>
@@ -402,20 +329,17 @@ export default function Tables() {
                     </div>
                   ) : (
                     <EmptyState
-                      title={"No filled form responses"}
-                      description={
-                        "Once schools submit forms, their responses will appear here."
-                      }
+                      title={"No responses"}
+                      description={"No form responses submitted by this school yet."}
                     />
                   )}
                 </TableContainer>
               </AdminCard>
             )}
-          </>
+          </div>
         )}
-      </main>
-
+      </div>
       <ChatWidget />
-    </div>
+    </AdminLayout>
   );
 }

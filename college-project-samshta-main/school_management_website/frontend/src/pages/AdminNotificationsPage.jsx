@@ -1,8 +1,8 @@
-
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ChatWidget from "../components/ChatWidget";
+import AdminLayout from "../components/admin/AdminLayout";
+import AdminCard from "../components/admin/AdminCard";
 
 export default function AdminNotificationsPage() {
   const [notifications, setNotifications] = useState([]);
@@ -25,7 +25,6 @@ export default function AdminNotificationsPage() {
   useEffect(() => {
     loadNotifications();
     loadForms();
-    // eslint-disable-next-line
   }, []);
 
   // Load notifications
@@ -81,7 +80,6 @@ export default function AdminNotificationsPage() {
     e.preventDefault();
     const token = localStorage.getItem("token");
 
-    // Prepare questions array with options correctly formatted
     const questionsPayload = formQuestions.map((q) => ({
       question_text: q.question_text,
       question_type: q.question_type,
@@ -89,7 +87,6 @@ export default function AdminNotificationsPage() {
     }));
 
     try {
-      // Create form
       const formRes = await axios.post(
         formAPI + "/create",
         {
@@ -104,10 +101,8 @@ export default function AdminNotificationsPage() {
         }
       );
       const formId = formRes.data.form.id;
+      const formLink = `http://localhost:3000/forms/${formId}`;
 
-      const formLink = `http://localhost:3000/forms/${formId}`; // Adjust frontend URL
-
-      // Send notification with form link in message
       await axios.post(
         notifAPI,
         {
@@ -122,22 +117,17 @@ export default function AdminNotificationsPage() {
       );
 
       alert("Form Created and Notification Sent ✅");
-
-      // Reset form input states
       setFormTitle("");
       setFormDesc("");
       setFormDeadline("");
       setFormQuestions([{ question_text: "", question_type: "text", options: "" }]);
-
       loadForms();
       loadNotifications();
-
     } catch (error) {
       alert("Error creating form or notification: " + error.message);
     }
   };
 
-  // Manage question list inputs
   const updateQuestion = (index, field, value) => {
     const qs = [...formQuestions];
     qs[index][field] = value;
@@ -152,7 +142,6 @@ export default function AdminNotificationsPage() {
     setFormQuestions(qs);
   };
 
-  // Mark notification read (same as before)
   const markRead = async (id) => {
     const token = localStorage.getItem("token");
     await axios.put(
@@ -165,164 +154,151 @@ export default function AdminNotificationsPage() {
     loadNotifications();
   };
 
-
   return (
-    <div className="container mt-4">
+    <AdminLayout activeSidebarTab="notifications">
+      <div className="notifications-portal">
+        <div className="row">
+          <div className="col-lg-6 mb-4">
+            <AdminCard header="Send Global Notification">
+              <form onSubmit={sendNotification}>
+                <div className="mb-3">
+                  <label className="form-label small fw-bold">RECEIVER ROLE</label>
+                  <select className="form-select" value={receiverRole} onChange={(e) => setReceiverRole(e.target.value)}>
+                    <option value="principal">Principal</option>
+                    <option value="teacher">Teacher</option>
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-bold">TITLE</label>
+                  <input type="text" className="form-control" value={title} onChange={(e) => setTitle(e.target.value)} required />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-bold">MESSAGE</label>
+                  <textarea className="form-control" rows={3} value={message} onChange={(e) => setMessage(e.target.value)} required />
+                </div>
+                <button className="btn btn-primary w-100" type="submit">
+                  <i className="bi bi-send me-2"></i> Send Notification
+                </button>
+              </form>
+            </AdminCard>
+          </div>
 
-      <h2>Admin Notification Panel + Form Creator</h2>
-      <small className="text-muted">Send Notifications or Create & Send Forms</small>
-
-      {/* Notification sending form */}
-      <form onSubmit={sendNotification} className="card p-3 mt-3 shadow-sm">
-        <h5>Send Notification</h5>
-        <label>Send To:</label>
-        <select
-          className="form-select"
-          value={receiverRole}
-          onChange={(e) => setReceiverRole(e.target.value)}
-        >
-          <option value="principal">Principal</option>
-          <option value="teacher">Teacher</option>
-        </select>
-
-        <label className="mt-2">Title:</label>
-        <input
-          className="form-control"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
-
-        <label className="mt-2">Message:</label>
-        <textarea
-          className="form-control"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          required
-        />
-
-        <button className="btn btn-primary mt-3">Send ✅</button>
-      </form>
-
-      {/* Form creation section */}
-      <form onSubmit={createFormAndNotify} className="card p-3 mt-3 shadow-sm">
-        <h5>Create and Send Form</h5>
-        <label>Send To:</label>
-        <select
-          className="form-select"
-          value={receiverRole}
-          onChange={(e) => setReceiverRole(e.target.value)}
-        >
-          <option value="principal">Principal</option>
-          <option value="teacher">Teacher</option>
-        </select>
-
-        <label className="mt-2">Form Title:</label>
-        <input
-          type="text"
-          className="form-control"
-          value={formTitle}
-          onChange={(e) => setFormTitle(e.target.value)}
-          required
-        />
-
-        <label className="mt-2">Description (optional):</label>
-        <textarea
-          className="form-control"
-          value={formDesc}
-          onChange={(e) => setFormDesc(e.target.value)}
-        />
-
-        <label className="mt-2">Deadline:</label>
-        <input
-          type="datetime-local"
-          className="form-control"
-          value={formDeadline}
-          onChange={(e) => setFormDeadline(e.target.value)}
-          required
-        />
-
-        <div className="mt-3">
-          <h6>Questions:</h6>
-          {formQuestions.map((q, i) => (
-            <div key={i} className="mb-2 border p-2 rounded">
-              <input
-                type="text"
-                placeholder="Question text"
-                className="form-control mb-1"
-                value={q.question_text}
-                onChange={(e) => updateQuestion(i, 'question_text', e.target.value)}
-                required
-              />
-              <select
-                className="form-select mb-1"
-                value={q.question_type}
-                onChange={(e) => updateQuestion(i, 'question_type', e.target.value)}
-              >
-                <option value="text">Text</option>
-                <option value="number">Number</option>
-                <option value="date">Date</option>
-                <option value="select">Multiple Choice</option>
-              </select>
-              {q.question_type === 'select' && (
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Options, comma separated"
-                  value={q.options}
-                  onChange={(e) => updateQuestion(i, 'options', e.target.value)}
-                />
-              )}
-              <button type="button" className="btn btn-danger btn-sm mt-1" onClick={() => removeQuestion(i)}>Remove</button>
-            </div>
-          ))}
-          <button type="button" className="btn btn-secondary" onClick={addQuestion}>Add Question</button>
+          <div className="col-lg-6 mb-4">
+            <AdminCard header="Create & Distribute Form">
+              <form onSubmit={createFormAndNotify}>
+                <div className="mb-3">
+                  <label className="form-label small fw-bold">TARGET ROLE</label>
+                  <select className="form-select" value={receiverRole} onChange={(e) => setReceiverRole(e.target.value)}>
+                    <option value="principal">Principal</option>
+                    <option value="teacher">Teacher</option>
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-bold">FORM TITLE</label>
+                  <input type="text" className="form-control" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-bold">DEADLINE</label>
+                  <input type="datetime-local" className="form-control" value={formDeadline} onChange={(e) => setFormDeadline(e.target.value)} required />
+                </div>
+                
+                <div className="questions-section mb-3">
+                  <label className="form-label small fw-bold d-flex justify-content-between">
+                    QUESTIONS
+                    <button type="button" className="btn btn-link btn-sm p-0 text-decoration-none" onClick={addQuestion}>+ Add Question</button>
+                  </label>
+                  {formQuestions.map((q, i) => (
+                    <div key={i} className="p-3 border rounded bg-light mb-2">
+                       <input
+                        type="text"
+                        placeholder="Question text"
+                        className="form-control mb-2"
+                        value={q.question_text}
+                        onChange={(e) => updateQuestion(i, 'question_text', e.target.value)}
+                        required
+                      />
+                      <div className="d-flex gap-2">
+                        <select
+                          className="form-select w-auto"
+                          value={q.question_type}
+                          onChange={(e) => updateQuestion(i, 'question_type', e.target.value)}
+                        >
+                          <option value="text">Input Text</option>
+                          <option value="number">Number</option>
+                          <option value="date">Date</option>
+                          <option value="select">MCQ</option>
+                        </select>
+                        {q.question_type === 'select' && (
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Options, comma separated"
+                            value={q.options}
+                            onChange={(e) => updateQuestion(i, 'options', e.target.value)}
+                          />
+                        )}
+                        <button type="button" className="btn btn-outline-danger" onClick={() => removeQuestion(i)} disabled={formQuestions.length === 1}><i className="bi bi-trash"></i></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button type="submit" className="btn btn-success w-100">
+                  <i className="bi bi-plus-circle me-2"></i> Create Form & Notify
+                </button>
+              </form>
+            </AdminCard>
+          </div>
         </div>
 
-        <button type="submit" className="btn btn-success mt-3">Create Form & Send Notification ✅</button>
-      </form>
+        <div className="row">
+          <div className="col-md-6 mb-4">
+            <AdminCard header="Received Notifications">
+              <div className="notification-list" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                {notifications.length === 0 ? (
+                  <p className="text-muted text-center py-4">No notifications received</p>
+                ) : (
+                  notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      className={`p-3 mb-2 rounded border-start border-4 ${n.is_read ? "bg-light border-secondary" : "bg-white border-warning shadow-sm"}`}
+                      style={{ cursor: "pointer" }}
+                      onClick={() => markRead(n.id)}
+                    >
+                      <h6 className="mb-1">{n.title}</h6>
+                      <p className="m-0 small text-muted">{n.message}</p>
+                      <div className="mt-1"><span className="badge bg-secondary" style={{ fontSize: '10px' }}>{n.receiver_role}</span></div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </AdminCard>
+          </div>
 
-      {/* Received Notifications */}
-      <div className="card p-3 mt-4 shadow-sm">
-        <h5>Received Notifications</h5>
-        {notifications.length === 0 ? (
-          <p className="text-muted">No notifications received</p>
-        ) : (
-          notifications.map((n) => (
-            <div
-              key={n.id}
-              className={`p-2 mt-2 rounded ${n.is_read ? "bg-light" : "bg-warning"}`}
-              style={{ cursor: "pointer" }}
-              onClick={() => markRead(n.id)}
-            >
-              <strong>{n.title}</strong>
-              <p className="m-0">{n.message}</p>
-              <small>To: {n.receiver_role}</small>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Active Forms */}
-      <div className="card p-3 mt-4 shadow-sm">
-        <h5>Active Forms ({forms.length})</h5>
-        {forms.length === 0 ? (
-          <p className="text-muted">No active forms</p>
-        ) : (
-          forms.map((form) => (
-            <div key={form.id} className="p-2 mt-2 rounded border">
-              <strong>{form.title}</strong>
-              <p>{form.description}</p>
-              <small>Deadline: {new Date(form.deadline).toLocaleString()}</small>
-              <br />
-              <a href={`http://localhost:3000/forms/${form.id}`} target="_blank" rel="noopener noreferrer">
-                Fill Form Link
-              </a>
-            </div>
-          ))
-        )}
+          <div className="col-md-6 mb-4">
+            <AdminCard header={`Active Forms (${forms.length})`}>
+              <div className="form-list" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                {forms.length === 0 ? (
+                  <p className="text-muted text-center py-4">No active forms found</p>
+                ) : (
+                  forms.map((form) => (
+                    <div key={form.id} className="p-3 mb-2 rounded border bg-white shadow-sm">
+                      <h6 className="text-primary mb-1">{form.title}</h6>
+                      <p className="small text-muted mb-2">{form.description || 'No description provided'}</p>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <small className="text-muted"><i className="bi bi-clock me-1"></i> {new Date(form.deadline).toLocaleDateString()}</small>
+                        <a href={`http://localhost:3000/forms/${form.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm">
+                          View Link
+                        </a>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </AdminCard>
+          </div>
+        </div>
       </div>
       <ChatWidget />
-    </div>
+    </AdminLayout>
   );
 }
