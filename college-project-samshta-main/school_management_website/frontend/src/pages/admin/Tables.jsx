@@ -24,6 +24,7 @@ export default function Tables() {
   const [searchTeachers, setSearchTeachers] = useState("");
   const [searchStudents, setSearchStudents] = useState("");
   const [filledForms, setFilledForms] = useState([]);
+  const [selectedTab, setSelectedTab] = useState("teachers");
 
   useEffect(() => {
     const fetchFilledForms = async () => {
@@ -204,184 +205,212 @@ export default function Tables() {
 
         {selectedUnit && (
           <>
-            {/* TEACHERS */}
-            <AdminCard header={"Teachers"} className="mb-4 section-card">
-              <TableContainer
-                title={"Teachers"}
-                toolbar={
-                  <Toolbar
-                    left={<span>Teachers</span>}
-                    right={
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Search teachers by any field..."
-                        value={searchTeachers}
-                        onChange={(e) => setSearchTeachers(e.target.value)}
-                      />
-                    }
-                  />
-                }
+            {/* Tabs Navigation */}
+            <div className="tables-tabs">
+              <button
+                className={`tab-button ${selectedTab === "teachers" ? "active" : ""}`}
+                onClick={() => setSelectedTab("teachers")}
               >
-                {(teachers || []).filter((teacher) =>
-                  Object.values(teacher).some((val) =>
-                    String(val).toLowerCase().includes(searchTeachers.toLowerCase())
-                  )
-                ).length === 0 ? (
-                  <EmptyState
-                    title={"No teachers found"}
-                    description={
-                      t("no_teachers_found_description") ||
-                      "Teachers for this school will appear here once added."
-                    }
-                  />
-                ) : (
-                  <table className="table table-striped table-hover table-bordered">
-                    <thead>
-                      <tr>
-                        <th>{t("name")}</th>
-                        <th>{t("email")}</th>
-                        <th>{t("phone")}</th>
-                        <th>{t("subject")}</th>
-                        <th>{t("qualification")}</th>
-                        <th>{t("joining_date")}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(teachers || [])
-                        .filter((teacher) =>
-                          Object.values(teacher).some((val) =>
-                            String(val).toLowerCase().includes(searchTeachers.toLowerCase())
+                Teachers
+              </button>
+              <button
+                className={`tab-button ${selectedTab === "students" ? "active" : ""}`}
+                onClick={() => setSelectedTab("students")}
+              >
+                Students
+              </button>
+              <button
+                className={`tab-button ${selectedTab === "forms" ? "active" : ""}`}
+                onClick={() => setSelectedTab("forms")}
+              >
+                Filled Forms
+              </button>
+            </div>
+
+            {/* Teachers Tab */}
+            {selectedTab === "teachers" && (
+              <AdminCard header={"Teachers"} className="mb-4 section-card">
+                <TableContainer
+                  title={"Teachers"}
+                  toolbar={
+                    <Toolbar
+                      left={
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Search teachers..."
+                          value={searchTeachers}
+                          onChange={(e) => setSearchTeachers(e.target.value)}
+                          style={{ maxWidth: 300 }}
+                        />
+                      }
+                      right={null}
+                    />
+                  }
+                >
+                  {(teachers || []).filter((teacher) =>
+                    Object.values(teacher).some((val) =>
+                      String(val).toLowerCase().includes(searchTeachers.toLowerCase())
+                    )
+                  ).length === 0 ? (
+                    <EmptyState
+                      title={"No teachers found"}
+                      description={
+                        "Teachers for this school will appear here once added."
+                      }
+                    />
+                  ) : (
+                    <table className="table table-striped table-hover table-bordered">
+                      <thead>
+                        <tr>
+                          <th>{t("name")}</th>
+                          <th>{t("email")}</th>
+                          <th>{t("phone")}</th>
+                          <th>{t("subject")}</th>
+                          <th>{t("qualification")}</th>
+                          <th>{t("joining_date")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(teachers || [])
+                          .filter((teacher) =>
+                            Object.values(teacher).some((val) =>
+                              String(val).toLowerCase().includes(searchTeachers.toLowerCase())
+                            )
                           )
-                        )
-                        .map((teacher) => (
-                          <tr key={teacher.staff_id}>
-                            <td>{teacher.full_name}</td>
-                            <td>{teacher.email}</td>
-                            <td>{teacher.phone}</td>
-                            <td>{teacher.subject}</td>
-                            <td>{teacher.qualification}</td>
-                            <td>{new Date(teacher.joining_date).toLocaleDateString()}</td>
+                          .map((teacher) => (
+                            <tr key={teacher.staff_id}>
+                              <td>{teacher.full_name}</td>
+                              <td>{teacher.email}</td>
+                              <td>{teacher.phone}</td>
+                              <td>{teacher.subject}</td>
+                              <td>{teacher.qualification}</td>
+                              <td>{new Date(teacher.joining_date).toLocaleDateString()}</td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  )}
+                </TableContainer>
+              </AdminCard>
+            )}
+
+            {/* Students Tab */}
+            {selectedTab === "students" && (
+              <AdminCard header={"Students"} className="mb-4 section-card">
+                <TableContainer
+                  title={"Students"}
+                  toolbar={
+                    <Toolbar
+                      left={
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Search students..."
+                          value={searchStudents}
+                          onChange={(e) => setSearchStudents(e.target.value)}
+                          style={{ maxWidth: 300 }}
+                        />
+                      }
+                      right={null}
+                    />
+                  }
+                >
+                  {(students || []).filter((student) =>
+                    Object.values(student).some((val) =>
+                      String(val).toLowerCase().includes(searchStudents.toLowerCase())
+                    )
+                  ).length === 0 ? (
+                    <EmptyState
+                      title={"No students found"}
+                      description={
+                        "Students will appear here after they are added for this school."
+                      }
+                    />
+                  ) : (
+                    <table className="table table-striped table-hover table-bordered">
+                      <thead>
+                        <tr>
+                          <th>{t("roll_number")}</th>
+                          <th>{t("name")}</th>
+                          <th>{t("standard")}</th>
+                          <th>{t("division")}</th>
+                          <th>{t("parent_name")}</th>
+                          <th>{t("parent_phone")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(students || [])
+                          .filter((student) =>
+                            Object.values(student).some((val) =>
+                              String(val).toLowerCase().includes(searchStudents.toLowerCase())
+                            )
+                          )
+                          .map((student) => (
+                            <tr key={student.student_id}>
+                              <td>{student.roll_number}</td>
+                              <td>{student.full_name}</td>
+                              <td>{student.standard}</td>
+                              <td>{student.division}</td>
+                              <td>{student.parent_name}</td>
+                              <td>{student.parent_phone}</td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  )}
+                </TableContainer>
+              </AdminCard>
+            )}
+
+            {/* Filled Forms Tab */}
+            {selectedTab === "forms" && (
+              <AdminCard header={"Filled Forms Data"} className="mb-4 section-card">
+                <TableContainer
+                  title={"Filled Forms Data"}
+                  toolbar={
+                    <Toolbar
+                      left={<span>Response Data</span>}
+                      right={null}
+                    />
+                  }
+                >
+                  {filteredForms && filteredForms.length > 0 ? (
+                    <div style={{ overflowX: "auto" }}>
+                      <table className="table table-striped table-hover table-bordered">
+                        <thead>
+                          <tr>
+                            {filteredKeys.map((col) => (
+                              <th key={col}>{col}</th>
+                            ))}
                           </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                )}
-              </TableContainer>
-            </AdminCard>
-
-            {/* STUDENTS – same header style */}
-            <AdminCard header={"Students"} className="mb-4 section-card">
-  <TableContainer
-    title={"Students"}
-    toolbar={
-      <Toolbar
-        left={<span>Students</span>}
-        right={
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Search students by any field..."
-            value={searchStudents}
-            onChange={(e) => setSearchStudents(e.target.value)}
-          />
-        }
-      />
-    }
-  >
-    {(students || []).filter((student) =>
-      Object.values(student).some((val) =>
-        String(val).toLowerCase().includes(searchStudents.toLowerCase())
-      )
-    ).length === 0 ? (
-      <EmptyState
-        title={"No students found"}
-        description={
-          "Students will appear here after they are added for this school."
-        }
-      />
-    ) : (
-      <table className="table table-striped table-hover table-bordered">
-        <thead>
-          <tr>
-            <th>{t("roll_number")}</th>
-            <th>{t("name")}</th>
-            <th>{t("standard")}</th>
-            <th>{t("division")}</th>
-            <th>{t("parent_name")}</th>
-            <th>{t("parent_phone")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(students || [])
-            .filter((student) =>
-              Object.values(student).some((val) =>
-                String(val).toLowerCase().includes(searchStudents.toLowerCase())
-              )
-            )
-            .map((student) => (
-              <tr key={student.student_id}>
-                <td>{student.roll_number}</td>
-                <td>{student.full_name}</td>
-                <td>{student.standard}</td>
-                <td>{student.division}</td>
-                <td>{student.parent_name}</td>
-                <td>{student.parent_phone}</td>
-              </tr>
-            ))}
-        </tbody>
-      </table>
-    )}
-  </TableContainer>
-</AdminCard>
-
-            {/* FILLED FORMS – same header style */}
-            <AdminCard header={"Filled Forms Data"} className="mb-4 section-card">
-  <TableContainer
-    title={"Filled Forms Data"}
-    toolbar={
-      <Toolbar
-        left={<span>Filled Forms Data</span>}
-        right={null}
-      />
-    }
-  >
-    {filteredForms && filteredForms.length > 0 ? (
-      <div style={{ overflowX: "auto" }}>
-        <table className="table table-striped table-hover table-bordered">
-          <thead>
-            <tr>
-              {filteredKeys.map((col) => (
-                <th key={col}>{col}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filteredForms.map((row, idx) => (
-              <tr key={idx}>
-                {filteredKeys.map((col) => (
-                  <td key={col}>
-                    {row[col] !== null && row[col] !== undefined
-                      ? String(row[col])
-                      : ""}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    ) : (
-      <EmptyState
-        title={"No filled form responses"}
-        description={
-          "Once schools submit forms, their responses will appear here."
-        }
-      />
-    )}
-  </TableContainer>
-</AdminCard>
-
+                        </thead>
+                        <tbody>
+                          {filteredForms.map((row, idx) => (
+                            <tr key={idx}>
+                              {filteredKeys.map((col) => (
+                                <td key={col}>
+                                  {row[col] !== null && row[col] !== undefined
+                                    ? String(row[col])
+                                    : ""}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <EmptyState
+                      title={"No filled form responses"}
+                      description={
+                        "Once schools submit forms, their responses will appear here."
+                      }
+                    />
+                  )}
+                </TableContainer>
+              </AdminCard>
+            )}
           </>
         )}
       </main>
