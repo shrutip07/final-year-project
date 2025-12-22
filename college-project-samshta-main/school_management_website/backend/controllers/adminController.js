@@ -303,14 +303,14 @@ exports.getUnitAnalytics = async (req, res) => {
 exports.getUnits = async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT 
-        u.unit_id,
-        u.kendrashala_name AS unit_name,
-        (SELECT COUNT(*) FROM staff WHERE staff.unit_id = u.unit_id) AS staff_count,
-        (SELECT COUNT(*) FROM students WHERE students.unit_id = u.unit_id) AS student_count
-      FROM unit u
-      ORDER BY u.kendrashala_name
-    `);
+        SELECT 
+          u.unit_id,
+          COALESCE(u.kendrashala_name, 'Education Unit ' || u.unit_id) AS unit_name,
+          (SELECT COUNT(*) FROM staff WHERE staff.unit_id = u.unit_id) AS staff_count,
+          (SELECT COUNT(*) FROM students WHERE students.unit_id = u.unit_id) AS student_count
+        FROM unit u
+        ORDER BY u.kendrashala_name
+      `);
     res.json(result.rows);
   } catch (err) {
     console.error('Error in getUnits:', err);
