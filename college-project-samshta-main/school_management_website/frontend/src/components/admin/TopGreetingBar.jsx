@@ -1,15 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { jwtDecode } from "jwt-decode";
 import './TopGreetingBar.scss';
 
 export default function TopGreetingBar({ role, schoolName, semisId }) {
   const { i18n } = useTranslation();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [displayName, setDisplayName] = useState("User");
   
-  const userEmail = localStorage.getItem("email") || "User";
-  const userName = userEmail;
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        // Try to get name from decoded token, fallback to email or 'User'
+        const name = decoded.full_name || decoded.email || decoded.username || "User";
+        setDisplayName(name.split('@')[0]); // Clean up email if that's what we have
+      } catch (e) {
+        setDisplayName("User");
+      }
+    }
+  }, []);
 
   const toggleLanguage = () => {
     const nextLang = i18n.language === 'en' ? 'mr' : 'en';
@@ -27,7 +40,7 @@ export default function TopGreetingBar({ role, schoolName, semisId }) {
       <div className="greeting-left">
         <div className="welcome-text">
           <span className="welcome-label">Welcome,</span>
-          <span className="user-name">{userName}</span>
+          <span className="user-name">{displayName}</span>
         </div>
       </div>
       <div className="greeting-right">
@@ -39,8 +52,8 @@ export default function TopGreetingBar({ role, schoolName, semisId }) {
         </button>
         <div className="user-profile-wrapper">
           <div className="user-profile" onClick={() => setShowDropdown(!showDropdown)}>
-            <div className="avatar">{userName.charAt(0).toUpperCase()}</div>
-            <span className="profile-name">{userName}</span>
+            <div className="avatar">{displayName.charAt(0).toUpperCase()}</div>
+            <span className="profile-name">{displayName}</span>
             <i className={`bi bi-chevron-${showDropdown ? 'up' : 'down'}`}></i>
           </div>
           
@@ -66,3 +79,4 @@ export default function TopGreetingBar({ role, schoolName, semisId }) {
     </div>
   );
 }
+

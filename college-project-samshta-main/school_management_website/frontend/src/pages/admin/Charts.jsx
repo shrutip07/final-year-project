@@ -136,26 +136,26 @@ export default function AdminCharts({ units }) {
   };
 
   return (
-    <div className="charts-page-container">
+    <div className="charts-page erp-container">
       {/* Unit Selection Card */}
       <AdminCard header={
         <div className="d-flex align-items-center gap-2">
           <i className="bi bi-graph-up text-primary"></i>
-          <span>Analytics Insights & Unit Selection</span>
+          <span>Institutional Analytics</span>
         </div>
-      } className="mb-4">
+      } className="mb-3">
         <div className="row align-items-center">
-          <div className="col-md-8">
-            <p className="text-muted small mb-3">
-              <i className="bi bi-info-circle me-1"></i>
-              Select a school unit to visualize its historical trends, financial performance, and student demographics.
-            </p>
-            <div className="d-flex align-items-center gap-3">
+          <div className="col-md-12">
+            <div className="d-flex align-items-center justify-content-between gap-3">
+              <p className="text-muted small mb-0">
+                <i className="bi bi-info-circle me-1"></i>
+                Select a school unit to visualize performance and student demographics.
+              </p>
               <select
                 className="form-select border-primary-subtle"
                 value={selectedUnitId}
                 onChange={(e) => setSelectedUnitId(e.target.value)}
-                style={{ fontWeight: '500', padding: '0.6rem 1rem' }}
+                style={{ fontWeight: '500', padding: '0.5rem 1rem', width: '350px' }}
               >
                 {units.map((u) => (
                   <option key={u.unit_id} value={u.unit_id}>
@@ -169,7 +169,7 @@ export default function AdminCharts({ units }) {
       </AdminCard>
 
       {selectedUnitId && (
-        <div className="mt-4">
+        <div className="charts-content-wrapper">
           <TabNavigation
             tabs={[
               { id: "admissions", label: "Admissions", icon: "bi-person-plus-fill" },
@@ -182,246 +182,256 @@ export default function AdminCharts({ units }) {
             onTabChange={setSelectedTab}
           />
 
-          {loading ? (
-            <div className="text-center py-5">
-              <div className="spinner-border text-primary" role="status"></div>
-              <p className="mt-3 text-muted fw-bold">Generating reports...</p>
-            </div>
-          ) : err ? (
-            <div className="alert alert-danger shadow-sm border-0 d-flex align-items-center">
-              <i className="bi bi-exclamation-octagon-fill me-2 fs-4"></i>
-              {err}
-            </div>
-          ) : (
-            analytics && (
-              <div className="tab-content mt-4">
-                {/* 1. Admissions Tab */}
-                {selectedTab === "admissions" && (
-                  <AdminCard header={
-                    <div className="d-flex align-items-center gap-2">
-                      <i className="bi bi-activity text-primary"></i>
-                      <span>Admission Trends</span>
-                    </div>
-                  }>
-                    <div className="row">
-                      <div className="col-md-10 mx-auto">
-                        <div style={{ height: '350px' }}>
-                          <Bar
-                            data={{
-                              labels: c.admissions.labels,
-                              datasets: [
-                                {
-                                  label: "New Admissions",
-                                  data: c.admissions.data,
-                                  backgroundColor: "rgba(34, 108, 240, 0.85)",
-                                  borderRadius: 6,
-                                },
-                              ],
-                            }}
-                            options={chartOptions}
-                            redraw
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </AdminCard>
-                )}
-
-                {/* 2. Students Tab */}
-                {selectedTab === "students" && (
-                  <AdminCard header={
-                    <div className="d-flex align-items-center gap-2">
-                      <i className="bi bi-grid-3x3-gap text-success"></i>
-                      <span>Standard-wise Distribution</span>
-                    </div>
-                  }>
-                    <div className="row">
-                      <div className="col-md-10 mx-auto">
-                        <div style={{ height: '350px' }}>
-                          <Bar
-                            data={{
-                              labels: c.studentsByClass.labels,
-                              datasets: [
-                                {
-                                  label: "Total Students",
-                                  data: c.studentsByClass.data,
-                                  backgroundColor: "rgba(71, 199, 152, 0.85)",
-                                  borderRadius: 6,
-                                },
-                              ],
-                            }}
-                            options={chartOptions}
-                            redraw
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </AdminCard>
-                )}
-
-                {/* 3. Finance Tab */}
-                {selectedTab === "finance" && (
-                  <div className="row g-4">
-                    <div className="col-lg-6">
-                      <AdminCard header={
-                        <div className="d-flex align-items-center gap-2">
-                          <i className="bi bi-wallet2 text-warning"></i>
-                          <span>Payments by Category</span>
-                        </div>
-                      }>
-                        <div style={{ height: '320px' }}>
-                          <Bar
-                            data={{
-                              labels: c.payments.labels,
-                              datasets: c.payments.datasets.map((d, i) => ({
-                                ...d,
-                                backgroundColor: ["rgba(196, 88, 232, 0.85)", "rgba(80, 155, 235, 0.85)", "rgba(242, 186, 49, 0.85)"][i % 3],
-                                borderRadius: 4,
-                              })),
-                            }}
-                            options={{
-                              ...chartOptions,
-                              scales: { 
-                                x: { stacked: true, grid: { display: false } }, 
-                                y: { stacked: true, grid: { color: '#f1f5f9' } } 
-                              }
-                            }}
-                            redraw
-                          />
-                        </div>
-                      </AdminCard>
-                    </div>
-                    <div className="col-lg-6">
-                      <AdminCard header={
-                        <div className="d-flex align-items-center gap-2">
-                          <i className="bi bi-graph-down-arrow text-danger"></i>
-                          <span>Revenue vs Expenditure</span>
-                        </div>
-                      }>
-                        <div style={{ height: '320px' }}>
-                          <Line
-                            data={{
-                              labels: c.budgets.labels,
-                              datasets: [
-                                {
-                                  label: "Income",
-                                  data: c.budgets.income,
-                                  borderColor: "#33b249",
-                                  backgroundColor: "rgba(191, 252, 198, 0.2)",
-                                  fill: true,
-                                  tension: 0.4
-                                },
-                                {
-                                  label: "Expenses",
-                                  data: c.budgets.expenses,
-                                  borderColor: "#db504a",
-                                  backgroundColor: "rgba(255, 224, 224, 0.2)",
-                                  fill: true,
-                                  tension: 0.4
-                                },
-                              ],
-                            }}
-                            options={chartOptions}
-                            redraw
-                          />
-                        </div>
-                      </AdminCard>
-                    </div>
-                  </div>
-                )}
-
-                {/* 4. Results Tab */}
-                {selectedTab === "results" && (
-                  <AdminCard header={
-                    <div className="d-flex align-items-center gap-2">
-                      <i className="bi bi-pie-chart-fill text-info"></i>
-                      <span>Overall Academic Success</span>
-                    </div>
-                  }>
-                    <div className="row align-items-center">
-                      <div className="col-md-6 text-center">
-                         <div style={{ height: '300px' }}>
-                            <Pie
-                              data={{
-                                labels: ["Passed", "Not Passed"],
-                                datasets: [{
-                                  data: c.pass,
-                                  backgroundColor: ["#3b82f6", "#f59e0b"],
-                                  borderWidth: 0,
-                                }],
-                              }}
-                              options={{
-                                maintainAspectRatio: false,
-                                plugins: { legend: { position: 'right' } }
-                              }}
-                              redraw
-                            />
-                         </div>
-                      </div>
-                      <div className="col-md-6">
-                         <div className="p-4 bg-light rounded-3 border">
-                            <h6 className="fw-bold mb-3">Data Summary</h6>
-                            <div className="d-flex justify-content-between mb-2 pb-2 border-bottom">
-                               <span className="text-muted">Students Passed</span>
-                               <span className="fw-bold text-success">{c.pass[0]}</span>
-                            </div>
-                            <div className="d-flex justify-content-between">
-                               <span className="text-muted">Pending/Fail</span>
-                               <span className="fw-bold text-warning">{c.pass[1]}</span>
-                            </div>
-                         </div>
-                      </div>
-                    </div>
-                  </AdminCard>
-                )}
-
-                {/* 5. Demographics Tab */}
-                {selectedTab === "demographics" && (
-                  <AdminCard header={
-                    <div className="d-flex align-items-center gap-2">
-                      <i className="bi bi-gender-ambiguous text-secondary"></i>
-                      <span>Gender Representation</span>
-                    </div>
-                  }>
-                    <div className="row align-items-center">
-                      <div className="col-md-6 text-center">
-                         <div style={{ height: '300px' }}>
-                            <Pie
-                              data={{
-                                labels: ["Male", "Female"],
-                                datasets: [{
-                                  data: c.gender,
-                                  backgroundColor: ["#42a5f5", "#d81b60"],
-                                  borderWidth: 0,
-                                }],
-                              }}
-                              options={{
-                                maintainAspectRatio: false,
-                                plugins: { legend: { position: 'right' } }
-                              }}
-                              redraw
-                            />
-                         </div>
-                      </div>
-                      <div className="col-md-6">
-                         <div className="p-4 bg-light rounded-3 border">
-                            <h6 className="fw-bold mb-3">Breakdown</h6>
-                            <div className="d-flex justify-content-between mb-2 pb-2 border-bottom">
-                               <span className="text-muted">Male Students</span>
-                               <span className="fw-bold text-primary">{c.gender[0]}</span>
-                            </div>
-                            <div className="d-flex justify-content-between">
-                               <span className="text-muted">Female Students</span>
-                               <span className="fw-bold" style={{ color: '#d81b60' }}>{c.gender[1]}</span>
-                            </div>
-                         </div>
-                      </div>
-                    </div>
-                  </AdminCard>
-                )}
+          <div className="tab-pane-container mt-3" style={{ height: 'calc(100vh - 280px)', overflowY: 'auto' }}>
+            {loading ? (
+              <div className="text-center py-5 bg-white rounded border shadow-sm">
+                <div className="spinner-border text-primary" role="status"></div>
+                <p className="mt-3 text-muted fw-bold">Generating reports...</p>
               </div>
-            )
-          )}
+            ) : err ? (
+              <div className="alert alert-danger shadow-sm border-0 d-flex align-items-center">
+                <i className="bi bi-exclamation-octagon-fill me-2 fs-4"></i>
+                {err}
+              </div>
+            ) : (
+              analytics && (
+                <div className="tab-content">
+                  {/* 1. Admissions Tab */}
+                  {selectedTab === "admissions" && (
+                    <div className="row g-4">
+                      <div className="col-md-8 mx-auto">
+                        <AdminCard header={
+                          <div className="d-flex align-items-center gap-2">
+                            <i className="bi bi-activity text-primary"></i>
+                            <span>Admission Trends</span>
+                          </div>
+                        }>
+                          <div style={{ height: '350px' }}>
+                            <Bar
+                              data={{
+                                labels: c.admissions.labels,
+                                datasets: [
+                                  {
+                                    label: "New Admissions",
+                                    data: c.admissions.data,
+                                    backgroundColor: "rgba(34, 108, 240, 0.85)",
+                                    borderRadius: 6,
+                                  },
+                                ],
+                              }}
+                              options={chartOptions}
+                              redraw
+                            />
+                          </div>
+                        </AdminCard>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2. Students Tab */}
+                  {selectedTab === "students" && (
+                    <div className="row g-4">
+                      <div className="col-md-8 mx-auto">
+                        <AdminCard header={
+                          <div className="d-flex align-items-center gap-2">
+                            <i className="bi bi-grid-3x3-gap text-success"></i>
+                            <span>Standard-wise Distribution</span>
+                          </div>
+                        }>
+                          <div style={{ height: '350px' }}>
+                            <Bar
+                              data={{
+                                labels: c.studentsByClass.labels,
+                                datasets: [
+                                  {
+                                    label: "Total Students",
+                                    data: c.studentsByClass.data,
+                                    backgroundColor: "rgba(71, 199, 152, 0.85)",
+                                    borderRadius: 6,
+                                  },
+                                ],
+                              }}
+                              options={chartOptions}
+                              redraw
+                            />
+                          </div>
+                        </AdminCard>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. Finance Tab */}
+                  {selectedTab === "finance" && (
+                    <div className="row g-4">
+                      <div className="col-lg-6">
+                        <AdminCard header={
+                          <div className="d-flex align-items-center gap-2">
+                            <i className="bi bi-wallet2 text-warning"></i>
+                            <span>Payments by Category</span>
+                          </div>
+                        }>
+                          <div style={{ height: '350px' }}>
+                            <Bar
+                              data={{
+                                labels: c.payments.labels,
+                                datasets: c.payments.datasets.map((d, i) => ({
+                                  ...d,
+                                  backgroundColor: ["rgba(196, 88, 232, 0.85)", "rgba(80, 155, 235, 0.85)", "rgba(242, 186, 49, 0.85)"][i % 3],
+                                  borderRadius: 4,
+                                })),
+                              }}
+                              options={{
+                                ...chartOptions,
+                                scales: { 
+                                  x: { stacked: true, grid: { display: false } }, 
+                                  y: { stacked: true, grid: { color: '#f1f5f9' } } 
+                                }
+                              }}
+                              redraw
+                            />
+                          </div>
+                        </AdminCard>
+                      </div>
+                      <div className="col-lg-6">
+                        <AdminCard header={
+                          <div className="d-flex align-items-center gap-2">
+                            <i className="bi bi-graph-down-arrow text-danger"></i>
+                            <span>Revenue vs Expenditure</span>
+                          </div>
+                        }>
+                          <div style={{ height: '350px' }}>
+                            <Line
+                              data={{
+                                labels: c.budgets.labels,
+                                datasets: [
+                                  {
+                                    label: "Income",
+                                    data: c.budgets.income,
+                                    borderColor: "#33b249",
+                                    backgroundColor: "rgba(191, 252, 198, 0.2)",
+                                    fill: true,
+                                    tension: 0.4
+                                  },
+                                  {
+                                    label: "Expenses",
+                                    data: c.budgets.expenses,
+                                    borderColor: "#db504a",
+                                    backgroundColor: "rgba(255, 224, 224, 0.2)",
+                                    fill: true,
+                                    tension: 0.4
+                                  },
+                                ],
+                              }}
+                              options={chartOptions}
+                              redraw
+                            />
+                          </div>
+                        </AdminCard>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 4. Results Tab */}
+                  {selectedTab === "results" && (
+                    <div className="row g-4">
+                      <div className="col-lg-8 mx-auto">
+                        <AdminCard header={
+                          <div className="d-flex align-items-center gap-2">
+                            <i className="bi bi-pie-chart-fill text-info"></i>
+                            <span>Overall Academic Success</span>
+                          </div>
+                        }>
+                          <div className="row align-items-center">
+                            <div className="col-md-6 text-center border-end">
+                               <div style={{ height: '300px' }}>
+                                  <Pie
+                                    data={{
+                                      labels: ["Passed", "Not Passed"],
+                                      datasets: [{
+                                        data: c.pass,
+                                        backgroundColor: ["#3b82f6", "#f59e0b"],
+                                        borderWidth: 0,
+                                      }],
+                                    }}
+                                    options={{
+                                      maintainAspectRatio: false,
+                                      plugins: { legend: { position: 'bottom' } }
+                                    }}
+                                    redraw
+                                  />
+                               </div>
+                            </div>
+                            <div className="col-md-6 px-4">
+                               <div className="p-4 bg-light rounded-3 border">
+                                  <h6 className="fw-bold mb-3 text-dark">Data Summary</h6>
+                                  <div className="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                                     <span className="text-muted">Students Passed</span>
+                                     <span className="fw-bold text-success fs-5">{c.pass[0]}</span>
+                                  </div>
+                                  <div className="d-flex justify-content-between">
+                                     <span className="text-muted">Pending/Fail</span>
+                                     <span className="fw-bold text-warning fs-5">{c.pass[1]}</span>
+                                  </div>
+                               </div>
+                            </div>
+                          </div>
+                        </AdminCard>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 5. Demographics Tab */}
+                  {selectedTab === "demographics" && (
+                    <div className="row g-4">
+                      <div className="col-lg-8 mx-auto">
+                        <AdminCard header={
+                          <div className="d-flex align-items-center gap-2">
+                            <i className="bi bi-gender-ambiguous text-secondary"></i>
+                            <span>Gender Representation</span>
+                          </div>
+                        }>
+                          <div className="row align-items-center">
+                            <div className="col-md-6 text-center border-end">
+                               <div style={{ height: '300px' }}>
+                                  <Pie
+                                    data={{
+                                      labels: ["Male", "Female"],
+                                      datasets: [{
+                                        data: c.gender,
+                                        backgroundColor: ["#42a5f5", "#d81b60"],
+                                        borderWidth: 0,
+                                      }],
+                                    }}
+                                    options={{
+                                      maintainAspectRatio: false,
+                                      plugins: { legend: { position: 'bottom' } }
+                                    }}
+                                    redraw
+                                  />
+                               </div>
+                            </div>
+                            <div className="col-md-6 px-4">
+                               <div className="p-4 bg-light rounded-3 border">
+                                  <h6 className="fw-bold mb-3 text-dark">Breakdown</h6>
+                                  <div className="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                                     <span className="text-muted">Male Students</span>
+                                     <span className="fw-bold text-primary fs-5">{c.gender[0]}</span>
+                                  </div>
+                                  <div className="d-flex justify-content-between">
+                                     <span className="text-muted">Female Students</span>
+                                     <span className="fw-bold fs-5" style={{ color: '#d81b60' }}>{c.gender[1]}</span>
+                                  </div>
+                               </div>
+                            </div>
+                          </div>
+                        </AdminCard>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            )}
+          </div>
         </div>
       )}
     </div>

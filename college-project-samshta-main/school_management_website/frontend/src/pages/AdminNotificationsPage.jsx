@@ -3,10 +3,12 @@ import axios from "axios";
 import ChatWidget from "../components/ChatWidget";
 import AdminLayout from "../components/admin/AdminLayout";
 import AdminCard from "../components/admin/AdminCard";
+import TabNavigation from "../components/admin/TabNavigation";
 
 export default function AdminNotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const [forms, setForms] = useState([]);
+  const [selectedTab, setSelectedTab] = useState("send_notification");
 
   // Notification state
   const [title, setTitle] = useState("");
@@ -25,7 +27,7 @@ export default function AdminNotificationsPage() {
   useEffect(() => {
     loadNotifications();
     loadForms();
-  }, []);
+  }, [receiverRole]);
 
   // Load notifications
   const loadNotifications = async () => {
@@ -156,149 +158,237 @@ export default function AdminNotificationsPage() {
 
   return (
     <AdminLayout activeSidebarTab="notifications">
-      <div className="notifications-portal">
-        <div className="row">
-          <div className="col-lg-6 mb-4">
-            <AdminCard header="Send Global Notification">
-              <form onSubmit={sendNotification}>
-                <div className="mb-3">
-                  <label className="form-label small fw-bold">RECEIVER ROLE</label>
-                  <select className="form-select" value={receiverRole} onChange={(e) => setReceiverRole(e.target.value)}>
-                    <option value="principal">Principal</option>
-                    <option value="teacher">Teacher</option>
-                  </select>
-                </div>
-                <div className="mb-3">
-                  <label className="form-label small fw-bold">TITLE</label>
-                  <input type="text" className="form-control" value={title} onChange={(e) => setTitle(e.target.value)} required />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label small fw-bold">MESSAGE</label>
-                  <textarea className="form-control" rows={3} value={message} onChange={(e) => setMessage(e.target.value)} required />
-                </div>
-                <button className="btn btn-primary w-100" type="submit">
-                  <i className="bi bi-send me-2"></i> Send Notification
-                </button>
-              </form>
-            </AdminCard>
-          </div>
+      <div className="notifications-page erp-container">
+        <TabNavigation
+          tabs={[
+            { id: "send_notification", label: "Send Notification", icon: "bi-send-fill" },
+            { id: "create_form", label: "Create Form", icon: "bi-file-earmark-plus-fill" },
+            { id: "received", label: "Received Notifications", icon: "bi-inbox-fill" },
+            { id: "active_forms", label: "Active Forms", icon: "bi-card-list" },
+          ]}
+          activeTab={selectedTab}
+          onTabChange={setSelectedTab}
+        />
 
-          <div className="col-lg-6 mb-4">
-            <AdminCard header="Create & Distribute Form">
-              <form onSubmit={createFormAndNotify}>
-                <div className="mb-3">
-                  <label className="form-label small fw-bold">TARGET ROLE</label>
-                  <select className="form-select" value={receiverRole} onChange={(e) => setReceiverRole(e.target.value)}>
-                    <option value="principal">Principal</option>
-                    <option value="teacher">Teacher</option>
-                  </select>
-                </div>
-                <div className="mb-3">
-                  <label className="form-label small fw-bold">FORM TITLE</label>
-                  <input type="text" className="form-control" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label small fw-bold">DEADLINE</label>
-                  <input type="datetime-local" className="form-control" value={formDeadline} onChange={(e) => setFormDeadline(e.target.value)} required />
-                </div>
-                
-                <div className="questions-section mb-3">
-                  <label className="form-label small fw-bold d-flex justify-content-between">
-                    QUESTIONS
-                    <button type="button" className="btn btn-link btn-sm p-0 text-decoration-none" onClick={addQuestion}>+ Add Question</button>
-                  </label>
-                  {formQuestions.map((q, i) => (
-                    <div key={i} className="p-3 border rounded bg-light mb-2">
-                       <input
-                        type="text"
-                        placeholder="Question text"
-                        className="form-control mb-2"
-                        value={q.question_text}
-                        onChange={(e) => updateQuestion(i, 'question_text', e.target.value)}
-                        required
-                      />
-                      <div className="d-flex gap-2">
-                        <select
-                          className="form-select w-auto"
-                          value={q.question_type}
-                          onChange={(e) => updateQuestion(i, 'question_type', e.target.value)}
-                        >
-                          <option value="text">Input Text</option>
-                          <option value="number">Number</option>
-                          <option value="date">Date</option>
-                          <option value="select">MCQ</option>
+        <div className="tab-pane-container mt-3" style={{ height: 'calc(100vh - 180px)', overflowY: 'auto' }}>
+          {selectedTab === "send_notification" && (
+            <div className="row g-4">
+              <div className="col-lg-8 mx-auto">
+                <AdminCard header={
+                  <div className="d-flex align-items-center gap-2">
+                    <i className="bi bi-megaphone-fill text-primary"></i>
+                    <span>Official Announcement</span>
+                  </div>
+                }>
+                  <form onSubmit={sendNotification}>
+                    <div className="row g-3">
+                      <div className="col-md-12">
+                        <label className="form-label small fw-bold text-muted">TARGET AUDIENCE</label>
+                        <select className="form-select border-primary-subtle" value={receiverRole} onChange={(e) => setReceiverRole(e.target.value)}>
+                          <option value="principal">Principals (Heads of Schools)</option>
+                          <option value="teacher">Teachers (Staff Members)</option>
                         </select>
-                        {q.question_type === 'select' && (
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Options, comma separated"
-                            value={q.options}
-                            onChange={(e) => updateQuestion(i, 'options', e.target.value)}
-                          />
-                        )}
-                        <button type="button" className="btn btn-outline-danger" onClick={() => removeQuestion(i)} disabled={formQuestions.length === 1}><i className="bi bi-trash"></i></button>
+                      </div>
+                      <div className="col-md-12">
+                        <label className="form-label small fw-bold text-muted">ANNOUNCEMENT TITLE</label>
+                        <input type="text" className="form-control" placeholder="Subject of the notification" value={title} onChange={(e) => setTitle(e.target.value)} required />
+                      </div>
+                      <div className="col-md-12">
+                        <label className="form-label small fw-bold text-muted">MESSAGE CONTENT</label>
+                        <textarea className="form-control" rows={5} placeholder="Type your detailed message here..." value={message} onChange={(e) => setMessage(e.target.value)} required />
+                      </div>
+                      <div className="col-md-12">
+                        <button className="btn btn-primary btn-lg w-100 shadow-sm" type="submit">
+                          <i className="bi bi-send-check me-2"></i> Broadcast Notification
+                        </button>
                       </div>
                     </div>
-                  ))}
-                </div>
-                <button type="submit" className="btn btn-success w-100">
-                  <i className="bi bi-plus-circle me-2"></i> Create Form & Notify
-                </button>
-              </form>
-            </AdminCard>
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="col-md-6 mb-4">
-            <AdminCard header="Received Notifications">
-              <div className="notification-list" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                {notifications.length === 0 ? (
-                  <p className="text-muted text-center py-4">No notifications received</p>
-                ) : (
-                  notifications.map((n) => (
-                    <div
-                      key={n.id}
-                      className={`p-3 mb-2 rounded border-start border-4 ${n.is_read ? "bg-light border-secondary" : "bg-white border-warning shadow-sm"}`}
-                      style={{ cursor: "pointer" }}
-                      onClick={() => markRead(n.id)}
-                    >
-                      <h6 className="mb-1">{n.title}</h6>
-                      <p className="m-0 small text-muted">{n.message}</p>
-                      <div className="mt-1"><span className="badge bg-secondary" style={{ fontSize: '10px' }}>{n.receiver_role}</span></div>
-                    </div>
-                  ))
-                )}
+                  </form>
+                </AdminCard>
               </div>
-            </AdminCard>
-          </div>
+            </div>
+          )}
 
-          <div className="col-md-6 mb-4">
-            <AdminCard header={`Active Forms (${forms.length})`}>
-              <div className="form-list" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                {forms.length === 0 ? (
-                  <p className="text-muted text-center py-4">No active forms found</p>
-                ) : (
-                  forms.map((form) => (
-                    <div key={form.id} className="p-3 mb-2 rounded border bg-white shadow-sm">
-                      <h6 className="text-primary mb-1">{form.title}</h6>
-                      <p className="small text-muted mb-2">{form.description || 'No description provided'}</p>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <small className="text-muted"><i className="bi bi-clock me-1"></i> {new Date(form.deadline).toLocaleDateString()}</small>
-                        <a href={`http://localhost:3000/forms/${form.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm">
-                          View Link
-                        </a>
+          {selectedTab === "create_form" && (
+            <div className="row g-4">
+              <div className="col-lg-8 mx-auto">
+                <AdminCard header={
+                  <div className="d-flex align-items-center gap-2">
+                    <i className="bi bi-file-earmark-spreadsheet-fill text-success"></i>
+                    <span>Data Collection Campaign</span>
+                  </div>
+                }>
+                  <form onSubmit={createFormAndNotify}>
+                    <div className="row g-3">
+                      <div className="col-md-6">
+                        <label className="form-label small fw-bold text-muted">TARGET ROLE</label>
+                        <select className="form-select border-success-subtle" value={receiverRole} onChange={(e) => setReceiverRole(e.target.value)}>
+                          <option value="principal">Principals</option>
+                          <option value="teacher">Teachers</option>
+                        </select>
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label small fw-bold text-muted">SUBMISSION DEADLINE</label>
+                        <input type="datetime-local" className="form-control border-danger-subtle" value={formDeadline} onChange={(e) => setFormDeadline(e.target.value)} required />
+                      </div>
+                      <div className="col-md-12">
+                        <label className="form-label small fw-bold text-muted">FORM TITLE</label>
+                        <input type="text" className="form-control" placeholder="e.g. Monthly Attendance Registry" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required />
+                      </div>
+                      
+                      <div className="col-md-12">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <label className="form-label small fw-bold text-muted mb-0">QUESTIONNAIRE DESIGN</label>
+                          <button type="button" className="btn btn-sm btn-outline-success" onClick={addQuestion}>
+                            <i className="bi bi-plus-lg me-1"></i> Add Question
+                          </button>
+                        </div>
+                        {formQuestions.map((q, i) => (
+                          <div key={i} className="p-3 border rounded bg-light mb-3 shadow-sm">
+                             <input
+                              type="text"
+                              placeholder="Describe your question..."
+                              className="form-control mb-2 fw-semibold"
+                              value={q.question_text}
+                              onChange={(e) => updateQuestion(i, 'question_text', e.target.value)}
+                              required
+                            />
+                            <div className="d-flex gap-2">
+                              <select
+                                className="form-select w-auto"
+                                value={q.question_type}
+                                onChange={(e) => updateQuestion(i, 'question_type', e.target.value)}
+                              >
+                                <option value="text">Short Text</option>
+                                <option value="number">Numeric Value</option>
+                                <option value="date">Date Entry</option>
+                                <option value="select">Multiple Choice (MCQ)</option>
+                              </select>
+                              {q.question_type === 'select' && (
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  placeholder="Option A, Option B, Option C..."
+                                  value={q.options}
+                                  onChange={(e) => updateQuestion(i, 'options', e.target.value)}
+                                  required
+                                />
+                              )}
+                              <button type="button" className="btn btn-outline-danger" onClick={() => removeQuestion(i)} disabled={formQuestions.length === 1}>
+                                <i className="bi bi-trash"></i>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="col-md-12 mt-4">
+                        <button type="submit" className="btn btn-success btn-lg w-100 shadow-sm">
+                          <i className="bi bi-cloud-upload me-2"></i> Deploy Form & Notify Recipients
+                        </button>
                       </div>
                     </div>
-                  ))
-                )}
+                  </form>
+                </AdminCard>
               </div>
-            </AdminCard>
-          </div>
+            </div>
+          )}
+
+          {selectedTab === "received" && (
+            <div className="row g-4">
+              <div className="col-lg-10 mx-auto">
+                <AdminCard header={
+                  <div className="d-flex align-items-center gap-2">
+                    <i className="bi bi-envelope-paper-fill text-info"></i>
+                    <span>Inbox - Administrator Notifications</span>
+                  </div>
+                }>
+                  <div className="notification-list">
+                    {notifications.length === 0 ? (
+                      <div className="text-center py-5">
+                        <i className="bi bi-mailbox2 text-muted fs-1 mb-3"></i>
+                        <p className="text-muted fw-bold">Your inbox is clear</p>
+                      </div>
+                    ) : (
+                      <div className="row g-3">
+                        {notifications.map((n) => (
+                          <div key={n.id} className="col-md-12">
+                            <div
+                              className={`p-4 rounded border-start border-4 shadow-sm transition-all ${n.is_read ? "bg-light border-secondary opacity-75" : "bg-white border-primary border-shadow-custom"}`}
+                              style={{ cursor: "pointer" }}
+                              onClick={() => markRead(n.id)}
+                            >
+                              <div className="d-flex justify-content-between align-items-start mb-2">
+                                <h6 className={`mb-0 fw-bold ${n.is_read ? "text-muted" : "text-dark"}`}>{n.title}</h6>
+                                {!n.is_read && <span className="badge bg-primary rounded-pill">New</span>}
+                              </div>
+                              <p className="m-0 text-muted small lh-lg">{n.message}</p>
+                              <div className="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+                                <span className="text-uppercase fw-bold text-muted" style={{ fontSize: '10px', letterSpacing: '1px' }}>
+                                  <i className="bi bi-person-circle me-1"></i> {n.receiver_role}
+                                </span>
+                                <span className="text-muted" style={{ fontSize: '10px' }}>
+                                  <i className="bi bi-clock me-1"></i> {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </AdminCard>
+              </div>
+            </div>
+          )}
+
+          {selectedTab === "active_forms" && (
+            <div className="row g-4">
+              <div className="col-lg-10 mx-auto">
+                <AdminCard header={
+                  <div className="d-flex align-items-center gap-2">
+                    <i className="bi bi-clipboard-data-fill text-warning"></i>
+                    <span>Ongoing Data Collection Forms</span>
+                  </div>
+                }>
+                  <div className="form-list">
+                    {forms.length === 0 ? (
+                      <div className="text-center py-5">
+                        <i className="bi bi-file-earmark-x text-muted fs-1 mb-3"></i>
+                        <p className="text-muted fw-bold">No active forms found</p>
+                      </div>
+                    ) : (
+                      <div className="row g-3">
+                        {forms.map((form) => (
+                          <div key={form.id} className="col-md-6">
+                            <div className="p-4 rounded border bg-white shadow-sm h-100 d-flex flex-column">
+                              <div className="d-flex justify-content-between align-items-start mb-3">
+                                <h6 className="text-primary fw-bold mb-0">{form.title}</h6>
+                                <span className="erp-badge badge-year">ACTIVE</span>
+                              </div>
+                              <p className="small text-muted mb-4 flex-grow-1">{form.description || 'No specialized description provided for this collection form.'}</p>
+                              <div className="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                                <div className="text-danger small fw-bold">
+                                  <i className="bi bi-calendar-event me-1"></i> 
+                                  Due: {new Date(form.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                </div>
+                                <a href={`http://localhost:3000/forms/${form.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-primary px-3">
+                                  <i className="bi bi-link-45deg me-1"></i> Form Link
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </AdminCard>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <ChatWidget />
     </AdminLayout>
   );
 }
+

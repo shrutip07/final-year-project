@@ -1142,132 +1142,192 @@ export default function AdminDashboard() {
     </div>
   );
 
-  const renderContent = () => {
-    switch (sidebarTab) {
-      case "dashboard":
-        if (selectedUnit && unitDetails) return renderUnitDetails();
-        return renderDashboardMain();
+    const [selectedNotificationTab, setSelectedNotificationTab] = useState("send_notification");
 
-      case "charts":
-        return (
-          <AdminCharts units={units} />
-        );
+    const renderNotificationsModule = () => {
+      return (
+        <div className="notifications-page erp-container">
+          <TabNavigation
+            tabs={[
+              { id: "send_notification", label: "Send Notification", icon: "bi-send-fill" },
+              { id: "create_form", label: "Create Form", icon: "bi-file-earmark-plus-fill" },
+              { id: "activity", label: "Recent Activity", icon: "bi-clock-history" },
+            ]}
+            activeTab={selectedNotificationTab}
+            onTabChange={setSelectedNotificationTab}
+          />
 
-      case "notifications":
-        return (
-          <div className="notifications-portal">
-            <div className="row">
-              <div className="col-lg-6 mb-4">
-                <AdminCard header="Send Global Notification">
-                  <form onSubmit={addNotification}>
-                    <div className="mb-3">
-                      <label className="form-label small fw-bold">RECEIVER ROLE</label>
-                      <select className="form-select" value={notifRole} onChange={(e) => setNotifRole(e.target.value)}>
-                        <option value="principal">Principal</option>
-                        <option value="teacher">Teacher</option>
-                      </select>
+          <div className="tab-pane-container mt-3" style={{ height: 'calc(100vh - 220px)', overflowY: 'auto' }}>
+            {selectedNotificationTab === "send_notification" && (
+              <div className="row g-4">
+                <div className="col-lg-8 mx-auto">
+                  <AdminCard header={
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="bi bi-megaphone-fill text-primary"></i>
+                      <span>Official Announcement</span>
                     </div>
-                    <div className="mb-3">
-                      <label className="form-label small fw-bold">TITLE</label>
-                      <input type="text" className="form-control" value={notifTitle} onChange={(e) => setNotifTitle(e.target.value)} required />
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label small fw-bold">MESSAGE</label>
-                      <textarea className="form-control" rows={3} value={notifMsg} onChange={(e) => setNotifMsg(e.target.value)} required />
-                    </div>
-                    <button className="btn btn-primary w-100" disabled={notifLoading} type="submit">
-                      {notifLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-send me-2"></i>}
-                      Dispatch Notification
-                    </button>
-                  </form>
-                </AdminCard>
+                  }>
+                    <form onSubmit={addNotification}>
+                      <div className="mb-3">
+                        <label className="form-label small fw-bold text-muted">RECEIVER ROLE</label>
+                        <select className="form-select border-primary-subtle" value={notifRole} onChange={(e) => setNotifRole(e.target.value)}>
+                          <option value="principal">Principal</option>
+                          <option value="teacher">Teacher</option>
+                        </select>
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label small fw-bold text-muted">TITLE</label>
+                        <input type="text" className="form-control" value={notifTitle} onChange={(e) => setNotifTitle(e.target.value)} required />
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label small fw-bold text-muted">MESSAGE</label>
+                        <textarea className="form-control" rows={4} value={notifMsg} onChange={(e) => setNotifMsg(e.target.value)} required />
+                      </div>
+                      <button className="btn btn-primary w-100 py-2 shadow-sm" disabled={notifLoading} type="submit">
+                        {notifLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-send me-2"></i>}
+                        Dispatch Notification
+                      </button>
+                    </form>
+                  </AdminCard>
+                </div>
               </div>
+            )}
 
-              <div className="col-lg-6 mb-4">
-                <AdminCard header="Create & Distribute Form">
-                  <form onSubmit={addForm}>
-                    <div className="mb-3">
-                      <label className="form-label small fw-bold">TARGET ROLE</label>
-                      <select className="form-select" value={formRole} onChange={(e) => setFormRole(e.target.value)}>
-                        <option value="principal">Principal</option>
-                        <option value="teacher">Teacher</option>
-                      </select>
+            {selectedNotificationTab === "create_form" && (
+              <div className="row g-4">
+                <div className="col-lg-8 mx-auto">
+                  <AdminCard header={
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="bi bi-file-earmark-plus-fill text-success"></i>
+                      <span>Data Collection Campaign</span>
                     </div>
-                    <div className="mb-3">
-                      <label className="form-label small fw-bold">FORM TITLE</label>
-                      <input type="text" className="form-control" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required />
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label small fw-bold">DEADLINE</label>
-                      <input type="datetime-local" className="form-control" value={formDeadline} onChange={(e) => setFormDeadline(e.target.value)} />
-                    </div>
-                    
-                    <div className="questions-section mb-3">
-                      <label className="form-label small fw-bold d-flex justify-content-between">
-                        QUESTIONS
-                        <button type="button" className="btn btn-link btn-sm p-0" onClick={addFormQuestion}>+ Add More</button>
-                      </label>
-                      {formQuestions.map((q, idx) => (
-                        <div key={idx} className="p-3 border rounded bg-light mb-2">
-                          <input placeholder="Enter question..." className="form-control mb-2" value={q.question_text} required onChange={(e) => handleQuestionChange(idx, "question_text", e.target.value)} />
-                          <div className="d-flex gap-2">
-                             <select className="form-select w-auto" value={q.question_type} onChange={(e) => handleQuestionChange(idx, "question_type", e.target.value)}>
-                               <option value="text">Input Text</option>
-                               <option value="mcq">Multiple Choice</option>
-                             </select>
-                             {q.question_type === "mcq" && (
-                               <input placeholder="Option 1, Option 2..." className="form-control" value={q.options} onChange={(e) => handleQuestionChange(idx, "options", e.target.value)} />
-                             )}
-                             <button type="button" className="btn btn-outline-danger" onClick={() => removeFormQuestion(idx)} disabled={formQuestions.length === 1}><i className="bi bi-trash"></i></button>
-                          </div>
+                  }>
+                    <form onSubmit={addForm}>
+                      <div className="row g-3">
+                        <div className="col-md-6">
+                          <label className="form-label small fw-bold text-muted">TARGET ROLE</label>
+                          <select className="form-select border-success-subtle" value={formRole} onChange={(e) => setFormRole(e.target.value)}>
+                            <option value="principal">Principal</option>
+                            <option value="teacher">Teacher</option>
+                          </select>
                         </div>
-                      ))}
-                    </div>
-                    <button className="btn btn-success w-100" disabled={formLoading} type="submit">
-                      {formLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-plus-circle me-2"></i>}
-                      Launch Form Campaign
-                    </button>
-                  </form>
-                </AdminCard>
+                        <div className="col-md-6">
+                          <label className="form-label small fw-bold text-muted">DEADLINE</label>
+                          <input type="datetime-local" className="form-control" value={formDeadline} onChange={(e) => setFormDeadline(e.target.value)} />
+                        </div>
+                        <div className="col-md-12">
+                          <label className="form-label small fw-bold text-muted">FORM TITLE</label>
+                          <input type="text" className="form-control" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required />
+                        </div>
+                        <div className="col-md-12">
+                          <div className="d-flex justify-content-between align-items-center mb-2">
+                            <label className="form-label small fw-bold text-muted mb-0">QUESTIONS</label>
+                            <button type="button" className="btn btn-link btn-sm p-0 text-decoration-none" onClick={addFormQuestion}>+ Add More</button>
+                          </div>
+                          {formQuestions.map((q, idx) => (
+                            <div key={idx} className="p-3 border rounded bg-light mb-2 shadow-sm">
+                              <input placeholder="Enter question text..." className="form-control mb-2" value={q.question_text} required onChange={(e) => handleQuestionChange(idx, "question_text", e.target.value)} />
+                              <div className="d-flex gap-2">
+                                <select className="form-select w-auto" value={q.question_type} onChange={(e) => handleQuestionChange(idx, "question_type", e.target.value)}>
+                                  <option value="text">Input Text</option>
+                                  <option value="mcq">Multiple Choice</option>
+                                </select>
+                                {q.question_type === "mcq" && (
+                                  <input placeholder="Options (comma separated)" className="form-control" value={q.options} onChange={(e) => handleQuestionChange(idx, "options", e.target.value)} />
+                                )}
+                                <button type="button" className="btn btn-outline-danger" onClick={() => removeFormQuestion(idx)} disabled={formQuestions.length === 1}><i className="bi bi-trash"></i></button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="col-md-12 mt-3">
+                          <button className="btn btn-success w-100 py-2 shadow-sm" disabled={formLoading} type="submit">
+                            {formLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-rocket-takeoff me-2"></i>}
+                            Launch Campaign
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </AdminCard>
+                </div>
               </div>
-            </div>
-            
-            <div className="row">
-               <div className="col-md-12">
-                  <AdminCard header="Recent Activity">
-                    <div className="list-group list-group-flush">
-                      {notifications.slice(0, 5).map(n => (
-                        <div key={n.id} className="list-group-item px-0">
-                          <div className="d-flex w-100 justify-content-between">
-                            <h6 className="mb-1">{n.title}</h6>
-                            <small className="text-muted">Notification</small>
-                          </div>
-                          <p className="mb-1 small text-muted">{n.message}</p>
+            )}
+
+            {selectedNotificationTab === "activity" && (
+              <div className="row g-4">
+                <div className="col-lg-10 mx-auto">
+                  <AdminCard header={
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="bi bi-clock-history text-info"></i>
+                      <span>Recent Communication Registry</span>
+                    </div>
+                  }>
+                    <div className="list-group list-group-flush professional-list">
+                      {notifications.length === 0 && forms.length === 0 ? (
+                        <div className="text-center py-5">
+                          <i className="bi bi-inbox text-muted fs-1"></i>
+                          <p className="text-muted mt-2">No recent activity found</p>
                         </div>
-                      ))}
-                      {forms.slice(0, 5).map(f => (
-                        <div key={f.id} className="list-group-item px-0">
-                          <div className="d-flex w-100 justify-content-between">
-                            <h6 className="mb-1 text-primary">{f.title}</h6>
-                            <small className="text-muted">Active Form</small>
-                          </div>
-                          <p className="mb-1 small text-muted">Deadline: {f.deadline ? new Date(f.deadline).toLocaleDateString() : 'No limit'}</p>
-                        </div>
-                      ))}
+                      ) : (
+                        <>
+                          {notifications.slice(0, 10).map(n => (
+                            <div key={n.id} className="list-group-item py-4 border-bottom">
+                              <div className="d-flex w-100 justify-content-between align-items-center mb-2">
+                                <h6 className="mb-0 fw-bold">{n.title}</h6>
+                                <span className="badge bg-soft-primary text-primary px-3 py-2">NOTIFICATION</span>
+                              </div>
+                              <p className="mb-2 text-muted small lh-lg">{n.message}</p>
+                              <div className="d-flex gap-3 small text-muted">
+                                <span><i className="bi bi-person me-1"></i> {n.receiver_role}</span>
+                                <span><i className="bi bi-clock me-1"></i> {new Date().toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                          ))}
+                          {forms.slice(0, 10).map(f => (
+                            <div key={f.id} className="list-group-item py-4 border-bottom">
+                              <div className="d-flex w-100 justify-content-between align-items-center mb-2">
+                                <h6 className="mb-0 fw-bold text-success">{f.title}</h6>
+                                <span className="badge bg-soft-success text-success px-3 py-2">ACTIVE FORM</span>
+                              </div>
+                              <div className="d-flex justify-content-between align-items-center mt-3">
+                                <span className="text-danger small fw-bold"><i className="bi bi-calendar-event me-1"></i> Deadline: {f.deadline ? new Date(f.deadline).toLocaleDateString() : 'No limit'}</span>
+                                <button className="btn btn-sm btn-outline-success px-3" onClick={() => window.open(`http://localhost:3000/forms/${f.id}`, '_blank')}>View Form</button>
+                              </div>
+                            </div>
+                          ))}
+                        </>
+                      )}
                     </div>
                   </AdminCard>
-               </div>
-            </div>
+                </div>
+              </div>
+            )}
           </div>
-        );
+        </div>
+      );
+    };
 
-      case "reports":
-        return renderReportsPage();
+    const renderContent = () => {
+      switch (sidebarTab) {
+        case "dashboard":
+          if (selectedUnit && unitDetails) return renderUnitDetails();
+          return renderDashboardMain();
 
-      default:
-        return null;
-    }
-  };
+        case "charts":
+          return (
+            <AdminCharts units={units} />
+          );
+
+        case "notifications":
+          return renderNotificationsModule();
+
+        case "reports":
+          return renderReportsPage();
+
+        default:
+          return null;
+      }
+    };
 
   return (
     <AdminLayout

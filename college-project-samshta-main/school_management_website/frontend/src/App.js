@@ -123,7 +123,17 @@ function App() {
             <AdminNotificationsPage />
           </ProtectedRoute>
         } />
+        <Route path="/admin/budgets" element={
+          <ProtectedRoute role="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
         <Route path="/admin/report" element={
+          <ProtectedRoute role="admin">
+            <Report />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/reports" element={
           <ProtectedRoute role="admin">
             <Report />
           </ProtectedRoute>
