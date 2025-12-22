@@ -584,7 +584,7 @@ export default function AdminDashboard() {
       }, [data]);
       if (!data.length)
         return (
-          <EmptyState title="No Records" description={`No ${tableName.toLowerCase()} data available for this unit.`} />
+          <div className="mb-4 text-muted small">No {tableName} records found.</div>
         );
       const cols = Object.keys(data[0]);
       function handleToggle(col) {
@@ -593,47 +593,41 @@ export default function AdminDashboard() {
         );
       }
       return (
-        <TableContainer 
-          title=""
-          toolbar={
-            <Toolbar 
-              left={<span className="text-muted small uppercase fw-bold">{data.length} Total Records</span>}
-              right={
-                <div className="position-relative">
-                  <button
-                    className="btn btn-outline-secondary btn-sm"
-                    onClick={() => setSelectShow((s) => !s)}
-                  >
-                    <i className="bi bi-columns-gap me-1"></i> Columns
-                  </button>
-                  {selectShow && (
-                    <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
-                      {cols.map((col) => (
-                        <div key={col} className="form-check mb-1">
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            id={`col-check-table-${tableName}-${col}`}
-                            checked={visibleCols.includes(col)}
-                            onChange={() => handleToggle(col)}
-                          />
-                          <label
-                            className="form-check-label small"
-                            htmlFor={`col-check-table-${tableName}-${col}`}
-                          >
-                            {toLabel(col)}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              }
-            />
-          }
-        >
+        <div className="dynamic-table-wrapper">
+          <div className="dynamic-table-header d-flex justify-content-end align-items-center mb-3">
+            <div className="position-relative">
+
+            <button
+              className="btn btn-outline-secondary btn-sm"
+              onClick={() => setSelectShow((s) => !s)}
+            >
+              <i className="bi bi-columns-gap me-1"></i> Columns
+            </button>
+            {selectShow && (
+              <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
+                {cols.map((col) => (
+                  <div key={col} className="form-check mb-1">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      id={`col-check-table-${tableName}-${col}`}
+                      checked={visibleCols.includes(col)}
+                      onChange={() => handleToggle(col)}
+                    />
+                    <label
+                      className="form-check-label small"
+                      htmlFor={`col-check-table-${tableName}-${col}`}
+                    >
+                      {toLabel(col)}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
           <div className="table-responsive">
-            <table className="table table-striped table-hover table-sm">
+            <table className="table table-hover table-sm">
               <thead>
                 <tr>
                   {cols
@@ -650,7 +644,7 @@ export default function AdminDashboard() {
                       .filter((col) => visibleCols.includes(col))
                       .map((col) => (
                         <td key={col}>
-                          {row[col] != null ? row[col].toString() : "-"}
+                          {row[col] != null ? row[col].toString() : ""}
                         </td>
                       ))}
                   </tr>
@@ -658,9 +652,10 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           </div>
-        </TableContainer>
+        </div>
       );
     }
+
 
   const renderUnitDetails = () =>
     unitDetails ? (
@@ -700,14 +695,14 @@ export default function AdminDashboard() {
           <div className="tab-pane-content">
             <div className="row">
               <div className="col-md-12">
-                <AdminCard header="Unit Overview Summary">
+                <AdminCard header="Summary">
                    <div className="metrics-grid">
                      <div className="metric-box">
-                       <span className="label">TOTAL STAFF</span>
+                       <span className="label">STAFF</span>
                        <span className="value">{unitDetails.teachers?.length ?? 0}</span>
                      </div>
                      <div className="metric-box">
-                       <span className="label">TOTAL STUDENTS</span>
+                       <span className="label">STUDENTS</span>
                        <span className="value">{unitDetails.students?.length ?? 0}</span>
                      </div>
                      <div className="metric-box">
@@ -717,23 +712,21 @@ export default function AdminDashboard() {
                            ? (unitDetails.students.length / unitDetails.teachers.length).toFixed(1)
                            : "0"}
                        </span>
-                       <span className="sub-label">Student/Teacher</span>
                      </div>
                      <div className="metric-box highlight">
-                       <span className="label">COLLECTED FEES</span>
+                       <span className="label">FEES</span>
                        <span className="value">₹{(overviewMetrics?.feesCollectedFy ?? 0).toLocaleString()}</span>
-                       <span className="sub-label">Financial Snapshot</span>
                      </div>
                    </div>
                 </AdminCard>
                 <div className="mt-4">
-                  <AdminCard header="School Identity">
+                  <AdminCard header="Identity">
                     <div className="profile-details-grid">
                       {[
                         ["unit_id", "Unit ID"],
                         ["semis_no", "SEMIS No"],
-                        ["standard_range", "Standard Range"],
-                        ["school_shift", "School Shift"],
+                        ["standard_range", "Range"],
+                        ["school_shift", "Shift"],
                       ].map(([key, label]) => (
                         <div key={key} className="profile-row">
                           <span className="field-label">{label}</span>
@@ -959,8 +952,8 @@ export default function AdminDashboard() {
                      </table>
                    </div>
                  )}
-                  </TableContainer>
-              </AdminCard>
+                </TableContainer>
+              )}
             </div>
           )}
 
@@ -975,43 +968,51 @@ export default function AdminDashboard() {
             </AdminCard>
           </div>
         )}
+
       </div>
     ) : null;
 
   const renderDashboardMain = () => (
     <div className="dashboard-main-view">
-      <AdminCard header={"School Overview"}>
-        <div className="row school-grid">
-          {safeUnits.length === 0 ? (
-            <div className="col-12 text-center py-5">
-              <div className="spinner-border text-primary" role="status"></div>
-              <p className="mt-2 text-muted">Loading schools...</p>
-            </div>
-          ) : (
-            safeUnits.map((unit, idx) => (
-              <div key={unit.unit_id} className="col-md-4 col-sm-6 mb-4">
-                <div className="school-card-new" onClick={() => handleUnitCardClick(unit.unit_id)}>
-                   <div className="card-top">
-                     <span className="idx">#{idx + 1}</span>
-                     <div className="school-id">UNIT: {unit.unit_id}</div>
+      <div className="dashboard-hero-title">
+        <h3>School Overview</h3>
+        <p>Monitor and manage all academic units</p>
+      </div>
+      <div className="row school-grid">
+        {safeUnits.length === 0 ? (
+          <div className="col-12 text-center py-5">
+            <div className="spinner-border text-primary" role="status"></div>
+            <p className="mt-2 text-muted">Synchronizing units...</p>
+          </div>
+        ) : (
+          safeUnits.map((unit, idx) => (
+            <div key={unit.unit_id} className="col-md-4 col-sm-6 mb-4">
+              <div className="school-card-pro" onClick={() => handleUnitCardClick(unit.unit_id)}>
+                 <div className="card-accent-line"></div>
+                 <div className="card-index-pill">{idx + 1}</div>
+                 <div className="card-top-meta">
+                   <span className="unit-tag">Unit {unit.unit_id}</span>
+                 </div>
+                 <h4 className="school-display-name">{unit.kendrashala_name || "MKSSS School Unit"}</h4>
+                 <div className="card-stats-row">
+                   <div className="stat-item-mini">
+                     <i className="bi bi-people-fill"></i>
+                     <span>{unit.staff_count || 0} Staff</span>
                    </div>
-                   <h5 className="school-title">{unit.kendrashala_name || `School ${unit.unit_id}`}</h5>
-                   <div className="card-bottom">
-                     <div className="badge-item">
-                       <i className="bi bi-people"></i>
-                       <span>{unit.staff_count || 0} Staff</span>
-                     </div>
-                     <div className="badge-item">
-                       <i className="bi bi-mortarboard"></i>
-                       <span>{unit.student_count || 0} Students</span>
-                     </div>
+                   <div className="stat-item-mini">
+                     <i className="bi bi-mortarboard-fill"></i>
+                     <span>{unit.student_count || 0} Students</span>
                    </div>
-                </div>
+                 </div>
+                 <div className="card-action-bar">
+                   <span>View Details</span>
+                   <i className="bi bi-arrow-right-short"></i>
+                 </div>
               </div>
-            ))
-          )}
-        </div>
-      </AdminCard>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 

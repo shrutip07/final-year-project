@@ -8,11 +8,11 @@ export default function TopGreetingBar({ role, schoolName, semisId }) {
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   
-  const userEmail = localStorage.getItem("email") || "User";
-  const userName = localStorage.getItem("full_name") || userEmail.split("@")[0];
+  const userName = localStorage.getItem("full_name") || "Admin User";
+  const userEmail = localStorage.getItem("email") || "admin@mksss.org";
 
   const toggleLanguage = () => {
-    const nextLang = i18n.language === 'en' ? 'mr' : 'en';
+    const nextLang = (i18n.language && i18n.language.startsWith('mr')) ? 'en' : 'mr';
     i18n.changeLanguage(nextLang);
     localStorage.setItem("appLanguage", nextLang);
   };
@@ -31,34 +31,58 @@ export default function TopGreetingBar({ role, schoolName, semisId }) {
         </div>
       </div>
       <div className="greeting-right">
-        <button className="lang-btn" onClick={toggleLanguage}>
-          {i18n.language === 'en' ? 'मराठी' : 'English'}
+        <button 
+          className={`lang-btn ${i18n.language === 'mr' ? 'active' : ''}`} 
+          onClick={toggleLanguage}
+          title="Switch Language"
+        >
+          {i18n.language && i18n.language.startsWith('mr') ? 'English' : 'मराठी'}
         </button>
         <button className="notif-btn">
           <i className="bi bi-bell"></i>
+          <span className="badge-dot"></span>
         </button>
+        
         <div className="user-profile-wrapper">
           <div className="user-profile" onClick={() => setShowDropdown(!showDropdown)}>
-            <div className="avatar">{userName.charAt(0).toUpperCase()}</div>
-            <span className="profile-name">{userName}</span>
-            <i className={`bi bi-chevron-${showDropdown ? 'up' : 'down'}`}></i>
+            <div className="avatar-circle">
+              {userName.charAt(0).toUpperCase()}
+            </div>
+            <div className="profile-info-mini">
+              <span className="profile-name">{userName}</span>
+              <i className={`bi bi-chevron-${showDropdown ? 'up' : 'down'} ms-2`}></i>
+            </div>
           </div>
           
           {showDropdown && (
-            <div className="profile-dropdown">
-              <button 
-                className="dropdown-item" 
-                onClick={() => {
-                  setShowDropdown(false);
-                  navigate(`/${role || 'admin'}/profile`);
-                }}
-              >
-                <i className="bi bi-person"></i> Profile
-              </button>
+            <div className="profile-dropdown-google">
+              <div className="dropdown-header-google">
+                <div className="avatar-large">{userName.charAt(0).toUpperCase()}</div>
+                <div className="user-detail-google">
+                  <div className="user-fullname">{userName}</div>
+                  <div className="user-email-google">{userEmail}</div>
+                </div>
+              </div>
               <div className="dropdown-divider"></div>
-              <button className="dropdown-item logout-item" onClick={handleLogout}>
-                <i className="bi bi-box-arrow-right"></i> Logout
-              </button>
+              <div className="dropdown-body-google">
+                <button 
+                  className="dropdown-item-google" 
+                  onClick={() => {
+                    setShowDropdown(false);
+                    navigate(`/${role || 'admin'}/profile`);
+                  }}
+                >
+                  <i className="bi bi-person-circle"></i>
+                  <span>Manage Profile</span>
+                </button>
+                <button 
+                  className="dropdown-item-google logout-btn-google" 
+                  onClick={handleLogout}
+                >
+                  <i className="bi bi-box-arrow-right"></i>
+                  <span>Sign out</span>
+                </button>
+              </div>
             </div>
           )}
         </div>
