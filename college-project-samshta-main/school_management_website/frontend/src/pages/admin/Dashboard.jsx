@@ -952,8 +952,11 @@ export default function AdminDashboard() {
                        </tbody>
                      </table>
                    </div>
-                 )}
-               </向
+                  )}
+                </TableContainer>
+              </AdminCard>
+            </div>
+          )}
 
         {/* TAB CONTENT - Generic tables */}
         {["payments", "banks", "cases"].includes(selectedSchoolTab) && (
