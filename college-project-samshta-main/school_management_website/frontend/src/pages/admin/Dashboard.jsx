@@ -582,80 +582,117 @@ export default function AdminDashboard() {
       useEffect(() => {
         if (data.length) setVisibleCols(Object.keys(data[0]));
       }, [data]);
+
       if (!data.length)
         return (
-          <div className="mb-4 text-muted">No {tableName} data available</div>
+          <div className="empty-table-msg text-center py-5 border rounded bg-light">
+            <i className="bi bi-info-circle text-muted fs-2 d-block mb-3"></i>
+            <span className="text-muted">No {tableName} data available for the selected period.</span>
+          </div>
         );
+
       const cols = Object.keys(data[0]);
       function handleToggle(col) {
         setVisibleCols((prev) =>
           prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
         );
       }
+
+      // Helper for professional cell rendering
+      const formatCell = (key, val) => {
+        if (val === null || val === undefined) return "-";
+        const valStr = val.toString();
+
+        // Colors for amounts/finance
+        if (key.toLowerCase().includes("amount") || key.toLowerCase().includes("spent") || key.toLowerCase().includes("collected")) {
+          const num = parseFloat(val);
+          if (!isNaN(num)) {
+            const colorClass = num >= 0 ? "finance-positive" : "finance-negative";
+            return <span className={`fw-bold ${colorClass}`}>₹{num.toLocaleString()}</span>;
+          }
+        }
+
+        // Dates
+        if (key.toLowerCase().includes("date") || key.toLowerCase().includes("updated_at") || key.toLowerCase().includes("at")) {
+          return <span className="text-muted small">{new Date(valStr).toLocaleDateString(undefined, {
+            year: 'numeric', month: 'short', day: 'numeric'
+          })}</span>;
+        }
+
+        // Status / Category badges
+        if (key.toLowerCase().includes("category") || key.toLowerCase().includes("status") || key.toLowerCase().includes("type")) {
+          return <span className="erp-badge">{valStr.replace(/_/g, " ")}</span>;
+        }
+
+        return valStr;
+      };
+
       return (
         <div className="dynamic-table-wrapper">
           <div className="dynamic-table-toolbar d-flex justify-content-between align-items-center mb-3">
-            <h6 className="mb-0 text-muted">{tableName} Log</h6>
+            <h6 className="mb-0 text-dark fw-bold">{tableName} Directory</h6>
             <div className="position-relative">
               <button
-                className="btn btn-outline-secondary btn-sm"
+                className="btn btn-sm btn-light border d-flex align-items-center gap-2"
                 onClick={() => setSelectShow((s) => !s)}
               >
-                <i className="bi bi-columns-gap me-1"></i> Columns
+                <i className="bi bi-columns-gap"></i> Columns
               </button>
 
-            {selectShow && (
-              <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
-                {cols.map((col) => (
-                  <div key={col} className="form-check mb-1">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id={`col-check-table-${tableName}-${col}`}
-                      checked={visibleCols.includes(col)}
-                      onChange={() => handleToggle(col)}
-                    />
-                    <label
-                      className="form-check-label small"
-                      htmlFor={`col-check-table-${tableName}-${col}`}
-                    >
-                      {toLabel(col)}
-                    </label>
+              {selectShow && (
+                <div className="col-dropdown p-3 border rounded shadow bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '220px' }}>
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <span className="fw-bold small">Manage Columns</span>
+                    <button className="btn-close small" onClick={() => setSelectShow(false)} style={{fontSize: '0.7rem'}}></button>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="table-responsive">
-          <table className="table table-striped table-bordered table-hover">
-            <thead>
-              <tr>
-                {cols
-                  .filter((col) => visibleCols.includes(col))
-                  .map((col) => (
-                    <th key={col}>{toLabel(col)}</th>
+                  {cols.map((col) => (
+                    <div key={col} className="form-check mb-2">
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        id={`col-check-table-${tableName}-${col}`}
+                        checked={visibleCols.includes(col)}
+                        onChange={() => handleToggle(col)}
+                      />
+                      <label
+                        className="form-check-label small text-capitalize"
+                        htmlFor={`col-check-table-${tableName}-${col}`}
+                      >
+                        {toLabel(col)}
+                      </label>
+                    </div>
                   ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((row, i) => (
-                <tr key={tableName + "-row-" + i}>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="table-responsive professional-table">
+            <table className="table align-middle">
+              <thead>
+                <tr>
                   {cols
                     .filter((col) => visibleCols.includes(col))
                     .map((col) => (
-                      <td key={col}>
-                        {row[col] != null ? row[col].toString() : ""}
-                      </td>
+                      <th key={col}>{toLabel(col)}</th>
                     ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.map((row, i) => (
+                  <tr key={tableName + "-row-" + i}>
+                    {cols
+                      .filter((col) => visibleCols.includes(col))
+                      .map((col) => (
+                        <td key={col}>{formatCell(col, row[col])}</td>
+                      ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
   const renderUnitDetails = () =>
     unitDetails ? (
@@ -792,11 +829,16 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* TAB CONTENT - Teachers */}
-        {selectedSchoolTab === "teachers" && (
-          <div className="tab-pane-content">
-          <AdminCard header="Staff Directory">
-             <TableContainer
+          {/* TAB CONTENT - Teachers */}
+          {selectedSchoolTab === "teachers" && (
+            <div className="tab-pane-content">
+              <AdminCard header={
+                <div className="d-flex align-items-center gap-2">
+                  <i className="bi bi-people-fill text-primary"></i>
+                  <span>Staff Directory</span>
+                </div>
+              }>
+                <TableContainer
                title=""
                toolbar={
                  <Toolbar
@@ -845,40 +887,70 @@ export default function AdminDashboard() {
                  />
                }
              >
-                 {filteredTeachers.length === 0 ? (
-                   <EmptyState title="No Records" description="No teacher records found for this unit." />
-                 ) : (
-                   <div className="table-responsive">
-                     <table className="table table-hover table-sm">
-                       <thead>
-                         <tr>
-                           {teacherFields
-                             .filter(([key]) => teacherVisibleColumns.includes(key))
-                             .map(([key, label]) => <th key={key}>{label}</th>)}
-                         </tr>
-                       </thead>
-                       <tbody>
-                         {filteredTeachers.map((tch) => (
-                           <tr key={tch.staff_id}>
+                   {filteredTeachers.length === 0 ? (
+                     <EmptyState title="No Records" description="No teacher records found for this unit." />
+                   ) : (
+                     <div className="table-responsive professional-table">
+                       <table className="table table-hover align-middle">
+                         <thead>
+                           <tr>
                              {teacherFields
                                .filter(([key]) => teacherVisibleColumns.includes(key))
-                               .map(([key]) => <td key={key}>{tch[key] || "-"}</td>)}
+                               .map(([key, label]) => <th key={key}>{label}</th>)}
                            </tr>
-                         ))}
-                       </tbody>
-                     </table>
-                   </div>
-                 )}
+                         </thead>
+                         <tbody>
+                           {filteredTeachers.map((tch) => (
+                             <tr key={tch.staff_id}>
+                               {teacherFields
+                                 .filter(([key]) => teacherVisibleColumns.includes(key))
+                                 .map(([key]) => (
+                                   <td key={key}>
+                                     {key === "full_name" ? (
+                                       <div className="d-flex align-items-center gap-2">
+                                         <div className="avatar-circle">
+                                           {tch[key] ? tch[key].charAt(0).toUpperCase() : "T"}
+                                         </div>
+                                         <span className="fw-semibold">{tch[key] || "Unknown"}</span>
+                                       </div>
+                                     ) : key === "designation" || key === "qualification" ? (
+                                       <span className={`erp-badge ${key === "designation" ? "badge-designation" : "badge-qualification"}`}>
+                                         {tch[key] || "-"}
+                                       </span>
+                                     ) : key === "joining_date" || key.includes("updated_at") ? (
+                                       <span className="text-muted small">
+                                         {tch[key] ? new Date(tch[key]).toLocaleDateString(undefined, {
+                                           year: 'numeric', month: 'short', day: 'numeric'
+                                         }) : "-"}
+                                       </span>
+                                     ) : key === "email" ? (
+                                       <span className="text-primary small">{tch[key]}</span>
+                                     ) : (
+                                       tch[key] || "-"
+                                     )}
+                                   </td>
+                                 ))}
+                             </tr>
+                           ))}
+                         </tbody>
+                       </table>
+                     </div>
+                   )}
                </TableContainer>
             </AdminCard>
           </div>
         )}
 
-        {/* TAB CONTENT - Students */}
-        {selectedSchoolTab === "students" && (
-          <div className="tab-pane-content">
-          <AdminCard header="Student Enrollment">
-             <TableContainer
+          {/* TAB CONTENT - Students */}
+          {selectedSchoolTab === "students" && (
+            <div className="tab-pane-content">
+            <AdminCard header={
+              <div className="d-flex align-items-center gap-2">
+                <i className="bi bi-mortarboard-fill text-success"></i>
+                <span>Student Enrollment</span>
+              </div>
+            }>
+               <TableContainer
                title=""
                toolbar={
                  <Toolbar
@@ -939,50 +1011,74 @@ export default function AdminDashboard() {
                  />
                }
              >
-                 {filteredStudents.length === 0 ? (
-                   <EmptyState title="No Records" description="No student records found." />
-                 ) : (
-                   <div className="table-responsive">
-                     <table className="table table-hover table-sm">
-                       <thead>
-                         <tr>
-                           {studentFields
-                             .filter(([key]) => studentVisibleColumns.includes(key))
-                             .map(([key, label]) => <th key={key}>{label}</th>)}
-                         </tr>
-                       </thead>
-                       <tbody>
-                         {filteredStudents.map((s) => (
-                           <tr key={s.student_id}>
+                   {filteredStudents.length === 0 ? (
+                     <EmptyState title="No Records" description="No student records found." />
+                   ) : (
+                     <div className="table-responsive professional-table">
+                       <table className="table table-hover align-middle">
+                         <thead>
+                           <tr>
                              {studentFields
                                .filter(([key]) => studentVisibleColumns.includes(key))
-                               .map(([key]) => (
-                                 <td key={key}>
-                                   {key === "passed" ? (s[key] ? "Yes" : "No") : (s[key] || "-")}
-                                 </td>
-                               ))}
+                               .map(([key, label]) => <th key={key}>{label}</th>)}
                            </tr>
-                         ))}
-                       </tbody>
-                     </table>
-                   </div>
-                  )}
+                         </thead>
+                         <tbody>
+                           {filteredStudents.map((s) => (
+                             <tr key={s.student_id}>
+                               {studentFields
+                                 .filter(([key]) => studentVisibleColumns.includes(key))
+                                 .map(([key]) => (
+                                   <td key={key}>
+                                     {key === "full_name" ? (
+                                       <div className="d-flex align-items-center gap-2">
+                                         <div className="avatar-circle student">
+                                           {s[key] ? s[key].charAt(0).toUpperCase() : "S"}
+                                         </div>
+                                         <span className="fw-semibold">{s[key] || "Unknown"}</span>
+                                       </div>
+                                     ) : key === "passed" ? (
+                                       <span className={`erp-badge ${s[key] ? "badge-success" : "badge-danger"}`}>
+                                         {s[key] ? "Passed" : "Failed / In-Progress"}
+                                       </span>
+                                     ) : key === "academic_year" ? (
+                                       <span className="erp-badge badge-year">{s[key]}</span>
+                                     ) : (
+                                       s[key] || "-"
+                                     )}
+                                   </td>
+                                 ))}
+                             </tr>
+                           ))}
+                         </tbody>
+                       </table>
+                     </div>
+                    )}
                 </TableContainer>
               </AdminCard>
             </div>
           )}
 
-        {/* TAB CONTENT - Generic tables */}
-        {["payments", "banks", "cases"].includes(selectedSchoolTab) && (
-          <div className="tab-pane-content">
-            <AdminCard header={selectedSchoolTab.charAt(0).toUpperCase() + selectedSchoolTab.slice(1)}>
-              <DynamicDropdownTable
-                tableName={selectedSchoolTab.charAt(0).toUpperCase() + selectedSchoolTab.slice(1)}
-                data={unitDetails[selectedSchoolTab] ?? []}
-              />
-            </AdminCard>
-          </div>
-        )}
+          {/* TAB CONTENT - Generic tables */}
+          {["payments", "banks", "cases"].includes(selectedSchoolTab) && (
+            <div className="tab-pane-content">
+              <AdminCard header={
+                <div className="d-flex align-items-center gap-2">
+                  <i className={`bi ${
+                    selectedSchoolTab === 'payments' ? 'bi-credit-card text-info' :
+                    selectedSchoolTab === 'banks' ? 'bi-bank text-warning' :
+                    'bi-shield-shaded text-danger'
+                  }`}></i>
+                  <span>{selectedSchoolTab.charAt(0).toUpperCase() + selectedSchoolTab.slice(1)} Registry</span>
+                </div>
+              }>
+                <DynamicDropdownTable
+                  tableName={selectedSchoolTab.charAt(0).toUpperCase() + selectedSchoolTab.slice(1)}
+                  data={unitDetails[selectedSchoolTab] ?? []}
+                />
+              </AdminCard>
+            </div>
+          )}
       </div>
     ) : null;
 
