@@ -10,6 +10,16 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
+
+// Global error handler middleware
+app.use((err, req, res, next) => {
+  console.error('🔴 Global error handler caught:', err);
+  res.status(err.status || 500).json({ 
+    message: err.message || 'Server error',
+    error: process.env.NODE_ENV === 'development' ? err : {}
+  });
+});
+
 const adminRoutes = require('./routes/adminRoutes');
 const authRoutes = require('./routes/authRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
@@ -37,6 +47,10 @@ app.use('/api/teacher', teacherRoutes);
 app.use('/api/principal', principalRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/report', reportRoutes);
+
+// Alias route for backward compatibility
+app.post('/api/login', require('./controllers/authController').login);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

@@ -2,6 +2,7 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 import AuthContext from "../context/AuthContext";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./AuthForm.scss";
@@ -20,18 +21,23 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
+    setMsg("");
     try {
-      const res = await axios.post(
-        "/api/login", // ✅ no localhost:4000",
-        { email, password, role },
-        { withCredentials: true }
+      console.log("🔍 Attempting login with email:", email);
+      const res = await axiosInstance.post(
+        "/auth/login",
+        { email, password }
       );
 
-      setAuthData(res.data.accessToken, res.data.user);
+      console.log("✅ Login response:", res.data);
+      setAuthData(res.data.token, res.data.user);
       setMsg("Login successful");
 
-      // Navigate based on role
-      switch (role) {
+      // Navigate based on role from token
+      const decoded = jwtDecode(res.data.token);
+      console.log("📋 Decoded token:", decoded);
+      switch (decoded.role) {
         case "admin":
           navigate("/admin");
           break;
@@ -45,7 +51,13 @@ function Login() {
           navigate("/");
       }
     } catch (err) {
-      setMsg("Login failed");
+      console.error("❌ Login error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        fullError: err
+      });
+      setError(err.response?.data?.message || "Login failed. Please check your credentials.");
     }
   };
 
@@ -129,17 +141,17 @@ function Login() {
           handleRedirect(response.data.token);
         }
       } else {
-        const res = await axios.post(
-          "/api/login", // ✅ no localhost:4000",
-          { email, password, role },
-          { withCredentials: true }
+        const res = await axiosInstance.post(
+          "/auth/login",
+          { email, password }
         );
 
-        setAuthData(res.data.accessToken, res.data.user);
+        setAuthData(res.data.token, res.data.user);
         setMsg("Login successful");
 
-        // Navigate based on role
-        switch (role) {
+        // Navigate based on role from token
+        const decoded = jwtDecode(res.data.token);
+        switch (decoded.role) {
           case "admin":
             navigate("/admin");
             break;
@@ -210,6 +222,7 @@ function Login() {
 
         <button type="submit">Login</button>
         {msg && <p className="form-msg">{msg}</p>}
+        {error && <p className="form-error">{error}</p>}
       </form>
     </div>
   );
