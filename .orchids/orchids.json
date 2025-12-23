@@ -1,0 +1,8 @@
+{
+  "projectId": "144f36a3-f7ab-4431-be36-6971c33f557c",
+  "createdAt": 1766461155550,
+  "startupCommands": [
+    "cd college-project-samshta-main/school_management_website/backend && bun server.js",
+    "cd college-project-samshta-main/school_management_website/frontend && bun run start"
+  ]
+}
