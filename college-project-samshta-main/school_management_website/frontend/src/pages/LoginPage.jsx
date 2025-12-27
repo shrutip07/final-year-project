@@ -116,21 +116,16 @@ export default function LoginPage() {
     }
   }
 
-  // Toggle language between English and Marathi
- const handleLangToggle = () => {
-  const newLng = i18n.language === "en" ? "mr" : "en";
-  i18n.changeLanguage(newLng);
-  localStorage.setItem("appLanguage", newLng);
-};
-
+  const handleLangToggle = () => {
+    const newLng = i18n.language === "en" ? "mr" : "en";
+    i18n.changeLanguage(newLng);
+    localStorage.setItem("appLanguage", newLng);
+  };
 
   return (
     <div className="app-wrapper">
-      {/* Language toggle button */}
-      <button
-        onClick={handleLangToggle}
-        style={{ position: "absolute", top: 10, right: 10, zIndex: 1000 }}
-      >
+      <button className="lang-toggle" onClick={handleLangToggle}>
+        <i className="fas fa-globe mr-2"></i>
         {i18n.language === "en" ? "मराठी" : "English"}
       </button>
 
@@ -146,77 +141,74 @@ export default function LoginPage() {
 
       {/* ===== MAIN CONTENT ===== */}
       <main className="main-section">
-        {/* Left: Login/Signup Form */}
+        {/* Full background video */}
+        <div className="background-video-container">
+          <video autoPlay loop muted playsInline>
+            <source src={sideVideo} type="video/mp4" />
+          </video>
+        </div>
+
+        {/* Login Card */}
         <div className="login-section">
           <h2>{isRegister ? t("register") : t("login")}</h2>
           <form onSubmit={handleSubmit}>
-            <input
-              type="email"
-              placeholder={t("email")}
-              value={email}
-              required
-              onChange={(e) => setEmail(e.target.value)}
-              style={{ width: "100%", margin: "8px 0", padding: "8px" }}
-              pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
-              title={t("email_valid_title")}
-            />
+            <div className="form-group">
+              <i className="fas fa-envelope input-icon"></i>
+              <input
+                type="email"
+                placeholder={t("email")}
+                value={email}
+                required
+                onChange={(e) => setEmail(e.target.value)}
+                pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                title={t("email_valid_title")}
+              />
+            </div>
 
-            <input
-              type="password"
-              placeholder={t("password")}
-              value={password}
-              required
-              onChange={(e) => setPassword(e.target.value)}
-              style={{ width: "100%", margin: "8px 0", padding: "8px" }}
-              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
-              title={t("password_requirements")}
-            />
+            <div className="form-group">
+              <i className="fas fa-lock input-icon"></i>
+              <input
+                type="password"
+                placeholder={t("password")}
+                value={password}
+                required
+                onChange={(e) => setPassword(e.target.value)}
+                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+                title={t("password_requirements")}
+              />
+            </div>
 
             {isRegister && (
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                style={{ width: "100%", margin: "8px 0", padding: "8px" }}
-              >
-                <option value="teacher">{t("teacher")}</option>
-                <option value="admin">{t("admin")}</option>
-                <option value="principal">{t("principal")}</option>
-                 <option value="clerk">{t("clerk")}</option> 
-              </select>
+              <div className="form-group">
+                <i className="fas fa-user-tag input-icon"></i>
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                >
+                  <option value="teacher">{t("teacher")}</option>
+                  <option value="admin">{t("admin")}</option>
+                  <option value="principal">{t("principal")}</option>
+                  <option value="clerk">{t("clerk")}</option>
+                </select>
+              </div>
             )}
 
-            <button type="submit" style={{ width: "100%", padding: "8px" }}>
+            <button type="submit" className="login-button">
               {isRegister ? t("register") : t("login")}
             </button>
 
-            {error && <div style={{ color: "red", marginTop: "8px" }}>{error}</div>}
+            {error && <div className="form-error"><i className="fas fa-exclamation-circle mr-2"></i> {error}</div>}
           </form>
 
-          <div style={{ marginTop: 12, textAlign: "center" }}>
+          <div className="toggle-link-container">
+            {isRegister ? t("already_have_account") : t("dont_have_account")}
             <button
               type="button"
               onClick={() => setIsRegister(!isRegister)}
-              style={{
-                background: "none",
-                color: "blue",
-                border: "none",
-                textDecoration: "underline",
-                cursor: "pointer",
-              }}
             >
-              {isRegister
-                ? t("already_have_account")
-                : t("dont_have_account")}
+              {isRegister ? t("login") : t("register")}
             </button>
           </div>
-        </div>
-
-        {/* Right: Video */}
-        <div className="side-video">
-          <video autoPlay loop muted playsInline>
-            <source src={sideVideo} type="video/mp4" />
-            {t("video_not_supported")}
-          </video>
         </div>
       </main>
 
@@ -250,26 +242,26 @@ export default function LoginPage() {
           </div>
           <div>
             <h4>{t("contact_us")}</h4>
-            <p>{t("mksss_name")}</p>
+            <p><strong>{t("mksss_name")}</strong></p>
             <p>{t("mksss_address")}</p>
-            <p>{t("phone1")}</p>
-            <p>{t("phone2")}</p>
-            <p>{t("donation")}</p>
-            <p>{t("email")}</p>
+            <p><i className="fas fa-phone mr-2"></i> {t("phone1")}</p>
+            <p><i className="fas fa-phone mr-2"></i> {t("phone2")}</p>
+            <p><i className="fas fa-hand-holding-heart mr-2"></i> {t("donation")}</p>
+            <p><i className="fas fa-envelope mr-2"></i> {t("email")}</p>
             <div className="social-icons">
-              <a href="https://www.facebook.com/maharshikarvestreeshikshansamsthapune/">
+              <a href="https://www.facebook.com/maharshikarvestreeshikshansamsthapune/" target="_blank" rel="noreferrer">
                 <i className="fa-brands fa-facebook"></i>
               </a>
-              <a href="https://x.com/MKarveSamstha">
+              <a href="https://x.com/MKarveSamstha" target="_blank" rel="noreferrer">
                 <i className="fa-brands fa-x-twitter"></i>
               </a>
-              <a href="https://www.instagram.com/mkssspune/">
+              <a href="https://www.instagram.com/mkssspune/" target="_blank" rel="noreferrer">
                 <i className="fa-brands fa-instagram"></i>
               </a>
-              <a href="https://www.linkedin.com/in/mksss-pune-44bbb2157/">
+              <a href="https://www.linkedin.com/in/mksss-pune-44bbb2157/" target="_blank" rel="noreferrer">
                 <i className="fa-brands fa-linkedin"></i>
               </a>
-              <a href="https://www.youtube.com/@mkssspune6029">
+              <a href="https://www.youtube.com/@mkssspune6029" target="_blank" rel="noreferrer">
                 <i className="fa-brands fa-youtube"></i>
               </a>
             </div>
