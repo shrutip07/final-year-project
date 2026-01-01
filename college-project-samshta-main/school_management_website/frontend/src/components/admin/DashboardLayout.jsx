@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { jwtDecode } from "jwt-decode";
 import TopGreetingBar from './TopGreetingBar';
-import './AdminLayout.scss'; // Keeping the CSS file name or rename if preferred
+import TabNavigation from './TabNavigation';
+import mksssLogo from "../../assets/mksss-logo.png";
+import './AdminLayout.scss';
 
 export default function DashboardLayout({ 
   children, 
@@ -13,7 +17,23 @@ export default function DashboardLayout({
   portalName,
   portalIcon = "bi-buildings-fill"
 }) {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [displayName, setDisplayName] = useState("User");
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        const name = decoded.full_name || decoded.email || decoded.username || "User";
+        setDisplayName(name.split('@')[0]);
+      } catch (e) {
+        setDisplayName("User");
+      }
+    }
+  }, []);
 
   const handleNavClick = (item) => {
     if (onSidebarTabChange) {
@@ -24,31 +44,90 @@ export default function DashboardLayout({
     }
   };
 
-  return (
-    <div className="admin-layout">
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <div className="app-icon"><i className={`bi ${portalIcon}`}></i></div>
-          <h3>{portalName}</h3>
-        </div>
-        <nav className="sidebar-nav">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.key}
-              className={`nav-link ${activeSidebarTab === item.key ? "active" : ""}`}
-              onClick={() => handleNavClick(item)}
-            >
-              <i className={`bi ${item.icon}`}></i>
-              <span>{item.label}</span>
-            </button>
-          ))}
-          </nav>
-        </aside>
-        <div className="layout-content">
+  const handleLangToggle = () => {
+    const newLng = i18n.language === "en" ? "mr" : "en";
+    i18n.changeLanguage(newLng);
+    localStorage.setItem("appLanguage", newLng);
+  };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
+  return (
+    <div className="admin-layout-redesign">
+      {/* Premium Top Header */}
+      <header className="premium-header">
+        <div className="header-left">
+          <img src={mksssLogo} alt="MKSSS Logo" className="header-logo" />
+          <div className="header-divider"></div>
+          <h1 className="header-org-name">MKSSS</h1>
+        </div>
+
+        <div className="header-right">
+          <button className="lang-toggle-btn" onClick={handleLangToggle}>
+            <i className="fas fa-globe"></i>
+            <span>{i18n.language === "en" ? "मराठी" : "English"}</span>
+          </button>
+
+          <div className="header-icons">
+            <button className="icon-btn" title="Notifications">
+              <i className="bi bi-bell"></i>
+              <span className="icon-badge"></span>
+            </button>
+            
+            <div className="profile-section">
+              <div className="profile-trigger" onClick={() => setShowDropdown(!showDropdown)}>
+                <div className="profile-avatar">{displayName.charAt(0).toUpperCase()}</div>
+                <i className={`bi bi-chevron-${showDropdown ? 'up' : 'down'}`}></i>
+              </div>
+
+              {showDropdown && (
+                <div className="profile-dropdown-menu">
+                  <div className="dropdown-user-info">
+                    <p className="user-name">{displayName}</p>
+                    <p className="user-role">Administrator</p>
+                  </div>
+                  <div className="dropdown-divider"></div>
+                  <button className="dropdown-link" onClick={() => { setShowDropdown(false); navigate("/admin/profile"); }}>
+                    <i className="bi bi-person"></i> Profile
+                  </button>
+                  <button className="dropdown-link logout" onClick={handleLogout}>
+                    <i className="bi bi-box-arrow-right"></i> Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="layout-container">
         <TopGreetingBar schoolName={schoolName} semisId={semisId} />
-        <main className="main-viewport">
-          {children}
+        
+        {/* Horizontal Navigation Bar (Shown on main dashboard only) */}
+        {!schoolName && sidebarItems && (
+          <div className="horizontal-feature-nav">
+            <div className="nav-container">
+              {sidebarItems.map((item) => (
+                <button
+                  key={item.key}
+                  className={`horiz-nav-item ${activeSidebarTab === item.key ? "active" : ""}`}
+                  onClick={() => handleNavClick(item)}
+                >
+                  <i className={`bi ${item.icon}`}></i>
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <main className="premium-main-content">
+          <div className="content-inner">
+            {children}
+          </div>
         </main>
       </div>
     </div>
