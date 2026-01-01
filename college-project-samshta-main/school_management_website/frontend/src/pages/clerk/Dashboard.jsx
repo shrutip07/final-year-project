@@ -214,12 +214,14 @@
 // src/pages/clerk/ClerkDashboard.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
 import ClerkProfile from "./Profile";
 import StudentFees from "./StudentFees";
 import TeacherSalaries from "./TeacherSalaries";
 import ClerkAddStudent from "./StudentAdd";
+import FireSafety from "./FireSafety";
+import PhysicalSafety from "./PhysicalSafety";
 import ChatWidget from "../../components/ChatWidget";
-
 import "./Dashboard.scss";
 
 export default function ClerkDashboard() {
@@ -227,6 +229,7 @@ export default function ClerkDashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [checkingProfile, setCheckingProfile] = useState(true);
+
   const navigate = useNavigate();
 
   const sidebarItems = [
@@ -234,10 +237,12 @@ export default function ClerkDashboard() {
     { key: "profile", label: "Profile", icon: "bi-person" },
     { key: "fees", label: "Student Fees", icon: "bi-cash-stack" },
     { key: "salaries", label: "Teacher Salaries", icon: "bi-wallet2" },
-    { key: "addStudent", label: "Add Student", icon: "bi-person-plus" }
+    { key: "addStudent", label: "Add Student", icon: "bi-person-plus" },
+    { key: "fire-safety", label: "Fire Safety", icon: "bi-fire" },
+    { key: "physical-safety", label: "Physical Safety", icon: "bi-shield" },
   ];
 
-  // 1) Check if clerk profile exists; if not, send to onboarding
+  /* -------------------- PROFILE CHECK -------------------- */
   useEffect(() => {
     async function checkProfile() {
       const token = localStorage.getItem("token");
@@ -248,7 +253,7 @@ export default function ClerkDashboard() {
 
       try {
         const res = await fetch("http://localhost:5000/api/clerk/me", {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (res.status === 404) {
@@ -260,10 +265,11 @@ export default function ClerkDashboard() {
         setCheckingProfile(false);
       }
     }
+
     checkProfile();
   }, [navigate]);
 
-  // 2) Load unit dashboard once profile check is done
+  /* -------------------- DASHBOARD DATA -------------------- */
   useEffect(() => {
     if (checkingProfile) return;
 
@@ -271,7 +277,7 @@ export default function ClerkDashboard() {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch("http://localhost:5000/api/clerk/unit", {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
         setDashboard(data);
@@ -281,6 +287,7 @@ export default function ClerkDashboard() {
         setLoading(false);
       }
     }
+
     fetchDashboard();
   }, [checkingProfile]);
 
@@ -289,6 +296,7 @@ export default function ClerkDashboard() {
     navigate("/login");
   }
 
+  /* -------------------- RENDER HELPERS -------------------- */
   function renderDashboardCard() {
     return (
       <div className="clerk-main-inner">
@@ -304,7 +312,7 @@ export default function ClerkDashboard() {
                   {Object.entries(dashboard.unit).map(([key, value]) => (
                     <tr key={key}>
                       <th>{key.replace(/_/g, " ")}</th>
-                      <td>{value !== null && value !== "" ? value : "-"}</td>
+                      <td>{value || "-"}</td>
                     </tr>
                   ))}
                   <tr>
@@ -330,6 +338,7 @@ export default function ClerkDashboard() {
     switch (sidebarTab) {
       case "dashboard":
         return renderDashboardCard();
+
       case "profile":
         return (
           <div className="clerk-main-inner">
@@ -339,6 +348,7 @@ export default function ClerkDashboard() {
             <ClerkProfile />
           </div>
         );
+
       case "fees":
         return (
           <div className="clerk-main-inner">
@@ -348,6 +358,7 @@ export default function ClerkDashboard() {
             <StudentFees />
           </div>
         );
+
       case "salaries":
         return (
           <div className="clerk-main-inner">
@@ -357,6 +368,7 @@ export default function ClerkDashboard() {
             <TeacherSalaries />
           </div>
         );
+
       case "addStudent":
         return (
           <div className="clerk-main-inner">
@@ -366,26 +378,28 @@ export default function ClerkDashboard() {
             <ClerkAddStudent />
           </div>
         );
+
+      case "fire-safety":
+        return <FireSafety />;
+
+      case "physical-safety":
+        return <PhysicalSafety />;
+
       default:
         return null;
     }
   }
 
-  if (checkingProfile) {
-    return <div className="loading-state">Checking profile…</div>;
-  }
-  if (loading) {
-    return <div className="loading-state">Loading…</div>;
-  }
+  if (checkingProfile) return <div className="loading-state">Checking profile…</div>;
+  if (loading) return <div className="loading-state">Loading…</div>;
 
+  /* -------------------- JSX -------------------- */
   return (
     <div className="clerk-dashboard-container">
       {/* SIDEBAR */}
       <aside className="clerk-sidebar">
         <div className="clerk-sidebar-header">
-          <div className="clerk-sidebar-icon">
-            <i className="bi bi-journal-check" />
-          </div>
+          <i className="bi bi-journal-check" />
           <h3>Clerk Portal</h3>
         </div>
 
@@ -405,10 +419,7 @@ export default function ClerkDashboard() {
         </nav>
 
         <div className="clerk-sidebar-footer">
-          <button
-            className="clerk-nav-link logout-btn"
-            onClick={handleLogout}
-          >
+          <button className="clerk-nav-link logout-btn" onClick={handleLogout}>
             <i className="bi bi-box-arrow-left" />
             <span>Logout</span>
           </button>
