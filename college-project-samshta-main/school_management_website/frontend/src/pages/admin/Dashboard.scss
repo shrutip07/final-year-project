@@ -3,50 +3,57 @@ $primary: #002E6D;
 $accent: #0057D9;
 $highlight: #FFC145;
 $support: #00A9A5;
+$purple: #7C3AED;
+$rose: #E11D48;
+$orange: #EA580C;
+$emerald: #059669;
 $white: #ffffff;
 $text-dark: #1e293b;
 $text-muted: #64748b;
 $border-color: #e2e8f0;
 $background: #F9FAFB;
 
+.dashboard-wrapper {
+  min-height: calc(100vh - 200px);
+}
+
 .dashboard-main-view {
   .section-header-pro {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     h3 {
-      font-size: 24px;
-      font-weight: 800;
+      font-size: 20px;
+      font-weight: 700;
       color: $primary;
       margin: 0;
     }
     p {
       color: $text-muted;
-      margin: 5px 0 0;
-      font-size: 14px;
+      margin: 3px 0 0;
+      font-size: 13px;
     }
   }
 
   .school-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
 
     .school-card-pro {
       background: $white;
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 0;
       overflow: hidden;
       border: 1px solid $border-color;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
       cursor: pointer;
       transition: all 0.2s ease;
       position: relative;
-      height: 100%;
       display: flex;
       flex-direction: column;
 
       &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba($primary, 0.1);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba($primary, 0.1);
         border-color: $accent;
 
         .card-footer-pro i {
@@ -60,40 +67,40 @@ $background: #F9FAFB;
       }
 
       .card-header-pro {
-        padding: 15px 20px 10px;
+        padding: 12px 16px 8px;
         display: flex;
         justify-content: space-between;
         align-items: center;
 
         .school-symbol {
-          width: 36px;
-          height: 36px;
-          background: rgba($primary, 0.05);
+          width: 32px;
+          height: 32px;
+          background: rgba($primary, 0.08);
           color: $primary;
           border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 18px;
+          font-size: 16px;
         }
 
         .school-idx {
           font-weight: 700;
           color: $text-muted;
-          font-size: 11px;
+          font-size: 10px;
           opacity: 0.5;
         }
       }
 
       .card-body-pro {
-        padding: 0 20px 15px;
+        padding: 0 16px 12px;
         flex: 1;
 
         .school-name-text {
-          font-size: 16px;
+          font-size: 14px;
           font-weight: 700;
           color: $text-dark;
-          margin-bottom: 3px;
+          margin-bottom: 2px;
           line-height: 1.3;
           display: -webkit-box;
           -webkit-line-clamp: 2;
@@ -102,41 +109,40 @@ $background: #F9FAFB;
         }
 
         .school-id-tag {
-          font-size: 10px;
+          font-size: 9px;
           font-weight: 700;
           color: $text-muted;
           text-transform: uppercase;
           letter-spacing: 0.5px;
-          margin-bottom: 15px;
+          margin-bottom: 10px;
         }
 
         .school-stats-row {
           display: flex;
-          gap: 15px;
-          margin-top: auto;
+          gap: 12px;
 
           .stat-item {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
 
             .stat-icon {
-              width: 28px;
-              height: 28px;
+              width: 26px;
+              height: 26px;
               border-radius: 6px;
               display: flex;
               align-items: center;
               justify-content: center;
-              font-size: 14px;
+              font-size: 12px;
 
               &.staff {
-                background: rgba($support, 0.1);
+                background: rgba($support, 0.15);
                 color: $support;
               }
 
               &.students {
-                background: rgba($highlight, 0.1);
-                color: darken($highlight, 20%);
+                background: rgba($highlight, 0.15);
+                color: darken($highlight, 15%);
               }
             }
 
@@ -147,12 +153,12 @@ $background: #F9FAFB;
               .stat-count {
                 font-weight: 700;
                 color: $text-dark;
-                font-size: 14px;
+                font-size: 13px;
                 line-height: 1;
               }
 
               .stat-label {
-                font-size: 10px;
+                font-size: 9px;
                 color: $text-muted;
                 font-weight: 500;
               }
@@ -162,13 +168,13 @@ $background: #F9FAFB;
       }
 
       .card-footer-pro {
-        padding: 10px 20px;
+        padding: 8px 16px;
         background: $background;
         border-top: 1px solid $border-color;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 600;
         color: $accent;
 
@@ -181,32 +187,32 @@ $background: #F9FAFB;
 }
 
 .school-detail-view {
-  animation: fadeIn 0.5s ease;
+  animation: fadeIn 0.3s ease;
 }
 
-// Global UI Components Adjustments
+// Tab Navigation
 .tab-navigation-bar {
   background: $white;
-  padding: 5px;
-  border-radius: 12px;
+  padding: 4px;
+  border-radius: 10px;
   display: flex;
-  gap: 5px;
-  margin-bottom: 25px;
+  gap: 4px;
+  margin-bottom: 20px;
   border: 1px solid $border-color;
 
   .tab-item {
     flex: 1;
     border: none;
     background: none;
-    padding: 12px;
+    padding: 10px;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: $text-muted;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     transition: all 0.2s;
 
     &:hover {
@@ -217,52 +223,450 @@ $background: #F9FAFB;
     &.active {
       background: $primary;
       color: $white;
-      box-shadow: 0 4px 12px rgba($primary, 0.2);
+      box-shadow: 0 3px 10px rgba($primary, 0.2);
     }
   }
 }
 
+// Colorful Metrics Grid for Overview
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
 
   .metric-box {
-    background: $white;
-    padding: 25px;
-    border-radius: 16px;
-    border: 1px solid $border-color;
+    padding: 20px;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+    }
 
     .label {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
-      color: $text-muted;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
 
     .value {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 800;
-      color: $text-dark;
     }
 
     .sub-label {
-      font-size: 12px;
-      color: $text-muted;
+      font-size: 11px;
+      opacity: 0.8;
     }
 
-    &.highlight {
-      background: rgba($accent, 0.02);
-      border-color: rgba($accent, 0.2);
-      .value { color: $accent; }
+    &.metric-staff {
+      background: linear-gradient(135deg, rgba($support, 0.1) 0%, rgba($support, 0.05) 100%);
+      border: 1px solid rgba($support, 0.2);
+      &::before { background: $support; }
+      .label { color: darken($support, 10%); }
+      .value { color: $support; }
+      .sub-label { color: darken($support, 5%); }
+    }
+
+    &.metric-students {
+      background: linear-gradient(135deg, rgba($purple, 0.1) 0%, rgba($purple, 0.05) 100%);
+      border: 1px solid rgba($purple, 0.2);
+      &::before { background: $purple; }
+      .label { color: darken($purple, 10%); }
+      .value { color: $purple; }
+      .sub-label { color: darken($purple, 5%); }
+    }
+
+    &.metric-ratio {
+      background: linear-gradient(135deg, rgba($orange, 0.1) 0%, rgba($orange, 0.05) 100%);
+      border: 1px solid rgba($orange, 0.2);
+      &::before { background: $orange; }
+      .label { color: darken($orange, 10%); }
+      .value { color: $orange; }
+      .sub-label { color: darken($orange, 5%); }
+    }
+
+    &.metric-fees {
+      background: linear-gradient(135deg, rgba($emerald, 0.1) 0%, rgba($emerald, 0.05) 100%);
+      border: 1px solid rgba($emerald, 0.2);
+      &::before { background: $emerald; }
+      .label { color: darken($emerald, 10%); }
+      .value { color: $emerald; }
+      .sub-label { color: darken($emerald, 5%); }
     }
   }
 }
 
+// Overview Info Strip (Unit ID, SEMIS, Standards, Shift)
+.overview-info-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 16px;
+  background: $background;
+  border-radius: 10px;
+  border: 1px solid $border-color;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 14px;
+    background: $white;
+    border-radius: 8px;
+    border-left: 3px solid;
+
+    &:nth-child(1) { border-left-color: $primary; }
+    &:nth-child(2) { border-left-color: $accent; }
+    &:nth-child(3) { border-left-color: $support; }
+    &:nth-child(4) { border-left-color: $highlight; }
+
+    .label {
+      font-size: 10px;
+      font-weight: 700;
+      color: $text-muted;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .value {
+      font-size: 14px;
+      font-weight: 700;
+      color: $text-dark;
+    }
+  }
+}
+
+// Finance Summary Grid
+.finance-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .finance-item {
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      opacity: 0.1;
+      transform: translate(20px, 20px);
+    }
+
+    .label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .value {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .sub {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    &.budget {
+      background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+      border: 1px solid #C7D2FE;
+      &::after { background: #4F46E5; }
+      .label { color: #4338CA; }
+      .value { color: #4F46E5; }
+      .sub { color: #6366F1; }
+    }
+
+    &.collected {
+      background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+      border: 1px solid #A7F3D0;
+      &::after { background: $emerald; }
+      .label { color: #047857; }
+      .value { color: $emerald; }
+      .sub { color: #10B981; }
+    }
+
+    &.pending {
+      background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+      border: 1px solid #FCD34D;
+      &::after { background: #D97706; }
+      .label { color: #B45309; }
+      .value { color: #D97706; }
+      .sub { color: #F59E0B; }
+    }
+
+    &.spent {
+      background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+      border: 1px solid #FCA5A5;
+      &::after { background: $rose; }
+      .label { color: #B91C1C; }
+      .value { color: $rose; }
+      .sub { color: #EF4444; }
+    }
+  }
+}
+
+// Professional Tables
+.professional-table {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid $border-color;
+
+  table {
+    margin-bottom: 0;
+    
+    thead {
+      background: linear-gradient(135deg, $primary 0%, darken($primary, 5%) 100%);
+      
+      th {
+        color: $white;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px 14px;
+        border: none;
+        white-space: nowrap;
+      }
+    }
+
+    tbody {
+      tr {
+        transition: background 0.2s;
+        
+        &:hover {
+          background: rgba($accent, 0.03);
+        }
+
+        &:nth-child(even) {
+          background: rgba($background, 0.5);
+          
+          &:hover {
+            background: rgba($accent, 0.05);
+          }
+        }
+      }
+
+      td {
+        padding: 12px 14px;
+        font-size: 13px;
+        color: $text-dark;
+        border-color: $border-color;
+        vertical-align: middle;
+      }
+    }
+  }
+}
+
+// Avatar Circles
+.avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  background: linear-gradient(135deg, $primary 0%, $accent 100%);
+  color: $white;
+  flex-shrink: 0;
+
+  &.student {
+    background: linear-gradient(135deg, $purple 0%, #8B5CF6 100%);
+  }
+}
+
+// ERP Badges
+.erp-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+
+  &.badge-designation {
+    background: rgba($accent, 0.1);
+    color: $accent;
+  }
+
+  &.badge-qualification {
+    background: rgba($purple, 0.1);
+    color: $purple;
+  }
+
+  &.badge-success {
+    background: rgba($emerald, 0.1);
+    color: $emerald;
+  }
+
+  &.badge-danger {
+    background: rgba($rose, 0.1);
+    color: $rose;
+  }
+
+  &.badge-year {
+    background: rgba($orange, 0.1);
+    color: $orange;
+  }
+}
+
+// Finance Colors in Tables
+.finance-positive {
+  color: $emerald !important;
+}
+
+.finance-negative {
+  color: $rose !important;
+}
+
+// Dynamic Table Wrapper
+.dynamic-table-wrapper {
+  .dynamic-table-toolbar {
+    padding-bottom: 12px;
+    border-bottom: 1px solid $border-color;
+    margin-bottom: 16px;
+  }
+}
+
+// Column Dropdown
+.col-dropdown {
+  max-height: 300px;
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: $border-color;
+    border-radius: 3px;
+  }
+}
+
+// Tab Pane Content
+.tab-pane-content {
+  animation: fadeIn 0.3s ease;
+}
+
+// Admin Card Enhancements
+.admin-card {
+  border-radius: 12px;
+  border: 1px solid $border-color;
+  background: $white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-bottom: 20px;
+  overflow: hidden;
+
+  .card-header {
+    background: $white;
+    border-bottom: 1px solid $border-color;
+    padding: 16px 20px;
+    font-weight: 700;
+    color: $text-dark;
+    font-size: 15px;
+  }
+
+  .card-body {
+    padding: 20px;
+  }
+}
+
+// Empty State
+.empty-table-msg {
+  background: linear-gradient(135deg, $background 0%, $white 100%);
+  
+  i {
+    color: $text-muted;
+  }
+}
+
+// Soft Background Badges
+.bg-soft-primary {
+  background: rgba($accent, 0.1) !important;
+}
+
+.bg-soft-success {
+  background: rgba($emerald, 0.1) !important;
+}
+
+// Professional List
+.professional-list {
+  .list-group-item {
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+
+    &:hover {
+      border-left-color: $accent;
+      background: rgba($accent, 0.02);
+    }
+  }
+}
+
+// Alert Custom
+.alert-custom-danger {
+  background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+  border: 1px solid #FCA5A5;
+  border-radius: 12px;
+  color: #991B1B;
+}
+
+// Animations
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+// Responsive Adjustments
+@media (max-width: 768px) {
+  .dashboard-main-view {
+    .school-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .metrics-grid,
+  .finance-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .overview-info-strip {
+    grid-template-columns: 1fr;
+  }
 }
