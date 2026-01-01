@@ -20,6 +20,10 @@ const chatRoutes = require("./routes/chat");
 const reportRoutes = require('./routes/reportRoutes'); // Report Route
 const { verify } = require('./controllers/authController'); // <-- Import this!
 const clerkRoutes = require('./routes/clerkRoutes');
+const studentImportRoutes = require('./routes/studentImportRoutes');
+
+app.use('/api/students', studentImportRoutes);
+
 app.use('/api/clerk', clerkRoutes);
 
 
