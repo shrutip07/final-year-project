@@ -829,64 +829,66 @@ export default function AdminDashboard() {
           </div>
         )}
 
-          {/* TAB CONTENT - Teachers */}
-          {selectedSchoolTab === "teachers" && (
-            <div className="tab-pane-content">
-              <AdminCard header={
-                <div className="d-flex align-items-center gap-2">
-                  <i className="bi bi-people-fill text-primary"></i>
-                  <span>Staff Directory</span>
-                </div>
-              }>
-                <TableContainer
-               title=""
-               toolbar={
-                 <Toolbar
-                   left={
-                     <div className="d-flex align-items-center gap-2">
-                       <i className="bi bi-search text-muted"></i>
-                       <input
-                         type="text"
-                         className="form-control form-control-sm border-0 bg-light"
-                         placeholder="Search teachers..."
-                         style={{ minWidth: 250 }}
-                         value={teacherSearch}
-                         onChange={(e) => setTeacherSearch(e.target.value)}
-                       />
-                     </div>
-                   }
-                   right={
-                     <div className="position-relative">
-                       <button
-                         className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2"
-                         onClick={() => setTeachersShowColDropdown(!teachersShowColDropdown)}
-                       >
-                           <i className="bi bi-columns-gap"></i> Columns
-                         </button>
-
-                       {teachersShowColDropdown && (
-                         <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
-                           {teacherFields.map(([key, label]) => (
-                             <div key={key} className="form-check mb-1">
-                               <input
-                                 className="form-check-input"
-                                 type="checkbox"
-                                 id={`col-check-teacher-${key}`}
-                                 checked={teacherVisibleColumns.includes(key)}
-                                 onChange={() => handleTeacherColumnToggle(key)}
-                               />
-                               <label className="form-check-label small" htmlFor={`col-check-teacher-${key}`}>
-                                 {label}
-                               </label>
-                             </div>
-                           ))}
+            {/* TAB CONTENT - Teachers */}
+            {selectedSchoolTab === "teachers" && (
+              <div className="tab-pane-content">
+                <AdminCard>
+                  <TableContainer
+                 title=""
+                 toolbar={
+                   <Toolbar
+                     left={
+                       <h6 className="mb-0 text-dark fw-bold">Staff Directory</h6>
+                     }
+                     right={
+                       <div className="d-flex align-items-center gap-3">
+                         <div className="d-flex align-items-center gap-2 bg-light px-3 py-1 rounded-pill">
+                           <i className="bi bi-search text-muted"></i>
+                           <input
+                             type="text"
+                             className="form-control form-control-sm border-0 bg-transparent"
+                             placeholder="Search teachers..."
+                             style={{ width: 200 }}
+                             value={teacherSearch}
+                             onChange={(e) => setTeacherSearch(e.target.value)}
+                           />
                          </div>
-                       )}
-                     </div>
-                   }
-                 />
-               }
-             >
+                         <div className="position-relative">
+                           <button
+                             className="btn btn-sm btn-light border d-flex align-items-center gap-2"
+                             onClick={() => setTeachersShowColDropdown(!teachersShowColDropdown)}
+                           >
+                               <i className="bi bi-columns-gap"></i> Columns
+                             </button>
+  
+                           {teachersShowColDropdown && (
+                             <div className="col-dropdown p-3 border rounded shadow bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '220px' }}>
+                               <div className="d-flex justify-content-between align-items-center mb-2">
+                                 <span className="fw-bold small">Manage Columns</span>
+                                 <button className="btn-close" style={{fontSize: '0.6rem'}} onClick={() => setTeachersShowColDropdown(false)}></button>
+                               </div>
+                               {teacherFields.map(([key, label]) => (
+                                 <div key={key} className="form-check mb-1">
+                                   <input
+                                     className="form-check-input"
+                                     type="checkbox"
+                                     id={`col-check-teacher-${key}`}
+                                     checked={teacherVisibleColumns.includes(key)}
+                                     onChange={() => handleTeacherColumnToggle(key)}
+                                   />
+                                   <label className="form-check-label small" htmlFor={`col-check-teacher-${key}`}>
+                                     {label}
+                                   </label>
+                                 </div>
+                               ))}
+                             </div>
+                           )}
+                         </div>
+                       </div>
+                     }
+                   />
+                 }
+               >
                    {filteredTeachers.length === 0 ? (
                      <EmptyState title="No Records" description="No teacher records found for this unit." />
                    ) : (
@@ -941,76 +943,77 @@ export default function AdminDashboard() {
           </div>
         )}
 
-          {/* TAB CONTENT - Students */}
-          {selectedSchoolTab === "students" && (
-            <div className="tab-pane-content">
-            <AdminCard header={
-              <div className="d-flex align-items-center gap-2">
-                <i className="bi bi-mortarboard-fill text-success"></i>
-                <span>Student Enrollment</span>
-              </div>
-            }>
-               <TableContainer
-               title=""
-               toolbar={
-                 <Toolbar
-                   left={
-                     <div className="d-flex align-items-center gap-3">
-                       <div className="d-flex align-items-center gap-2">
-                         <i className="bi bi-search text-muted"></i>
-                         <input
-                           type="text"
-                           className="form-control form-control-sm border-0 bg-light"
-                           placeholder="Search students..."
-                           style={{ minWidth: 200 }}
-                           value={studentSearch}
-                           onChange={(e) => setStudentSearch(e.target.value)}
-                         />
+            {/* TAB CONTENT - Students */}
+            {selectedSchoolTab === "students" && (
+              <div className="tab-pane-content">
+              <AdminCard>
+                 <TableContainer
+                 title=""
+                 toolbar={
+                   <Toolbar
+                     left={
+                       <h6 className="mb-0 text-dark fw-bold">Student Enrollment</h6>
+                     }
+                     right={
+                       <div className="d-flex align-items-center gap-3">
+                         <div className="d-flex align-items-center gap-2 bg-light px-3 py-1 rounded-pill">
+                           <i className="bi bi-search text-muted"></i>
+                           <input
+                             type="text"
+                             className="form-control form-control-sm border-0 bg-transparent"
+                             placeholder="Search students..."
+                             style={{ width: 180 }}
+                             value={studentSearch}
+                             onChange={(e) => setStudentSearch(e.target.value)}
+                           />
+                         </div>
+                         <div className="d-flex align-items-center gap-2 bg-light px-3 py-1 rounded-pill">
+                           <span className="small text-muted fw-bold text-nowrap">Year:</span>
+                           <select
+                             value={studentsYear}
+                             onChange={(e) => setStudentsYear(e.target.value)}
+                             className="form-select form-select-sm border-0 bg-transparent w-auto py-0"
+                             style={{ fontSize: '0.75rem' }}
+                           >
+                             <option value="">All</option>
+                             {allStudentYears.map(y => <option key={y} value={y}>{y}</option>)}
+                           </select>
+                         </div>
+                         <div className="position-relative">
+                          <button
+                            className="btn btn-sm btn-light border d-flex align-items-center gap-2"
+                            onClick={() => setStudentsShowColDropdown(!studentsShowColDropdown)}
+                          >
+                            <i className="bi bi-columns-gap"></i> Columns
+                          </button>
+                          {studentsShowColDropdown && (
+                            <div className="col-dropdown p-3 border rounded shadow bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '220px' }}>
+                               <div className="d-flex justify-content-between align-items-center mb-2">
+                                 <span className="fw-bold small">Manage Columns</span>
+                                 <button className="btn-close" style={{fontSize: '0.6rem'}} onClick={() => setStudentsShowColDropdown(false)}></button>
+                               </div>
+                              {studentFields.map(([key, label]) => (
+                                <div key={key} className="form-check mb-1">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id={`col-check-student-${key}`}
+                                    checked={studentVisibleColumns.includes(key)}
+                                    onChange={() => handleStudentColumnToggle(key)}
+                                  />
+                                  <label className="form-check-label small" htmlFor={`col-check-student-${key}`}>
+                                    {label}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                        </div>
-                       <div className="d-flex align-items-center gap-2">
-                         <span className="small text-muted fw-bold text-nowrap">Academic Year:</span>
-                         <select
-                           value={studentsYear}
-                           onChange={(e) => setStudentsYear(e.target.value)}
-                           className="form-select form-select-sm w-auto border-0 bg-light"
-                         >
-                           <option value="">All Years</option>
-                           {allStudentYears.map(y => <option key={y} value={y}>{y}</option>)}
-                         </select>
-                       </div>
-                     </div>
-                   }
-                   right={
-                      <div className="position-relative">
-                        <button
-                          className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2"
-                          onClick={() => setStudentsShowColDropdown(!studentsShowColDropdown)}
-                        >
-                          <i className="bi bi-columns-gap"></i> Columns
-                        </button>
-                        {studentsShowColDropdown && (
-                          <div className="col-dropdown p-3 border rounded shadow-sm bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '200px' }}>
-                            {studentFields.map(([key, label]) => (
-                              <div key={key} className="form-check mb-1">
-                                <input
-                                  className="form-check-input"
-                                  type="checkbox"
-                                  id={`col-check-student-${key}`}
-                                  checked={studentVisibleColumns.includes(key)}
-                                  onChange={() => handleStudentColumnToggle(key)}
-                                />
-                                <label className="form-check-label small" htmlFor={`col-check-student-${key}`}>
-                                  {label}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                   }
-                 />
-               }
-             >
+                     }
+                   />
+                 }
+               >
                    {filteredStudents.length === 0 ? (
                      <EmptyState title="No Records" description="No student records found." />
                    ) : (
