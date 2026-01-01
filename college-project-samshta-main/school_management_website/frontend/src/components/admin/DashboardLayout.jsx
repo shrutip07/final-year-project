@@ -58,12 +58,11 @@ export default function DashboardLayout({
   return (
     <div className="admin-layout-redesign">
       {/* Premium Top Header */}
-      <header className="premium-header">
-        <div className="header-left">
-          <img src={mksssLogo} alt="MKSSS Logo" className="header-logo" />
-          <div className="header-divider"></div>
-          <h1 className="header-org-name">MKSSS</h1>
-        </div>
+        <header className="premium-header">
+          <div className="header-left">
+            <img src={mksssLogo} alt="MKSSS Logo" className="header-logo" />
+            <h1 className="header-org-name">Maharshi Karve Stree Shikshan Samstha (MKSSS)</h1>
+          </div>
 
         <div className="header-right">
           <button className="lang-toggle-btn" onClick={handleLangToggle}>

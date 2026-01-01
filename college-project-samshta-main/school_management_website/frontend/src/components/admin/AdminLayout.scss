@@ -17,15 +17,16 @@ $border-color: #e2e8f0;
 
   .premium-header {
     height: 80px;
-    background: $white;
+    background: #022A52;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 40px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     z-index: 1000;
     position: sticky;
     top: 0;
+    border-bottom: 3px solid #D9B86F;
 
     .header-left {
       display: flex;
@@ -33,22 +34,17 @@ $border-color: #e2e8f0;
       gap: 20px;
 
       .header-logo {
-        height: 55px;
+        height: 60px;
         width: auto;
       }
 
-      .header-divider {
-        width: 1.5px;
-        height: 35px;
-        background-color: $border-color;
-      }
-
       .header-org-name {
-        font-size: 22px;
-        font-weight: 800;
-        color: $primary;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: white;
         margin: 0;
-        letter-spacing: 1px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
     }
 
@@ -58,21 +54,20 @@ $border-color: #e2e8f0;
       gap: 30px;
 
       .lang-toggle-btn {
-        background: $background;
-        border: 1px solid $border-color;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #022A52;
         padding: 8px 16px;
-        border-radius: 50px;
+        border-radius: 20px;
         display: flex;
         align-items: center;
         gap: 10px;
-        color: $text-dark;
+        color: #022A52;
         font-weight: 600;
         transition: all 0.2s ease;
 
         &:hover {
-          background: $white;
-          border-color: $accent;
-          color: $accent;
+          background: #022A52;
+          color: white;
         }
       }
 
@@ -86,12 +81,12 @@ $border-color: #e2e8f0;
           background: none;
           border: none;
           font-size: 22px;
-          color: $text-muted;
+          color: white;
           padding: 5px;
           transition: color 0.2s;
 
           &:hover {
-            color: $accent;
+            color: #D9B86F;
           }
 
           .icon-badge {
@@ -100,9 +95,9 @@ $border-color: #e2e8f0;
             right: 5px;
             width: 8px;
             height: 8px;
-            background-color: $highlight;
+            background-color: #D9B86F;
             border-radius: 50%;
-            border: 2px solid $white;
+            border: 2px solid #022A52;
           }
         }
 
@@ -119,14 +114,14 @@ $border-color: #e2e8f0;
             transition: background 0.2s;
 
             &:hover {
-              background: $background;
+              background: rgba(255,255,255,0.1);
             }
 
             .profile-avatar {
               width: 38px;
               height: 38px;
-              background: linear-gradient(135deg, $primary, $accent);
-              color: $white;
+              background: #D9B86F;
+              color: #022A52;
               border-radius: 10px;
               display: flex;
               align-items: center;
@@ -136,7 +131,7 @@ $border-color: #e2e8f0;
             }
 
             i {
-              color: $text-muted;
+              color: white;
               font-size: 14px;
             }
           }
@@ -206,49 +201,49 @@ $border-color: #e2e8f0;
     }
   }
 
-  .layout-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 0 40px 40px;
-  }
-
-  .horizontal-feature-nav {
-    margin-bottom: 30px;
-    
-    .nav-container {
+    .layout-container {
+      flex: 1;
       display: flex;
-      gap: 15px;
-      padding: 10px;
-      background: $white;
-      border-radius: 16px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-      border: 1px solid $border-color;
+      flex-direction: column;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 30px 30px;
+    }
+  
+    .horizontal-feature-nav {
+      margin-bottom: 20px;
       
-      .horiz-nav-item {
-        flex: 1;
+      .nav-container {
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-        padding: 15px;
-        border: none;
-        background: none;
+        gap: 10px;
+        padding: 8px;
+        background: $white;
         border-radius: 12px;
-        color: $text-muted;
-        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        border: 1px solid $border-color;
         
-        i {
-          font-size: 24px;
-        }
-        
-        span {
-          font-size: 14px;
-          font-weight: 600;
-        }
+        .horiz-nav-item {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 5px;
+          padding: 10px;
+          border: none;
+          background: none;
+          border-radius: 10px;
+          color: $text-muted;
+          transition: all 0.2s ease;
+          
+          i {
+            font-size: 20px;
+          }
+          
+          span {
+            font-size: 13px;
+            font-weight: 600;
+          }
         
         &:hover {
           background: $background;
