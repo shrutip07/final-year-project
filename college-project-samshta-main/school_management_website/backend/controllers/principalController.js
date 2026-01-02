@@ -22,7 +22,63 @@ exports.getProfile = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+// Get top N students per standard for the principal's unit
+// Query parameter: ?limit=3  (default 3)
+exports.getToppers = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const limit = parseInt(req.query.limit, 10) || 3;
 
+    // Get principal's unit_id
+    const principalResult = await pool.query('SELECT unit_id FROM principal WHERE user_id = $1', [userId]);
+    if (principalResult.rows.length === 0) return res.status(404).json({ error: "No principal/unit assigned" });
+    const unitId = principalResult.rows[0].unit_id;
+
+    // Partition by standard and pick top N by percentage (highest first).
+    // We assume `enrollments.percentage` exists; if your schema uses marks instead, adjust the column.
+    const q = `
+      SELECT student_id, full_name, standard, division, academic_year, percentage, rn
+      FROM (
+        SELECT s.student_id, s.full_name, e.standard, e.division, e.academic_year, e.percentage,
+               ROW_NUMBER() OVER (PARTITION BY e.standard ORDER BY e.percentage DESC NULLS LAST) AS rn
+          FROM students s
+          JOIN enrollments e ON e.student_id = s.student_id
+         WHERE s.unit_id = $1
+      ) t
+      WHERE rn <= $2
+      ORDER BY standard, rn;
+    `;
+    const result = await pool.query(q, [unitId, limit]);
+
+    // Group by standard for a friendly response shape
+    const grouped = {};
+    for (const r of result.rows) {
+      const std = r.standard || 'Unknown';
+      if (!grouped[std]) grouped[std] = [];
+      grouped[std].push({
+        student_id: r.student_id,
+        full_name: r.full_name,
+        division: r.division,
+        academic_year: r.academic_year,
+        percentage: r.percentage,
+        rank: r.rn
+      });
+    }
+
+    // Convert to array sorted by standard
+    const response = Object.keys(grouped).sort((a,b) => {
+      // try numeric sort if possible
+      const na = Number(a), nb = Number(b);
+      if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
+      return a.localeCompare(b);
+    }).map(std => ({ standard: std, toppers: grouped[std] }));
+
+    res.json({ limit, data: response });
+  } catch (err) {
+    console.error("getToppers error:", err);
+    res.status(500).json({ error: "Failed to fetch toppers" });
+  }
+};
 // Onboard new principal
 exports.onboard = async (req, res) => {
   try {

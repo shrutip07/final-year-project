@@ -19,12 +19,15 @@ const {
   payTeacherSalary,
   getPendingSalaries,
   addStudent,
+  listTeachersForClerk,
+  updateTeacherRetirement,
   listTeachersForAllocation,
   allocateTeacherClass,
   listPassedStudentsForAllocation,
   allocateStudentNextYear,
   getPhysicalSafetyInfo,
   updatePhysicalSafetyInfo,
+  upsertClassCapacity,
   getPhysicalSafetyAnalytics
 } = require('../controllers/clerkController');
 // Onboarding (create/update profile)
@@ -43,6 +46,9 @@ router.get('/physical-safety/analytics', authenticateToken, authorizeRoles('cler
 // Fee master (set fees for standard & year)
 router.get('/fee-master', authenticateToken, authorizeRoles('clerk'), getFeeMaster);
 router.post('/fee-master', authenticateToken, authorizeRoles('clerk'), setFeeMaster);
+
+router.get('/teachers', authenticateToken, authorizeRoles('clerk'), listTeachersForClerk);
+router.put('/teacher-retirement', authenticateToken, authorizeRoles('clerk'), updateTeacherRetirement);
 
 // Dashboard unit details, teacher/students count
 router.get("/unit", authenticateToken, authorizeRoles("clerk"), getUnitDashboard);
@@ -84,6 +90,9 @@ router.post('/allocate-student-next-year',
   authorizeRoles('clerk'),
   allocateStudentNextYear
 );
+// Manage class capacity
+router.post('/capacity', authenticateToken, 
+  authorizeRoles('clerk'), upsertClassCapacity);
 
 module.exports = router;
 module.exports = router;

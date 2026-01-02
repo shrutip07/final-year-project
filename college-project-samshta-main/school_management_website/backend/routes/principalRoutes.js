@@ -7,7 +7,6 @@ const { getPrincipalNotifications } = require("../controllers/notificationContro
 
 // Principal Onboarding (create profile)
 router.post('/onboard', authenticateToken, principalController.onboard);
-
 // Get principal profile
 router.get('/me', authenticateToken, principalController.getProfile);
 
@@ -28,6 +27,7 @@ router.get('/analytics', authenticateToken, authorizeRoles('principal'), princip
 
 // Add this new route
 router.get('/students', authenticateToken, principalController.getStudents);
+router.get('/students/toppers', authenticateToken, principalController.getToppers);
 router.get(
   "/notifications",
   authenticateToken,

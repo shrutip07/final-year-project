@@ -52,27 +52,30 @@ export default function Students() {
   const [showColDropdown, setShowColDropdown] = useState(false);
   const [search, setSearch] = useState("");
 
-  // Fetch all students once
+  // Toppers state
+  const [toppers, setToppers] = useState([]); // grouped by standard
+  const [toppersLimit, setToppersLimit] = useState(3);
+  const [loadingToppers, setLoadingToppers] = useState(false);
+
+  // Fetch all students once (and toppers)
   useEffect(() => {
     async function fetchAll() {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(
-          "http://localhost:5000/api/principal/students",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await axios.get("http://localhost:5000/api/principal/students", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         const data = res.data || [];
         setStudents(data);
 
-        const years = Array.from(
-          new Set(data.map((s) => s.academic_year).filter(Boolean))
-        )
+        const years = Array.from(new Set(data.map((s) => s.academic_year).filter(Boolean)))
           .sort()
           .reverse();
         setAllYears(years);
+
+        // fetch toppers as well
+        await fetchToppers(toppersLimit, token);
       } catch (err) {
         setError(
           err.response?.data?.message ||
@@ -89,30 +92,48 @@ export default function Students() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Fetch toppers function
+  async function fetchToppers(limit = 3, tokenArg = null) {
+    setLoadingToppers(true);
+    try {
+      const token = tokenArg || localStorage.getItem("token");
+      const res = await axios.get(`http://localhost:5000/api/principal/students/toppers?limit=${limit}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // res.data.data is expected to be [{ standard: '1', toppers: [...] }, ...]
+      setToppers(res.data?.data || []);
+    } catch (err) {
+      console.error("Failed to load toppers:", err);
+      setToppers([]);
+    } finally {
+      setLoadingToppers(false);
+    }
+  }
+
+  // When toppersLimit changes, re-fetch toppers
+  useEffect(() => {
+    // avoid calling until students load triggered initial fetch; still safe to call
+    fetchToppers(toppersLimit);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toppersLimit]);
+
   // Filtered list by year + search
   const searchLower = search.toLowerCase();
   const filteredStudents = students.filter((s) => {
     const matchesYear = !academicYear || s.academic_year === academicYear;
     const matchesSearch =
       !searchLower ||
-      (s.full_name &&
-        s.full_name.toLowerCase().includes(searchLower)) ||
-      (s.roll_number &&
-        s.roll_number.toString().includes(searchLower)) ||
-      (s.standard &&
-        s.standard.toLowerCase().includes(searchLower)) ||
-      (s.division &&
-        s.division.toLowerCase().includes(searchLower)) ||
-      (s.parent_name &&
-        s.parent_name.toLowerCase().includes(searchLower));
+      (s.full_name && s.full_name.toLowerCase().includes(searchLower)) ||
+      (s.roll_number && s.roll_number.toString().includes(searchLower)) ||
+      (s.standard && s.standard.toLowerCase().includes(searchLower)) ||
+      (s.division && s.division.toLowerCase().includes(searchLower)) ||
+      (s.parent_name && s.parent_name.toLowerCase().includes(searchLower));
     return matchesYear && matchesSearch;
   });
 
   function handleColumnToggle(key) {
     setVisibleColumns((prev) =>
-      prev.includes(key)
-        ? prev.filter((c) => c !== key)
-        : [...prev, key]
+      prev.includes(key) ? prev.filter((c) => c !== key) : [...prev, key]
     );
   }
 
@@ -134,19 +155,81 @@ export default function Students() {
 
   return (
     // PageHeader + .page-inner are provided by PrincipalDashboard
-    <AdminCard
-      header={t("students") || "Students"}
-      className="section-card section-card--table"
-    >
+    <AdminCard header={t("students") || "Students"} className="section-card section-card--table">
+      {/* TOPPERS PANEL */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+          <div style={{ fontWeight: 600 }}>Toppers by Standard</div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div style={{ fontSize: 13, color: "#555" }}>Top</div>
+            <select
+              className="form-control form-control-sm"
+              value={toppersLimit}
+              onChange={(e) => setToppersLimit(Number(e.target.value))}
+              style={{ width: 100 }}
+            >
+              <option value={1}>1</option>
+              <option value={2}>2</option>
+              <option value={3}>3</option>
+              <option value={5}>5</option>
+            </select>
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => fetchToppers(toppersLimit)}
+            >
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        {loadingToppers ? (
+          <div className="mt-2">Loading toppers…</div>
+        ) : toppers.length === 0 ? (
+          <div className="text-muted mt-2">No topper data available.</div>
+        ) : (
+          <div style={{ marginTop: 10, display: "flex", gap: 12, flexWrap: "wrap" }}>
+            {toppers.map((group) => (
+              <div
+                key={group.standard}
+                style={{
+                  minWidth: 260,
+                  border: "1px solid #e6e6e6",
+                  borderRadius: 6,
+                  padding: 12,
+                  background: "#fff"
+                }}
+              >
+                <div style={{ fontWeight: 600, marginBottom: 8 }}>Standard {group.standard}</div>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: "left", fontSize: 12, color: "#444" }}>Rank</th>
+                      <th style={{ textAlign: "left", fontSize: 12, color: "#444" }}>Name</th>
+                      <th style={{ textAlign: "left", fontSize: 12, color: "#444" }}>Perc</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {group.toppers.map((t) => (
+                      <tr key={t.student_id}>
+                        <td style={{ paddingRight: 8 }}>{t.rank ?? "-"}</td>
+                        <td>{t.full_name}</td>
+                        <td>{t.percentage != null ? t.percentage : "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Toolbar – search + year + columns */}
-      <div className="table-toolbar">
+      <div className="table-toolbar" style={{ marginTop: 8 }}>
         <div className="toolbar-search" style={{ maxWidth: 320 }}>
           <input
             className="form-control"
-            placeholder={
-              t("search_by_details") ||
-              "Search by name, roll, standard, division, or parent"
-            }
+            placeholder={t("search_by_details") || "Search by name, roll, standard, division, or parent"}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -160,9 +243,7 @@ export default function Students() {
             className="form-control form-control-sm"
             style={{ width: 160 }}
           >
-            <option value="">
-              {t("all_years") || "All Years"}
-            </option>
+            <option value="">{t("all_years") || "All Years"}</option>
             {allYears.map((y) => (
               <option key={y} value={y}>
                 {y}
@@ -171,15 +252,8 @@ export default function Students() {
           </select>
 
           {/* Column selector */}
-          <div
-            className="dropdown"
-            style={{ position: "relative" }}
-          >
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-secondary"
-              onClick={() => setShowColDropdown((s) => !s)}
-            >
+          <div className="dropdown" style={{ position: "relative" }}>
+            <button type="button" className="btn btn-sm btn-outline-secondary" onClick={() => setShowColDropdown((s) => !s)}>
               {t("select_columns") || "Select Columns"}
             </button>
             {showColDropdown && (
@@ -193,10 +267,7 @@ export default function Students() {
                       checked={visibleColumns.includes(col.key)}
                       onChange={() => handleColumnToggle(col.key)}
                     />
-                    <label
-                      className="form-check-label"
-                      htmlFor={`col-check-${col.key}`}
-                    >
+                    <label className="form-check-label" htmlFor={`col-check-${col.key}`}>
                       {col.label}
                     </label>
                   </div>
@@ -209,36 +280,21 @@ export default function Students() {
 
       {/* Table content */}
       {filteredStudents.length === 0 ? (
-        <EmptyState
-          title={t("no_students") || "No students"}
-          description={
-            t("no_students_found") || "No students match your filters."
-          }
-        />
+        <EmptyState title={t("no_students") || "No students"} description={t("no_students_found") || "No students match your filters."} />
       ) : (
-        <div className="table-responsive">
+        <div className="table-responsive" style={{ marginTop: 8 }}>
           <table className="table table-striped table-bordered">
             <thead>
               <tr>
-                {COLUMNS.filter((c) =>
-                  visibleColumns.includes(c.key)
-                ).map((col) => (
+                {COLUMNS.filter((c) => visibleColumns.includes(c.key)).map((col) => (
                   <th key={col.key}>{col.label}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filteredStudents.map((student) => (
-                <tr
-                  key={
-                    student.student_id +
-                    "-" +
-                    (student.academic_year || "")
-                  }
-                >
-                  {COLUMNS.filter((c) =>
-                    visibleColumns.includes(c.key)
-                  ).map((col) => {
+                <tr key={student.student_id + "-" + (student.academic_year || "")}>
+                  {COLUMNS.filter((c) => visibleColumns.includes(c.key)).map((col) => {
                     const val = student[col.key];
 
                     // boolean field (passed)
@@ -251,22 +307,15 @@ export default function Students() {
                     }
 
                     // date fields
-                    if (
-                      col.key === "dob" ||
-                      col.key === "admission_date"
-                    ) {
+                    if (col.key === "dob" || col.key === "admission_date") {
                       return (
                         <td key={col.key}>
-                          {val
-                            ? new Date(val).toLocaleDateString()
-                            : "-"}
+                          {val ? new Date(val).toLocaleDateString() : "-"}
                         </td>
                       );
                     }
 
-                    return (
-                      <td key={col.key}>{val ?? "-"}</td>
-                    );
+                    return <td key={col.key}>{val ?? "-"}</td>;
                   })}
                 </tr>
               ))}
