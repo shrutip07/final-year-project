@@ -20,6 +20,7 @@ const chatRoutes = require("./routes/chat");
 const reportRoutes = require('./routes/reportRoutes'); // Report Route
 const { verify } = require('./controllers/authController'); // <-- Import this!
 const clerkRoutes = require('./routes/clerkRoutes');
+const fireSafetyRoutes = require('./routes/fireSafetyRoutes');
 app.use('/api/clerk', clerkRoutes);
 
 
@@ -36,6 +37,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/principal', principalRoutes);
 app.use('/api/chat', chatRoutes);
+// Fire safety routes for clerk (mounted at /api/clerk/fire-safety)
+app.use('/api/clerk/fire-safety', fireSafetyRoutes);
 app.use('/api/report', reportRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
