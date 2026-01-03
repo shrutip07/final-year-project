@@ -13,6 +13,7 @@ import AdminCard from "../../components/admin/AdminCard";
 import TableContainer from "../../components/admin/TableContainer";
 import Toolbar from "../../components/admin/Toolbar";
 import EmptyState from "../../components/admin/EmptyState";
+import AdminUnitImport from "./AdminUnitImport";
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
@@ -937,6 +938,9 @@ export default function AdminDashboard() {
                 <i className="bi bi-file-earmark-text"></i> Generate Report
               </button>
             </div>
+
+            {/* Unit Import Component */}
+            <AdminUnitImport />
           </div>
 
           <div className="info-card-stats-row">
