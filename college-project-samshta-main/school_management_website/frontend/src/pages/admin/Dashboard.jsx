@@ -13,6 +13,7 @@ import AdminCard from "../../components/admin/AdminCard";
 import TableContainer from "../../components/admin/TableContainer";
 import Toolbar from "../../components/admin/Toolbar";
 import EmptyState from "../../components/admin/EmptyState";
+import AdminUnitImport from "./AdminUnitImport";
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
@@ -1099,6 +1100,9 @@ export default function AdminDashboard() {
               <div className="spinner-border text-primary" role="status"></div>
               <p className="mt-2 text-muted">Loading schools...</p>
             </div>
+
+            {/* Unit Import Component */}
+            <AdminUnitImport />
           </div>
         ) : (
             safeUnits.map((unit, idx) => (
