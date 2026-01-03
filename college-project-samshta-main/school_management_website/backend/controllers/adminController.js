@@ -306,12 +306,20 @@ exports.getUnits = async (req, res) => {
       SELECT 
         u.unit_id,
         u.kendrashala_name,
-        (SELECT COUNT(*) FROM staff WHERE staff.unit_id = u.unit_id) AS staff_count,
-        (SELECT COUNT(*) FROM students WHERE students.unit_id = u.unit_id) AS student_count
+        (SELECT COUNT(DISTINCT staff_id) FROM staff WHERE staff.unit_id = u.unit_id) AS staff_count,
+        (SELECT COUNT(DISTINCT student_id) FROM students WHERE students.unit_id = u.unit_id) AS student_count
       FROM unit u
       ORDER BY u.kendrashala_name
     `);
-    res.json(result.rows);
+    
+    // Ensure counts are returned as integers
+    const rows = result.rows.map(row => ({
+      ...row,
+      staff_count: parseInt(row.staff_count, 10) || 0,
+      student_count: parseInt(row.student_count, 10) || 0
+    }));
+    
+    res.json(rows);
   } catch (err) {
     console.error('Error in getUnits:', err);
     res.status(500).json({ error: err.message || 'Failed to fetch units.' });
