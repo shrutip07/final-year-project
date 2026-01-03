@@ -32,6 +32,38 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({ error: "Failed to update profile" });
   }
 };
+// Upsert class capacity for the clerk's unit
+exports.upsertClassCapacity = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { academic_year, standard, division, capacity } = req.body;
+
+    if (!academic_year || !standard || typeof capacity === 'undefined') {
+      return res.status(400).json({ error: 'academic_year, standard and capacity are required.' });
+    }
+
+    // Get clerk's unit_id
+    const { rows: clerkRows } = await pool.query("SELECT unit_id, clerk_id FROM clerks WHERE user_id = $1", [userId]);
+    const unit_id = clerkRows[0]?.unit_id;
+    if (!unit_id) return res.status(404).json({ error: 'No unit assigned to clerk.' });
+
+    // Upsert into unit_class_capacity
+    // NOTE: This ON CONFLICT assumes a unique constraint/index on (unit_id, academic_year, standard, division)
+    const result = await pool.query(
+      `INSERT INTO unit_class_capacity (unit_id, academic_year, standard, division, capacity, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+       ON CONFLICT (unit_id, academic_year, standard, division)
+       DO UPDATE SET capacity = EXCLUDED.capacity, updated_at = NOW()
+       RETURNING *`,
+      [unit_id, academic_year, standard, division || null, Number(capacity)]
+    );
+
+    res.json({ success: true, capacity: result.rows[0] });
+  } catch (err) {
+    console.error('upsertClassCapacity error:', err);
+    res.status(500).json({ error: 'Failed to save capacity.' });
+  }
+};
 exports.getUnitDashboard = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -39,31 +71,128 @@ exports.getUnitDashboard = async (req, res) => {
     // Find the clerk's assigned unit
     const clerkRes = await pool.query("SELECT unit_id FROM clerks WHERE user_id = $1", [userId]);
     if (clerkRes.rows.length === 0) return res.status(404).json({ error: "Unit not found." });
-
     const unit_id = clerkRes.rows[0].unit_id;
 
-    // Fetch all columns for this unit
+    // Fetch unit info
     const unitRes = await pool.query("SELECT * FROM unit WHERE unit_id = $1", [unit_id]);
     if (unitRes.rows.length === 0) return res.status(404).json({ error: "Unit not found." });
-
     const unit = unitRes.rows[0];
 
-    // Count teachers in this unit
+    // Accept academic_year param, or default to a simple current-year format (adjust to your app)
+    const academic_year = req.query.academic_year || (() => {
+      const d = new Date();
+      const y = d.getFullYear();
+      return `${y}-${String(y + 1).slice(-2)}`; // e.g. "2025-26"
+    })();
+
+    // 1) Capacity per standard/division for this unit & year
+    const capRes = await pool.query(
+      `SELECT standard, division, SUM(capacity)::int AS capacity
+         FROM unit_class_capacity
+        WHERE unit_id = $1 AND academic_year = $2
+        GROUP BY standard, division
+        ORDER BY standard, division`,
+      [unit_id, academic_year]
+    );
+
+    // 2) Enrolled students per standard/division for the same year
+    const enrollRes = await pool.query(
+      `SELECT e.standard, e.division, COUNT(*)::int AS enrolled
+         FROM enrollments e
+         JOIN students s ON s.student_id = e.student_id
+        WHERE s.unit_id = $1 AND e.academic_year = $2
+        GROUP BY e.standard, e.division
+        ORDER BY e.standard, e.division`,
+      [unit_id, academic_year]
+    );
+
+    // Create maps for merge
+    const capMap = {};
+    for (const r of capRes.rows) {
+      const key = `${r.standard}||${r.division ?? ''}`;
+      capMap[key] = { standard: r.standard, division: r.division, capacity: r.capacity };
+    }
+    const enrollMap = {};
+    for (const r of enrollRes.rows) {
+      const key = `${r.standard}||${r.division ?? ''}`;
+      enrollMap[key] = r.enrolled;
+    }
+
+    // Merge into array of class stats
+    const classStats = [];
+    const keys = new Set([...Object.keys(capMap), ...Object.keys(enrollMap)]);
+    for (const key of keys) {
+      const [standard, division] = key.split('||');
+      const capacity = capMap[key]?.capacity ?? 0;
+      const enrolled = enrollMap[key] ?? 0;
+      const seatsRemaining = Math.max(0, capacity - enrolled);
+      classStats.push({ standard, division: division || null, capacity, enrolled, seatsRemaining });
+    }
+
+    // Aggregate totals
+    const totals = classStats.reduce((acc, cur) => {
+      acc.capacity += cur.capacity;
+      acc.enrolled += cur.enrolled;
+      acc.seatsRemaining += cur.seatsRemaining;
+      return acc;
+    }, { capacity: 0, enrolled: 0, seatsRemaining: 0 });
+
+    // 3) Count left students in this unit (requires students.status column)
+    let leftStudents = 0;
+    try {
+      const leftRes = await pool.query(
+        `SELECT COUNT(*)::int AS left_count FROM students WHERE unit_id = $1 AND status = 'left'`,
+        [unit_id]
+      );
+      leftStudents = leftRes.rows[0]?.left_count ?? 0;
+    } catch (e) {
+      // If column doesn't exist, skip gracefully and leave leftStudents = 0
+      console.warn("students.status not found or left-count query failed:", e.message || e);
+    }
+
+    // Existing teacher and student counters
     const teacherRes = await pool.query(
       "SELECT COUNT(*) as teacher_count FROM staff WHERE unit_id = $1 AND staff_type = 'teaching'",
       [unit_id]
     );
-
-    // Count students in this unit
     const studentRes = await pool.query(
       "SELECT COUNT(*) as student_count FROM students WHERE unit_id = $1",
       [unit_id]
     );
+    // Count upcoming retirements grouped by calendar year (current and future)
+const retireRes = await pool.query(
+  `SELECT EXTRACT(YEAR FROM retirement_date)::int AS year, COUNT(*)::int AS count
+     FROM staff
+    WHERE unit_id = $1
+      AND staff_type = 'teaching'  -- or remove if you want all staff types
+      AND retirement_date IS NOT NULL
+      AND retirement_date >= CURRENT_DATE
+    GROUP BY year
+    ORDER BY year`,
+  [unit_id]
+);
+
+const retireMap = {};
+for (const r of retireRes.rows) retireMap[r.year] = r.count;
+
+// Build a list for the current year + next N years (horizonYears)
+const currentYear = new Date().getFullYear();
+const horizonYears = 5;
+const upcomingRetirements = [];
+for (let i = 0; i < horizonYears; i++) {
+  const y = currentYear + i;
+  upcomingRetirements.push({ year: y, count: retireMap[y] || 0 });
+}
 
     res.json({
-      unit, // all columns from unit table
+      unit,
       teacherCount: parseInt(teacherRes.rows[0].teacher_count, 10),
-      studentCount: parseInt(studentRes.rows[0].student_count, 10)
+      studentCount: parseInt(studentRes.rows[0].student_count, 10),
+      academic_year,
+      classStats,
+      totals,
+      leftStudents,
+      upcomingRetirements 
     });
   } catch (err) {
     console.error("Unit dashboard error:", err);
@@ -160,8 +289,52 @@ exports.getFeeMaster = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch fee master." });
   }
 };
+// List teaching staff for the clerk's unit (id + name + retirement_date)
+exports.listTeachersForClerk = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const clerkRes = await pool.query("SELECT unit_id FROM clerks WHERE user_id = $1", [userId]);
+    if (clerkRes.rows.length === 0) return res.status(404).json({ error: "No unit assigned" });
+    const unit_id = clerkRes.rows[0].unit_id;
 
+    const q = `SELECT staff_id, full_name, retirement_date
+                 FROM staff
+                WHERE unit_id = $1 AND staff_type = 'teaching'
+                ORDER BY full_name`;
+    const result = await pool.query(q, [unit_id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error("listTeachersForClerk error:", err);
+    res.status(500).json({ error: "Failed to list teachers" });
+  }
+};
+
+// Update retirement_date for a staff member in the clerk's unit
+exports.updateTeacherRetirement = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { staff_id, retirement_date } = req.body;
+    if (!staff_id) return res.status(400).json({ error: "staff_id required" });
+
+    // Check clerk's unit_id
+    const clerkRes = await pool.query("SELECT unit_id FROM clerks WHERE user_id = $1", [userId]);
+    if (clerkRes.rows.length === 0) return res.status(404).json({ error: "No unit assigned" });
+    const unit_id = clerkRes.rows[0].unit_id;
+
+    // Ensure the staff belongs to this unit
+    const staffRes = await pool.query("SELECT staff_id FROM staff WHERE staff_id = $1 AND unit_id = $2", [staff_id, unit_id]);
+    if (staffRes.rows.length === 0) return res.status(404).json({ error: "Staff not found in your unit" });
+
+    // Accept null to clear retirement_date
+    await pool.query("UPDATE staff SET retirement_date = $1, updatedat = NOW() WHERE staff_id = $2", [retirement_date || null, staff_id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("updateTeacherRetirement error:", err);
+    res.status(500).json({ error: "Failed to update retirement date" });
+  }
+};
 // Add or update a fee amount
+
 exports.setFeeMaster = async (req, res) => {
   try {
     const userId = req.user.id;

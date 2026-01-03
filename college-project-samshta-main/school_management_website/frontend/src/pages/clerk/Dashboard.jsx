@@ -221,6 +221,9 @@ import TeacherSalaries from "./TeacherSalaries";
 import ClerkAddStudent from "./StudentAdd";
 import FireSafety from "./FireSafety";
 import PhysicalSafety from "./PhysicalSafety";
+import CapacityManager from "./CapacityManager";
+import ManageRetirements from "./ManageRetirements";
+
 import ChatWidget from "../../components/ChatWidget";
 import "./Dashboard.scss";
 
@@ -237,9 +240,12 @@ export default function ClerkDashboard() {
     { key: "profile", label: "Profile", icon: "bi-person" },
     { key: "fees", label: "Student Fees", icon: "bi-cash-stack" },
     { key: "salaries", label: "Teacher Salaries", icon: "bi-wallet2" },
+    { key: "retirements", label: "Retirements", icon: "bi-calendar-x" },
     { key: "addStudent", label: "Add Student", icon: "bi-person-plus" },
+    { key: "capacity", label: "Capacity", icon: "bi-columns-gap" },
     { key: "fire-safety", label: "Fire Safety", icon: "bi-fire" },
     { key: "physical-safety", label: "Physical Safety", icon: "bi-shield" },
+    
   ];
 
   /* -------------------- PROFILE CHECK -------------------- */
@@ -323,12 +329,66 @@ export default function ClerkDashboard() {
                     <th>Student Count</th>
                     <td>{dashboard.studentCount ?? "-"}</td>
                   </tr>
+                  <tr>
+  <th>Retirements (this year)</th>
+  <td>{dashboard?.upcomingRetirements?.find(r => r.year === new Date().getFullYear())?.count ?? 0}</td>
+</tr>
+<tr>
+  <th>Retirements (next 4 yrs)</th>
+  <td>
+    {dashboard?.upcomingRetirements
+      ? dashboard.upcomingRetirements.slice(1).map(r => `${r.year}: ${r.count}`).join(' | ')
+      : '-'}
+  </td>
+</tr>
                 </tbody>
               </table>
             </div>
           ) : (
             <div className="text-muted">No unit information found.</div>
-          )}
+          )},
+          {/* Capacity summary */}
+{dashboard?.academic_year && (
+  <div className="clerk-capacity-summary" style={{ margin: '1rem 0' }}>
+    <h4>Capacity — Academic Year: {dashboard.academic_year}</h4>
+    <div className="summary-row" style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>
+      <div><strong>Total Capacity:</strong> {dashboard.totals?.capacity ?? '-'}</div>
+      <div><strong>Enrolled:</strong> {dashboard.totals?.enrolled ?? '-'}</div>
+      <div><strong>Seats Remaining:</strong> {dashboard.totals?.seatsRemaining ?? '-'}</div>
+      <div><strong>Left Students:</strong> {dashboard.leftStudents ?? '-'}</div>
+    </div>
+
+    {Array.isArray(dashboard.classStats) && dashboard.classStats.length > 0 && (
+      <div className="class-capacity-table">
+        <h5>Per-class capacity</h5>
+        <div className="table-responsive">
+          <table className="clerk-unit-table">
+            <thead>
+              <tr>
+                <th>Standard</th>
+                <th>Division</th>
+                <th>Capacity</th>
+                <th>Enrolled</th>
+                <th>Seats Remaining</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dashboard.classStats.map((c) => (
+                <tr key={`${c.standard}-${c.division || ''}`}>
+                  <td>{c.standard}</td>
+                  <td>{c.division ?? '-'}</td>
+                  <td>{c.capacity}</td>
+                  <td>{c.enrolled}</td>
+                  <td>{c.seatsRemaining}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    )}
+  </div>
+)}
         </div>
       </div>
     );
@@ -378,12 +438,17 @@ export default function ClerkDashboard() {
             <ClerkAddStudent />
           </div>
         );
+        case "capacity":
+  return <CapacityManager />;
 
       case "fire-safety":
         return <FireSafety />;
 
       case "physical-safety":
         return <PhysicalSafety />;
+
+      case "retirements":
+  return <ManageRetirements />;
 
       default:
         return null;
