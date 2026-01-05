@@ -34,8 +34,9 @@ $background: #F9FAFB;
   }
 
   .school-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(700px, 1fr));
+    // Remove grid-template-columns to allow Bootstrap's row/col system to work
+    // Or adjust to more standard sizes if keeping grid
+    // grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 24px;
 
     .school-card-pro {

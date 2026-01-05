@@ -104,7 +104,76 @@ export default function AdminDashboard() {
   const [reportSchools, setReportSchools] = useState([]);
   const [reportLoading, setReportLoading] = useState(false);
 
+  // Import Units state
+  const [importFile, setImportFile] = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importMessage, setImportMessage] = useState("");
+  const [importIsSuccess, setImportIsSuccess] = useState(false);
+  const [showFullFormat, setShowFullFormat] = useState(false);
+
   const navigate = useNavigate();
+
+  // Import Unit Handlers
+  function handleImportFileChange(e) {
+    const f = e.target.files?.[0];
+    setImportFile(f || null);
+    setImportMessage("");
+    setImportIsSuccess(false);
+  }
+
+  async function handleImportSubmit(e) {
+    e.preventDefault();
+    setImportMessage("");
+    setImportIsSuccess(false);
+
+    if (!importFile) {
+      setImportMessage("Please select an Excel file (.xlsx or .xls).");
+      return;
+    }
+
+    try {
+      setImportLoading(true);
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("file", importFile);
+
+      const res = await fetch("http://localhost:5000/api/units/import", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        let msg = data.message || "Failed to import units.";
+        if (Array.isArray(data.missingHeaders) && data.missingHeaders.length) {
+          msg += " Missing headers: " + data.missingHeaders.join(", ");
+        }
+        throw new Error(msg);
+      }
+
+      setImportMessage(
+        data.importedCount != null
+          ? `Imported ${data.importedCount} unit(s) successfully.`
+          : "Units imported successfully."
+      );
+      setImportIsSuccess(true);
+      setImportFile(null);
+      e.target.reset();
+
+      // Refresh units list
+      const updatedUnits = await axiosInstance.get("/admin/units");
+      setUnits(updatedUnits.data || []);
+    } catch (err) {
+      setImportMessage(err.message || "Failed to import units.");
+      setImportIsSuccess(false);
+    } finally {
+      setImportLoading(false);
+    }
+  }
 
   const sidebarItems = [
     { key: "dashboard", label: t("dashboard"), icon: "bi-speedometer2" },
@@ -1305,35 +1374,153 @@ export default function AdminDashboard() {
 
   const renderContent = () => {
     switch (sidebarTab) {
-      case "dashboard":
-        if (selectedUnit && unitDetails) return renderUnitDetails();
-        return (
-          <div className="page-inner">
-            <PageHeader
-              title={t("school_overview")}
-              subtitle={t("manage_monitor_all_schools")}
-            />
-            <div className="row school-grid">
-              {safeUnits.map((unit, idx) => (
-                <div key={unit.unit_id} className="col-md-4 col-lg-3 col-sm-6 mb-4">
-                  <div
-                    className="card school-card text-center p-3"
-                    onClick={() => handleUnitCardClick(unit.unit_id)}
-                  >
-                    <div className="school-index">{idx + 1}</div>
-                    <div className="school-name">{unit.kendrashala_name}</div>
-                    <div className="school-meta">
-                      {t("total_staff")}: {unit.staff_count || 0}
+        case "dashboard":
+          if (selectedUnit && unitDetails) return renderUnitDetails();
+          return (
+            <div className="page-inner">
+              <PageHeader
+                title={t("school_overview")}
+                subtitle={t("manage_monitor_all_schools")}
+              />
+
+              {/* Import Units Section */}
+              <div className="card admin-import-card mb-4 border-0 shadow-sm rounded-4">
+                <div className="card-body p-4">
+                  <div className="row align-items-center g-4">
+                    {/* Left: Upload */}
+                    <div className="col-lg-7 border-end">
+                      <div className="d-flex align-items-center gap-3 mb-3">
+                        <div className="import-icon-box">
+                          <i className="bi bi-file-earmark-spreadsheet text-primary"></i>
+                        </div>
+                        <div>
+                          <h5 className="mb-0 fw-bold">Import Units from Excel</h5>
+                          <p className="text-muted small mb-0">Bulk add schools to the system</p>
+                        </div>
+                      </div>
+
+                      {importMessage && (
+                        <div className={`alert ${importIsSuccess ? "alert-success" : "alert-danger"} py-2 small mb-3`}>
+                          {importMessage}
+                        </div>
+                      )}
+
+                      <form onSubmit={handleImportSubmit} className="upload-zone">
+                        <div className="input-group mb-3">
+                          <input
+                            type="file"
+                            className="form-control"
+                            accept=".xlsx,.xls"
+                            onChange={handleImportFileChange}
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          className="btn btn-primary btn-lg px-4 d-flex align-items-center gap-2 shadow-sm"
+                          disabled={importLoading || !importFile}
+                        >
+                          {importLoading ? (
+                            <span className="spinner-border spinner-border-sm" />
+                          ) : (
+                            <>
+                              <i className="bi bi-cloud-arrow-up fs-5"></i>
+                              <span>Import Units</span>
+                            </>
+                          )}
+                        </button>
+                      </form>
                     </div>
-                    <div className="school-meta">
-                      {t("total_students")}: {unit.student_count || 0}
+
+                    {/* Right: Instructions */}
+                    <div className="col-lg-5 ps-lg-4">
+                      <h6 className="fw-bold text-dark mb-3">
+                        <i className="bi bi-info-circle text-primary me-2"></i>
+                        Quick Instructions
+                      </h6>
+                      <ul className="instruction-list mb-3">
+                        <li>Ensure unique <code>unit_id</code> and <code>semis_no</code>.</li>
+                        <li>Required columns: <code>unit_id</code>, <code>semis_no</code>, <code>kendrashala_name</code>.</li>
+                        <li>Download sample to check correct alignment.</li>
+                      </ul>
+
+                      <div className="requirement-summary mb-3">
+                        <p className="x-small fw-bold text-uppercase text-muted mb-2 letter-spacing-1">Important Columns</p>
+                        <div className="d-flex flex-wrap gap-1">
+                          {['unit_id', 'semis_no', 'kendrashala_name', 'headmistress_name'].map(c => (
+                            <span key={c} className="badge bg-soft-primary text-primary border-0">{c}</span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <button
+                        className="btn btn-link btn-sm p-0 text-decoration-none fw-bold small"
+                        onClick={() => setShowFullFormat(!showFullFormat)}
+                      >
+                        {showFullFormat ? "- Hide full format" : "+ View full Excel format"}
+                      </button>
+
+                      {showFullFormat && (
+                        <div className="full-format-details mt-2 p-2 bg-light rounded border small text-muted">
+                          <strong>Headers:</strong> unit_id, semis_no, dcf_no, nmms_no, scholarship_code, first_grant_in_aid_year, type_of_management, school_jurisdiction, competent_authority_name, authority_number, authority_zone, kendrashala_name, info_authority_name, appellate_authority_name, midday_meal_org_name, midday_meal_org_contact, standard_range, headmistress_name, headmistress_phone, headmistress_email, school_shift
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
-              ))}
+              </div>
+
+              <div className="row school-grid g-4">
+                {safeUnits.map((unit, idx) => (
+                  <div key={unit.unit_id} className="col-md-4 col-lg-3 col-sm-6 mb-4">
+                    <div
+                      className="school-card-pro"
+                      onClick={() => handleUnitCardClick(unit.unit_id)}
+                    >
+                      <div className="card-accent bg-primary"></div>
+                      <div className="card-header-pro">
+                        <div className="school-symbol">
+                          <i className="bi bi-building"></i>
+                        </div>
+                        <div className="school-idx">#{idx + 1}</div>
+                      </div>
+                      
+                      <div className="card-body-pro text-start">
+                        <h5 className="school-name-text">{unit.kendrashala_name}</h5>
+                        <div className="school-id-tag">UNIT ID: {unit.unit_id}</div>
+                        
+                        <div className="school-stats-row">
+                          <div className="stat-item">
+                            <div className="stat-icon staff">
+                              <i className="bi bi-people-fill"></i>
+                            </div>
+                            <div className="stat-info">
+                              <span className="stat-count">{unit.staff_count || 0}</span>
+                              <span className="stat-label">Staff</span>
+                            </div>
+                          </div>
+                          <div className="stat-item">
+                            <div className="stat-icon students">
+                              <i className="bi bi-mortarboard-fill"></i>
+                            </div>
+                            <div className="stat-info">
+                              <span className="stat-count">{unit.student_count || 0}</span>
+                              <span className="stat-label">Students</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="card-footer-pro">
+                        <span>View Institutional Details</span>
+                        <i className="bi bi-arrow-right"></i>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        );
+          );
+
 
       case "charts":
         return (
