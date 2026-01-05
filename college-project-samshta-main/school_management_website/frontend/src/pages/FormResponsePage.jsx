@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import axiosInstance from '../api/axiosInstance';
-import { useParams } from 'react-router-dom';
-import ChatWidget from '../components/ChatWidget';
+import React, { useEffect, useState } from "react";
+import axiosInstance from "../api/axiosInstance";
+import { useParams } from "react-router-dom";
+import ChatWidget from "../components/ChatWidget";
 
 export default function FormResponsePage() {
   const { formId } = useParams();
@@ -9,13 +9,13 @@ export default function FormResponsePage() {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     async function fetchFormAndQuestions() {
       setLoading(true);
-      setError('');
+      setError("");
       try {
         // Get form details (with deadline)
         const formRes = await axiosInstance.get(`/forms/${formId}`);
@@ -25,8 +25,8 @@ export default function FormResponsePage() {
         const qRes = await axiosInstance.get(`/forms/${formId}/questions`);
         setQuestions(qRes.data);
       } catch (e) {
-        console.error('Error loading form:', e);
-        setError(e.response?.data?.error || 'Failed to load form');
+        console.error("Error loading form:", e);
+        setError(e.response?.data?.error || "Failed to load form");
       }
       setLoading(false);
     }
@@ -34,25 +34,27 @@ export default function FormResponsePage() {
   }, [formId]);
 
   const handleChange = (qid, value) => {
-    setAnswers(a => ({ ...a, [qid]: value }));
+    setAnswers((a) => ({ ...a, [qid]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    setError('');
+    setError("");
 
     try {
       await axiosInstance.post(`/forms/${formId}/submit`, {
-        answers: questions.map(q => ({
+        answers: questions.map((q) => ({
           question_id: q.id,
-          answer: answers[q.id] || ""
-        }))
+          answer: answers[q.id] || "",
+        })),
       });
       alert("Form submitted successfully!");
       window.location.reload();
+
+      // Optionally redirect or clear form
     } catch (err) {
-      console.error('Error submitting form:', err);
+      console.error("Error submitting form:", err);
       const errorMsg = err.response?.data?.error || "Failed to submit form";
       setError(errorMsg);
       alert(errorMsg);
@@ -62,7 +64,8 @@ export default function FormResponsePage() {
   };
 
   // Deadline check helper
-  const isExpired = (form) => form && form.deadline && (new Date() > new Date(form.deadline));
+  const isExpired = (form) =>
+    form && form.deadline && new Date() > new Date(form.deadline);
 
   if (loading) {
     return (
@@ -85,7 +88,7 @@ export default function FormResponsePage() {
 
   return (
     <div className="container mt-3">
-      <h3>{form ? form.title : 'Fill Form'}</h3>
+      <h3>{form ? form.title : "Fill Form"}</h3>
       {form && form.description && (
         <p className="text-muted">{form.description}</p>
       )}
@@ -100,14 +103,19 @@ export default function FormResponsePage() {
       {error && (
         <div className="alert alert-danger alert-dismissible fade show">
           {error}
-          <button type="button" className="btn-close" onClick={() => setError('')}></button>
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          ></button>
         </div>
       )}
 
       {form && isExpired(form) ? (
-        <div className="alert alert-danger" style={{ fontSize: '1.1em' }}>
+        <div className="alert alert-danger" style={{ fontSize: "1.1em" }}>
           <i className="bi bi-exclamation-triangle-fill me-2"></i>
-          <strong>This form's deadline has passed.</strong> You cannot submit this form anymore.
+          <strong>This form's deadline has passed.</strong> You cannot submit
+          this form anymore.
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
@@ -159,11 +167,11 @@ export default function FormResponsePage() {
                   required
                 >
                   <option value="">-Select an option --</option>
-                  {(q.options ? q.options.split(",") : []).map(opt =>
+                  {(q.options ? q.options.split(",") : []).map((opt) => (
                     <option key={opt.trim()} value={opt.trim()}>
                       {opt.trim()}
                     </option>
-                  )}
+                  ))}
                 </select>
               )}
             </div>
@@ -176,11 +184,11 @@ export default function FormResponsePage() {
           >
             {submitting ? (
               <>
-                <span className="spinner-border spinner-border-sm me-2"></span>
+                <span className="spinner-border spinner-border-sm me-2"></span>{" "}
                 Submitting...
               </>
             ) : (
-              'Submit Form'
+              "Submit Form"
             )}
           </button>
         </form>
