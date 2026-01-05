@@ -10,6 +10,7 @@ import TableContainer from "../../components/admin/TableContainer";
 import EmptyState from "../../components/admin/EmptyState";
 import Toolbar from "../../components/admin/Toolbar";
 import TabNavigation from "../../components/admin/TabNavigation";
+import AdminUnitImport from "./AdminUnitImport";
 
 export default function Tables() {
   const { t } = useTranslation();
@@ -167,11 +168,12 @@ export default function Tables() {
         {selectedUnit && (
           <div className="mt-4">
             <TabNavigation 
-              tabs={[
-                { id: "teachers", label: "Teachers", icon: "bi-people" },
-                { id: "students", label: "Students", icon: "bi-mortarboard" },
-                { id: "forms", label: "Filled Forms", icon: "bi-file-earmark-check" },
-              ]}
+                tabs={[
+                  { id: "teachers", label: "Teachers", icon: "bi-people" },
+                  { id: "students", label: "Students", icon: "bi-mortarboard" },
+                  { id: "forms", label: "Filled Forms", icon: "bi-file-earmark-check" },
+                  { id: "import", label: "Import Units", icon: "bi-file-earmark-arrow-up" },
+                ]}
               activeTab={selectedTab}
               onTabChange={setSelectedTab}
             />
@@ -395,10 +397,12 @@ export default function Tables() {
                 </TableContainer>
               </AdminCard>
             )}
-          </div>
-        )}
-      </div>
-      <ChatWidget />
-    </AdminLayout>
+              {/* Import Units Tab */}
+              {selectedTab === "import" && <AdminUnitImport />}
+            </div>
+          )}
+        </div>
+        <ChatWidget />
+      </AdminLayout>
   );
 }
