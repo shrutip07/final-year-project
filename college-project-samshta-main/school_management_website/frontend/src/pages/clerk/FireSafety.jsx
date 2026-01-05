@@ -5,12 +5,7 @@ import {
   TableCell, TableContainer, TableHead, TableRow, Paper, Stack
 } from '@mui/material';
 
-// Helpers
-function toDateOnly(iso) {
-  if (!iso) return '';
-  const s = typeof iso === 'string' ? iso : (new Date(iso)).toISOString();
-  return s.slice(0, 10); // yyyy-mm-dd
-}
+// Add this helper function at the top (inside or before the component)
 function formatSeconds(s) {
   if (isNaN(s)) return "-";
   const min = Math.floor(s / 60);
@@ -24,92 +19,42 @@ export default function FireSafety() {
   const [form, setForm] = useState({});
   const token = localStorage.getItem("token");
 
-  // central fetch function with error handling
-  async function fetchData() {
-    try {
-      const res = await fetch("http://localhost:5000/api/clerk/fire-safety", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!res.ok) {
-        console.error("Failed to load fire-safety, status:", res.status);
-        setInfo(null);
-        return;
-      }
-      const data = await res.json();
-      setInfo(data);
-    } catch (err) {
-      console.error("Failed to fetch fire-safety:", err);
-      setInfo(null);
-    }
-  }
-
-  // load once and after operations
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetch("http://localhost:5000/api/clerk/fire-safety", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(setInfo);
+  }, [editing]);
 
-  // When server returns safety object, normalize dates for inputs
-  useEffect(() => {
-    if (info?.safety) {
-      setForm(prev => ({
-        ...info.safety,
-        extinguisher_last_inspection: toDateOnly(info.safety.extinguisher_last_inspection),
-        // add other date-normalizations here if you add date fields
-      }));
-    }
-  }, [info]);
+  useEffect(() => { if (info?.safety) setForm(info.safety); }, [info]);
 
   const change = (e) => {
-    const { name, type } = e.target;
-    let value = type === "checkbox" ? e.target.checked : e.target.value;
-    setForm(f => ({ ...f, [name]: value }));
+    let value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    setForm(f => ({ ...f, [e.target.name]: value }));
   };
 
   const saveInfo = async (e) => {
     e.preventDefault();
-    try {
-      // send the form directly; date inputs are yyyy-mm-dd which PostgreSQL DATE accepts
-      const res = await fetch("http://localhost:5000/api/clerk/fire-safety", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(form)
-      });
-      if (!res.ok) {
-        console.error("Save failed, status:", res.status);
-      } else {
-        // reload data
-        await fetchData();
-        setEditing(false);
-      }
-    } catch (err) {
-      console.error("Save error:", err);
-    }
+    await fetch("http://localhost:5000/api/clerk/fire-safety", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(form)
+    });
+    setEditing(false);
   };
 
   const addDrill = async (e) => {
     e.preventDefault();
-    try {
-      const res = await fetch("http://localhost:5000/api/clerk/fire-safety/drill", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          drill_date: e.target.drill_date.value, // yyyy-mm-dd
-          participants_students: Number(e.target.students.value),
-          participants_staff: Number(e.target.staff.value),
-          evacuation_time_seconds: Number(e.target.evacuation.value)
-        })
-      });
-      if (!res.ok) {
-        console.error("Add drill failed, status:", res.status);
-      } else {
-        e.target.reset();
-        // reload data
-        await fetchData();
-        setEditing(false);
-      }
-    } catch (err) {
-      console.error("Add drill error:", err);
-    }
+    await fetch("http://localhost:5000/api/clerk/fire-safety/drill", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        drill_date: e.target.drill_date.value,
+        participants_students: e.target.students.value,
+        participants_staff: e.target.staff.value,
+        evacuation_time_seconds: e.target.evacuation.value
+      })
+    });
+    e.target.reset();
+    setEditing(false);
   };
 
   // Deduplicate by date
@@ -163,7 +108,7 @@ export default function FireSafety() {
                 <FormControlLabel control={<Checkbox checked={!!form.evacuation_routes_marked} name="evacuation_routes_marked" onChange={change} />} label="Evacuation Routes Marked" />
                 <TextField label="Assembly Points" name="assembly_points" value={form.assembly_points ?? ''} onChange={change} required />
                 <Button type="submit" variant="contained">Save</Button>
-                <Button color="secondary" onClick={() => { setEditing(false); /* restore form from latest info */ setForm(info?.safety ? { ...info.safety, extinguisher_last_inspection: toDateOnly(info.safety.extinguisher_last_inspection) } : {}); }}>Cancel</Button>
+                <Button color="secondary" onClick={() => setEditing(false)}>Cancel</Button>
               </form>
             )}
           </Stack>

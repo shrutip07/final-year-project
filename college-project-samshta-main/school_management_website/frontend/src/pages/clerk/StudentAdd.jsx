@@ -77,62 +77,6 @@ export default function StudentAdd() {
     }
   }
 
-  // ---------------- BULK IMPORT (EXCEL) ----------------
-  const [importFile, setImportFile] = useState(null);
-  const [importLoading, setImportLoading] = useState(false);
-  const [importMessage, setImportMessage] = useState("");
-
-  function handleFileChange(e) {
-    const file = e.target.files?.[0];
-    setImportFile(file || null);
-    setImportMessage("");
-  }
-
-  async function handleImportSubmit(e) {
-    e.preventDefault();
-    setImportMessage("");
-
-    if (!importFile) {
-      setImportMessage("Please select an Excel file (.xlsx or .xls).");
-      return;
-    }
-
-    try {
-      setImportLoading(true);
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-      // field name must be "file" to match uploadExcel.single('file')
-      formData.append("file", importFile);
-
-      const res = await fetch("http://localhost:5000/api/students/import", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`
-          // Do NOT set Content-Type manually; browser will set multipart boundary.
-        },
-        body: formData
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to import students.");
-      }
-
-      setImportMessage(
-        data.importedCount != null
-          ? `Imported ${data.importedCount} students successfully.`
-          : "Students imported successfully."
-      );
-      setImportFile(null);
-      e.target.reset();
-    } catch (err) {
-      setImportMessage(err.message || "Failed to import students.");
-    } finally {
-      setImportLoading(false);
-    }
-  }
-
   // ---------------- ALLOCATE STUDENTS (PROMOTION) ----------------
   const [studYear, setStudYear] = useState("");
   const [passedStudents, setPassedStudents] = useState([]);
@@ -475,46 +419,6 @@ export default function StudentAdd() {
                 {loading ? "Saving..." : "Add Student"}
               </button>
             </div>
-          </form>
-
-          {/* ---------- BULK IMPORT FROM EXCEL ---------- */}
-          <hr className="my-4" />
-          <h5 className="mb-3">Bulk Import from Excel</h5>
-          {importMessage && (
-            <div className="alert alert-info py-2 mb-3">
-              {importMessage}
-            </div>
-          )}
-          <form onSubmit={handleImportSubmit}>
-            <div className="row align-items-end">
-              <div className="col-md-6 mb-3">
-                <label className="form-label">
-                  Excel File (.xlsx or .xls)
-                </label>
-                <input
-                  type="file"
-                  className="form-control"
-                  accept=".xlsx,.xls"
-                  onChange={handleFileChange}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <button
-                  type="submit"
-                  className="save-btn"
-                  disabled={importLoading}
-                >
-                  {importLoading ? "Importing..." : "Import from Excel"}
-                </button>
-              </div>
-            </div>
-            <p className="text-muted" style={{ fontSize: "0.85rem" }}>
-             Make sure your Excel sheet has headers: unit_id, full_name, dob, gender,
-address, parent_name, parent_phone, admission_date, academic_year,
-standard, division, roll_number, passed, percentage, fee_paid_amount,
-fee_paid_on, fee_clerk_id, fee_remarks.
-
-            </p>
           </form>
         </div>
       </div>

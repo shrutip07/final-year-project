@@ -1,19 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 import "./Dashboard.scss";
-import axiosInstance from "../../api/axiosInstance";
-import AdminLayout from "../../components/admin/AdminLayout";
 
 import AdminCharts from "./Charts";
 import ChatWidget from "../../components/ChatWidget";
-import PageHeader from "../../components/admin/PageHeader";
+import AdminLayout from "../../components/admin/AdminLayout";
+import SchoolContextHeader from "../../components/admin/SchoolContextHeader";
+import TabNavigation from "../../components/admin/TabNavigation";
 import AdminCard from "../../components/admin/AdminCard";
 import TableContainer from "../../components/admin/TableContainer";
 import Toolbar from "../../components/admin/Toolbar";
 import EmptyState from "../../components/admin/EmptyState";
-import AdminUnitImport from "./AdminUnitImport";
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
@@ -24,7 +23,7 @@ export default function AdminDashboard() {
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [unitDetails, setUnitDetails] = useState(null);
   const [unitLoading, setUnitLoading] = useState(false);
-  const [selectedDetailTab, setSelectedDetailTab] = useState("overview");
+  const [selectedSchoolTab, setSelectedSchoolTab] = useState("overview");
 
   const [teacherSearch, setTeacherSearch] = useState("");
   const [studentSearch, setStudentSearch] = useState("");
@@ -56,11 +55,13 @@ export default function AdminDashboard() {
     "createdat",
     "updatedat",
   ]);
-  const [teachersShowColDropdown, setTeachersShowColDropdown] = useState(false);
-  const [studentsShowColDropdown, setStudentsShowColDropdown] = useState(false);
+  const [teachersShowColDropdown, setTeachersShowColDropdown] =
+    useState(false);
+  const [studentsShowColDropdown, setStudentsShowColDropdown] =
+    useState(false);
   const [studentsYear, setStudentsYear] = useState("");
 
-  // Notifications + Forms
+  // Notifications
   const [notifications, setNotifications] = useState([]);
   const [forms, setForms] = useState([]);
 
@@ -69,31 +70,17 @@ export default function AdminDashboard() {
   const [notifRole, setNotifRole] = useState("principal");
   const [notifLoading, setNotifLoading] = useState(false);
 
-  // shared targeting state
-  const [notifUnitId, setNotifUnitId] = useState("");
-  const [teachers, setTeachers] = useState([]);
-  const [sendAllTeachers, setSendAllTeachers] = useState(true);
-  const [selectedTeachers, setSelectedTeachers] = useState([]);
-
   // Forms
   const [formTitle, setFormTitle] = useState("");
   const [formDesc, setFormDesc] = useState("");
   const [formDeadline, setFormDeadline] = useState("");
   const [formRole, setFormRole] = useState("principal");
   const [formQuestions, setFormQuestions] = useState([
-    { questiontext: "", questiontype: "text", options: "" },
+    { question_text: "", question_type: "text", options: "" },
   ]);
   const [formLoading, setFormLoading] = useState(false);
 
-  // per-form recipient status (Sent / Received / Pending)
-  const [selectedFormId, setSelectedFormId] = useState(null);
-  const [recipientStatus, setRecipientStatus] = useState([]);
-  const [recipientLoading, setRecipientLoading] = useState(false);
-  const [formResponses, setFormResponses] = useState([]);
-  const [responsesLoading, setResponsesLoading] = useState(false);
-
-  // dashboard / finance data for a unit
-  const [unitDashboard, setUnitDashboard] = useState(null);
+  // NEW: dashboard / finance data for a unit
   const [selectedFy, setSelectedFy] = useState("2024-25");
   const [fyMetrics, setFyMetrics] = useState(null);
   const [selectedOverviewFy, setSelectedOverviewFy] = useState("2024-25");
@@ -106,92 +93,20 @@ export default function AdminDashboard() {
   const [reportSchools, setReportSchools] = useState([]);
   const [reportLoading, setReportLoading] = useState(false);
 
-  // Import Units state
-  const [importFile, setImportFile] = useState(null);
-  const [importLoading, setImportLoading] = useState(false);
-  const [importMessage, setImportMessage] = useState("");
-  const [importIsSuccess, setImportIsSuccess] = useState(false);
-  const [showFullFormat, setShowFullFormat] = useState(false);
-
   const navigate = useNavigate();
-
-  // Import Unit Handlers
-  function handleImportFileChange(e) {
-    const f = e.target.files?.[0];
-    setImportFile(f || null);
-    setImportMessage("");
-    setImportIsSuccess(false);
-  }
-
-  async function handleImportSubmit(e) {
-    e.preventDefault();
-    setImportMessage("");
-    setImportIsSuccess(false);
-
-    if (!importFile) {
-      setImportMessage("Please select an Excel file (.xlsx or .xls).");
-      return;
-    }
-
-    try {
-      setImportLoading(true);
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("file", importFile);
-
-      const res = await fetch("http://localhost:5000/api/units/import", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        let msg = data.message || "Failed to import units.";
-        if (Array.isArray(data.missingHeaders) && data.missingHeaders.length) {
-          msg += " Missing headers: " + data.missingHeaders.join(", ");
-        }
-        throw new Error(msg);
-      }
-
-      setImportMessage(
-        data.importedCount != null
-          ? `Imported ${data.importedCount} unit(s) successfully.`
-          : "Units imported successfully."
-      );
-      setImportIsSuccess(true);
-      setImportFile(null);
-      e.target.reset();
-
-      // Refresh units list
-      const updatedUnits = await axiosInstance.get("/admin/units");
-      setUnits(updatedUnits.data || []);
-    } catch (err) {
-      setImportMessage(err.message || "Failed to import units.");
-      setImportIsSuccess(false);
-    } finally {
-      setImportLoading(false);
-    }
-  }
-
-  const sidebarItems = [
-    { key: "dashboard", label: t("dashboard"), icon: "bi-speedometer2" },
-    { key: "tables", label: t("tables"), icon: "bi-table" },
-    { key: "charts", label: t("charts"), icon: "bi-bar-chart-fill" },
-    { key: "budgets", label: t("budgets"), icon: "bi-wallet2" },
-    { key: "notifications", label: t("notifications"), icon: "bi-bell-fill" },
-    { key: "reports", label: "Reports", icon: "bi-file-earmark-text" },
-  ];
 
   // Load all units
   useEffect(() => {
     async function fetchUnits() {
       try {
-        const res = await axiosInstance.get("/admin/units");
-        const unitData = Array.isArray(res.data) ? res.data : [];
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          "http://localhost:5000/api/admin/units",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const unitData = Array.isArray(response.data) ? response.data : [];
         setUnits(unitData);
         setLoading(false);
       } catch (err) {
@@ -236,254 +151,109 @@ export default function AdminDashboard() {
       .join(" ");
   };
 
-  // Notifications tab: load extra data
   useEffect(() => {
     if (sidebarTab === "notifications") {
-      fetchUnitsForNotifications();
       loadNotifications();
       loadForms();
     }
-  }, [sidebarTab, formRole]);
-
-  const fetchUnitsForNotifications = async () => {
-    try {
-      const res = await axiosInstance.get("/admin/units");
-      setUnits(res.data || []);
-    } catch (err) {
-      console.error("Failed to load units", err);
-      setUnits([]);
-    }
-  };
-
-  // load teachers when notifRole / notifUnitId change
-  useEffect(() => {
-    if (notifRole !== "teacher" || !notifUnitId) {
-      setTeachers([]);
-      setSelectedTeachers([]);
-      return;
-    }
-
-    async function loadTeachers() {
-      try {
-        const res = await axiosInstance.get(`/admin/units/${notifUnitId}/teachers`);
-        setTeachers(res.data || []);
-      } catch (err) {
-        console.error("Failed to load teachers", err);
-        setTeachers([]);
-      }
-    }
-
-    loadTeachers();
-  }, [notifRole, notifUnitId]);
+  }, [sidebarTab, notifRole, formRole]);
 
   const loadNotifications = async () => {
+    const token = localStorage.getItem("token");
     try {
-      const res = await axiosInstance.get("/notifications");
-      setNotifications(res.data || []);
+      const res = await axios.get("http://localhost:5000/api/notifications", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNotifications(res.data);
     } catch {
       setNotifications([]);
     }
   };
 
   const loadForms = async () => {
+    const token = localStorage.getItem("token");
     try {
-      const res = await axiosInstance.get("/forms/created-by-me");
-      setForms(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      console.error("Failed to load forms:", err);
+      const res = await axios.get(
+        `http://localhost:5000/api/forms/active?role=${formRole}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setForms(res.data);
+    } catch {
       setForms([]);
     }
   };
 
-  const loadRecipientStatus = async (formId) => {
-    setRecipientLoading(true);
-    try {
-      const res = await axiosInstance.get(`/forms/${formId}/recipient-status`);
-
-      const raw = Array.isArray(res.data)
-        ? res.data
-        : Array.isArray(res.data?.data)
-        ? res.data.data
-        : [];
-
-      const normalized = raw.map((r) => ({
-        ...r,
-        has_responded:
-          r.has_responded ??
-          r.hasResponded ??
-          r.responded ??
-          r.is_responded ??
-          false,
-      }));
-
-      setRecipientStatus(normalized);
-    } catch (e) {
-      console.error("Failed to load recipient status", e);
-      setRecipientStatus([]);
-    } finally {
-      setRecipientLoading(false);
-    }
-  };
-
-  const loadFormResponsesForDashboard = async (formId) => {
-    setResponsesLoading(true);
-    try {
-      const res = await axiosInstance.get("/admin/filled-forms-detailed");
-
-      const rows = Array.isArray(res?.data?.data)
-        ? res.data.data
-        : Array.isArray(res.data)
-        ? res.data
-        : [];
-      const fid = parseInt(formId, 10);
-
-      const formRows = rows.filter((r) => parseInt(r.form_id, 10) === fid);
-
-      const map = new Map();
-      for (const r of formRows) {
-        const rid = r.response_id;
-        if (!rid) continue;
-
-        if (!map.has(rid)) {
-          map.set(rid, {
-            response_id: rid,
-            submitted_by_name:
-              r.submitted_by_name || r.full_name || r.email || "User",
-            submitted_by_role: r.submitted_by_role || r.role || "",
-            unit_name: r.unit_name || "",
-            submitted_at: r.submitted_at || r.created_at || null,
-            answers: [],
-          });
-        }
-
-        map.get(rid).answers.push({
-          question: r.question_text || r.question || "",
-          answer: r.answer ?? "",
-        });
-      }
-
-      const grouped = Array.from(map.values()).sort((a, b) => {
-        const ta = a.submitted_at ? new Date(a.submitted_at).getTime() : 0;
-        const tb = b.submitted_at ? new Date(b.submitted_at).getTime() : 0;
-        return tb - ta;
-      });
-
-      setFormResponses(grouped);
-    } catch (err) {
-      console.error("Failed to load form responses", err);
-      setFormResponses([]);
-    } finally {
-      setResponsesLoading(false);
-    }
-  };
-
-  // helpers
-  const validateTarget = (role, unitId, allTeachers, selTeachers) => {
-    if (!unitId) {
-      alert("Please select a school");
-      return false;
-    }
-    if (role === "teacher" && !allTeachers && selTeachers.length === 0) {
-      alert("Please select at least one teacher");
-      return false;
-    }
-    return true;
-  };
-
-  const notifBasePayload = () => ({
-    receiver_role: notifRole,
-    unit_id: parseInt(notifUnitId, 10),
-    send_all_teachers: notifRole === "teacher" ? sendAllTeachers : false,
-    receiver_ids:
-      notifRole === "teacher" && !sendAllTeachers
-        ? selectedTeachers.map((id) => parseInt(id, 10))
-        : [],
-  });
-
-  const formBasePayload = () => ({
-    receiver_role: formRole,
-    unit_id: parseInt(notifUnitId, 10),
-    send_all_teachers: formRole === "teacher" ? sendAllTeachers : false,
-    receiver_ids:
-      formRole === "teacher" && !sendAllTeachers
-        ? selectedTeachers.map((id) => parseInt(id, 10))
-        : [],
-  });
-
   const addNotification = async (e) => {
     e.preventDefault();
-
-    if (
-      !validateTarget(notifRole, notifUnitId, sendAllTeachers, selectedTeachers)
-    )
-      return;
-
     setNotifLoading(true);
+    const token = localStorage.getItem("token");
     try {
-      await axiosInstance.post("/notifications", {
-        ...notifBasePayload(),
-        title: notifTitle,
-        message: notifMsg,
-      });
-
+      await axios.post(
+        "http://localhost:5000/api/notifications",
+        {
+          title: notifTitle,
+          message: notifMsg,
+          receiver_role: notifRole,
+          sender_role: "admin",
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setNotifTitle("");
       setNotifMsg("");
-      alert("Notification sent");
-    } catch (err) {
-      console.error("Failed to send notification", err);
-      alert(err.response?.data?.error || "Failed to send notification");
-    } finally {
       setNotifLoading(false);
+      loadNotifications();
+      alert("Notification Sent ✅");
+    } catch {
+      setNotifLoading(false);
+      alert("Failed to send notification");
     }
   };
 
   const addForm = async (e) => {
     e.preventDefault();
-
-    if (
-      !validateTarget(formRole, notifUnitId, sendAllTeachers, selectedTeachers)
-    )
-      return;
-
     setFormLoading(true);
-
+    const token = localStorage.getItem("token");
     const questionsPayload = formQuestions.map((q) => ({
-      question_text: q.questiontext,
-      question_type: q.questiontype,
-      options: q.options || null,
+      question_text: q.question_text,
+      question_type: q.question_type,
+      options: q.options ? q.options : null,
     }));
-
     try {
-      const formRes = await axiosInstance.post("/forms/create", {
-        title: formTitle,
-        description: formDesc,
-        deadline: formDeadline,
-        questions: questionsPayload,
-        ...formBasePayload(),
-      });
-
+      const formRes = await axios.post(
+        "http://localhost:5000/api/forms/create",
+        {
+          title: formTitle,
+          description: formDesc,
+          receiver_role: formRole,
+          deadline: formDeadline,
+          questions: questionsPayload,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       const formId = formRes.data.form.id;
-      const formLink = `${window.location.origin}/forms/${formId}`;
-
-      await axiosInstance.post("/notifications", {
-        ...formBasePayload(),
-        title: `New Form: ${formTitle}`,
-        message: `Please fill this form before deadline: ${formLink}`,
-      });
-
+      const formLink = `http://localhost:3000/forms/${formId}`;
+      await axios.post(
+        "http://localhost:5000/api/notifications",
+        {
+          title: `New Form: ${formTitle}`,
+          message: `Please fill this form before deadline: ${formLink}`,
+          receiver_role: formRole,
+          sender_role: "admin",
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setFormTitle("");
       setFormDesc("");
       setFormDeadline("");
-      setFormQuestions([{ questiontext: "", questiontype: "text", options: "" }]);
-
-      await loadForms();
-
-      alert(`Form created and sent to ${formRes.data.recipients} recipient(s)`);
-    } catch (err) {
-      console.error("Failed to create/send form", err);
-      alert(err.response?.data?.error || "Failed to create/send form");
-    } finally {
+      setFormQuestions([
+        { question_text: "", question_type: "text", options: "" },
+      ]);
       setFormLoading(false);
+      loadForms();
+      alert("Form Created and Notification Sent ✅");
+    } catch {
+      setFormLoading(false);
+      alert("Failed to create/send form");
     }
   };
 
@@ -496,7 +266,7 @@ export default function AdminDashboard() {
   const addFormQuestion = () => {
     setFormQuestions((qs) => [
       ...qs,
-      { questiontext: "", questiontype: "text", options: "" },
+      { question_text: "", question_type: "text", options: "" },
     ]);
   };
 
@@ -504,14 +274,12 @@ export default function AdminDashboard() {
     setFormQuestions((qs) => qs.filter((_, i) => i !== idx));
   };
 
-  // REPORTS
   const loadReportYears = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5100/api/report/years", {
+      const res = await axios.get("http://localhost:5000/api/report/years", {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       setReportYears(res.data || []);
       if (res.data && res.data.length > 0) {
         setSelectedReportYear(res.data[0]);
@@ -524,13 +292,11 @@ export default function AdminDashboard() {
 
   const fetchReportSchools = async () => {
     if (!selectedReportYear) return;
-
     setReportLoading(true);
-
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `http://localhost:5100/api/report/schools?year=${selectedReportYear}&type=${reportType}`,
+        `http://localhost:5000/api/report/schools?year=${selectedReportYear}&type=${reportType}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -546,89 +312,96 @@ export default function AdminDashboard() {
   const renderReportsPage = () => {
     return (
       <div className="page-inner">
-        <PageHeader
-          title="Generate Reports"
-          subtitle="Select academic year and report type, then download per school"
-        />
-
-        <label className="fw-semibold">Select Academic Year</label>
-        <select
-          className="form-select mb-3"
-          value={selectedReportYear}
-          onChange={(e) => setSelectedReportYear(e.target.value)}
-        >
-          <option value="">Select</option>
-          {reportYears.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
-
-        <label className="fw-semibold">Select Report Type</label>
-        <select
-          className="form-select mb-3"
-          value={reportType}
-          onChange={(e) => setReportType(e.target.value)}
-        >
-          <option value="annual">Annual Academic Report</option>
-          <option value="payroll">Staff Payroll Report</option>
-          <option value="finance">Financial Allocation Report</option>
-          <option value="safety">School Safety &amp; Compliance Report</option>
-        </select>
-
-        <button
-          className="btn btn-primary mb-4"
-          disabled={!selectedReportYear}
-          onClick={fetchReportSchools}
-        >
-          {reportLoading ? (
-            <span className="spinner-border spinner-border-sm" />
-          ) : (
-            "Fetch Schools"
-          )}
-        </button>
+        <AdminCard header="Generate Reports">
+          <p className="text-muted small mb-4">Select academic year and report type, then download per school</p>
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <label className="fw-semibold small mb-1">Select Academic Year</label>
+              <select
+                className="form-select"
+                value={selectedReportYear}
+                onChange={(e) => setSelectedReportYear(e.target.value)}
+              >
+                <option value="">Select</option>
+                {reportYears.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-6 mb-3">
+              <label className="fw-semibold small mb-1">Select Report Type</label>
+              <select
+                className="form-select"
+                value={reportType}
+                onChange={(e) => setReportType(e.target.value)}
+              >
+                <option value="annual">Annual Academic Report</option>
+                <option value="payroll">Staff Payroll Report</option>
+                <option value="finance">Financial Allocation Report</option>
+                <option value="safety">School Safety &amp; Compliance Report</option>
+              </select>
+            </div>
+          </div>
+          <button
+            className="btn btn-primary"
+            disabled={!selectedReportYear}
+            onClick={fetchReportSchools}
+          >
+            {reportLoading ? (
+              <span className="spinner-border spinner-border-sm" />
+            ) : (
+              "Fetch Schools"
+            )}
+          </button>
+        </AdminCard>
 
         {reportSchools.length > 0 && (
-          <table className="table table-bordered">
-            <thead>
-              <tr>
-                <th>School</th>
-                <th>Status</th>
-                <th>Download</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reportSchools.map((school) => (
-                <tr key={school.unit_id}>
-                  <td>
-                    {school.kendrashala_name ||
-                      school.unit_name ||
-                      school.school_name ||
-                      `Unit ${school.unit_id}`}
-                  </td>
-                  <td>
-                    {school.status === "complete" ? (
-                      <span className="badge bg-success">Ready</span>
-                    ) : (
-                      <span className="badge bg-danger">Missing</span>
-                    )}
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-outline-primary btn-sm"
-                      disabled={school.status !== "complete"}
-                      onClick={() => downloadSelectedReport(school.unit_id)}
-                    >
-                      Download
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="mt-4">
+            <AdminCard header="Available Schools">
+              <div className="table-responsive">
+                <table className="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <th>School</th>
+                      <th>Status</th>
+                      <th>Download</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reportSchools.map((school) => (
+                      <tr key={school.unit_id}>
+                        <td>
+                          {school.kendrashala_name ||
+                            school.unit_name ||
+                            school.school_name ||
+                            `Unit ${school.unit_id}`}
+                        </td>
+                        <td>
+                          {school.status === "complete" ? (
+                            <span className="badge bg-success">Ready</span>
+                          ) : (
+                            <span className="badge bg-danger">Missing</span>
+                          )}
+                        </td>
+                        <td>
+                          <button
+                            className="btn btn-outline-primary btn-sm"
+                            disabled={school.status !== "complete"}
+                            onClick={() => downloadSelectedReport(school.unit_id)}
+                          >
+                            Download
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </AdminCard>
+          </div>
         )}
-
         {reportSchools.length === 0 && !reportLoading && (
           <div className="text-muted mt-3">No report data found...</div>
         )}
@@ -639,25 +412,21 @@ export default function AdminDashboard() {
   const downloadSelectedReport = async (unitId) => {
     try {
       const token = localStorage.getItem("token");
-
       let endpoint;
       if (reportType === "annual") {
-        endpoint = `http://localhost:5100/api/report/units/${unitId}/report`;
+        endpoint = `http://localhost:5000/api/report/units/${unitId}/report`;
       } else {
-        endpoint = `http://localhost:5100/api/report/download?unit=${unitId}&year=${selectedReportYear}&type=${reportType}`;
+        endpoint = `http://localhost:5000/api/report/download?unit=${unitId}&year=${selectedReportYear}&type=${reportType}`;
       }
-
       const res = await axios.get(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: "blob",
       });
-
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
       link.href = url;
       link.download = `${reportType}_report_${unitId}_${selectedReportYear}.pdf`;
       link.click();
-
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Download error:", error);
@@ -668,34 +437,31 @@ export default function AdminDashboard() {
     }
   };
 
-  // UNIT DETAILS + dashboard
   async function handleUnitCardClick(unitId) {
     setUnitLoading(true);
     setSelectedUnit(unitId);
-    setSelectedDetailTab("overview");
     setTeacherSearch("");
     setStudentSearch("");
     setStudentsYear("");
-    setUnitDashboard(null);
     setFyMetrics(null);
     setOverviewMetrics(null);
-
     try {
-      const [detailRes, dashboardRes, fyRes, overviewRes] = await Promise.all([
-        axiosInstance.get(`/admin/units/${unitId}`),
-        axiosInstance.get(`/admin/units/${unitId}/dashboard-data`),
-
-        axiosInstance.get(
-          `/admin/units/${unitId}/finance-by-year?financial_year=${selectedFy}`
-        ),
-
-        axiosInstance.get(
-          `/admin/units/${unitId}/finance-by-year?financial_year=${selectedOverviewFy}`
-        ),
-      ]);
-
+      const token = localStorage.getItem("token");
+      const [detailRes, fyRes, overviewRes] =
+        await Promise.all([
+          axios.get(`http://localhost:5000/api/admin/units/${unitId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(
+            `http://localhost:5000/api/admin/units/${unitId}/finance-by-year?financial_year=${selectedFy}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+          axios.get(
+            `http://localhost:5000/api/admin/units/${unitId}/finance-by-year?financial_year=${selectedOverviewFy}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+        ]);
       setUnitDetails(detailRes.data);
-      setUnitDashboard(dashboardRes.data);
       setFyMetrics(fyRes.data);
       setOverviewMetrics(overviewRes.data);
     } catch (err) {
@@ -708,8 +474,10 @@ export default function AdminDashboard() {
     if (!selectedUnit) return;
     async function reloadFy() {
       try {
-        const res = await axiosInstance.get(
-          `/admin/units/${selectedUnit}/finance-by-year?financial_year=${selectedFy}`
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          `http://localhost:5000/api/admin/units/${selectedUnit}/finance-by-year?financial_year=${selectedFy}`,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         setFyMetrics(res.data);
       } catch (err) {
@@ -723,8 +491,10 @@ export default function AdminDashboard() {
     if (!selectedUnit) return;
     async function reloadOverviewFy() {
       try {
-        const res = await axiosInstance.get(
-          `/admin/units/${selectedUnit}/finance-by-year?financial_year=${selectedOverviewFy}`
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          `http://localhost:5000/api/admin/units/${selectedUnit}/finance-by-year?financial_year=${selectedOverviewFy}`,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         setOverviewMetrics(res.data);
       } catch (err) {
@@ -773,8 +543,8 @@ export default function AdminDashboard() {
     : [];
 
   const filteredTeachers = unitDetails?.teachers
-    ? unitDetails.teachers.filter((tch) =>
-        Object.values(tch)
+    ? unitDetails.teachers.filter((t) =>
+        Object.values(t)
           .join(" ")
           .toLowerCase()
           .includes(teacherSearch.toLowerCase())
@@ -804,1030 +574,794 @@ export default function AdminDashboard() {
     );
   }
 
-  function DynamicDropdownTable({ tableName, data }) {
-    const [visibleCols, setVisibleCols] = useState(() =>
-      data.length ? Object.keys(data[0]) : []
-    );
-    const [selectShow, setSelectShow] = useState(false);
+    function DynamicDropdownTable({ tableName, data }) {
+      const [visibleCols, setVisibleCols] = useState(() =>
+        data.length ? Object.keys(data[0]) : []
+      );
+      const [selectShow, setSelectShow] = useState(false);
+      useEffect(() => {
+        if (data.length) setVisibleCols(Object.keys(data[0]));
+      }, [data]);
 
-    useEffect(() => {
-      if (data.length) setVisibleCols(Object.keys(data[0]));
-    }, [data]);
+      if (!data.length)
+        return (
+          <div className="empty-table-msg text-center py-5 border rounded bg-light">
+            <i className="bi bi-info-circle text-muted fs-2 d-block mb-3"></i>
+            <span className="text-muted">No {tableName} data available for the selected period.</span>
+          </div>
+        );
 
-    if (!data.length)
-      return <div className="mb-4 text-muted">{tableName} not available</div>;
+      const cols = Object.keys(data[0]);
+      function handleToggle(col) {
+        setVisibleCols((prev) =>
+          prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
+        );
+      }
 
-    const cols = Object.keys(data[0]);
+      // Helper for professional cell rendering
+      const formatCell = (key, val) => {
+        if (val === null || val === undefined) return "-";
+        const valStr = val.toString();
 
-    function handleToggle(col) {
-      setVisibleCols((prev) =>
-        prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
+        // Colors for amounts/finance
+        if (key.toLowerCase().includes("amount") || key.toLowerCase().includes("spent") || key.toLowerCase().includes("collected")) {
+          const num = parseFloat(val);
+          if (!isNaN(num)) {
+            const colorClass = num >= 0 ? "finance-positive" : "finance-negative";
+            return <span className={`fw-bold ${colorClass}`}>₹{num.toLocaleString()}</span>;
+          }
+        }
+
+        // Dates
+        if (key.toLowerCase().includes("date") || key.toLowerCase().includes("updated_at") || key.toLowerCase().includes("at")) {
+          return <span className="text-muted small">{new Date(valStr).toLocaleDateString(undefined, {
+            year: 'numeric', month: 'short', day: 'numeric'
+          })}</span>;
+        }
+
+        // Status / Category badges
+        if (key.toLowerCase().includes("category") || key.toLowerCase().includes("status") || key.toLowerCase().includes("type")) {
+          return <span className="erp-badge">{valStr.replace(/_/g, " ")}</span>;
+        }
+
+        return valStr;
+      };
+
+      return (
+        <div className="dynamic-table-wrapper">
+          <div className="dynamic-table-toolbar d-flex justify-content-between align-items-center mb-3">
+            <h6 className="mb-0 text-dark fw-bold">{tableName} Directory</h6>
+            <div className="position-relative">
+              <button
+                className="btn btn-sm btn-light border d-flex align-items-center gap-2"
+                onClick={() => setSelectShow((s) => !s)}
+              >
+                <i className="bi bi-columns-gap"></i> Columns
+              </button>
+
+              {selectShow && (
+                <div className="col-dropdown p-3 border rounded shadow bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '220px' }}>
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <span className="fw-bold small">Manage Columns</span>
+                    <button className="btn-close small" onClick={() => setSelectShow(false)} style={{fontSize: '0.7rem'}}></button>
+                  </div>
+                  {cols.map((col) => (
+                    <div key={col} className="form-check mb-2">
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        id={`col-check-table-${tableName}-${col}`}
+                        checked={visibleCols.includes(col)}
+                        onChange={() => handleToggle(col)}
+                      />
+                      <label
+                        className="form-check-label small text-capitalize"
+                        htmlFor={`col-check-table-${tableName}-${col}`}
+                      >
+                        {toLabel(col)}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="table-responsive professional-table">
+            <table className="table align-middle">
+              <thead>
+                <tr>
+                  {cols
+                    .filter((col) => visibleCols.includes(col))
+                    .map((col) => (
+                      <th key={col}>{toLabel(col)}</th>
+                    ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((row, i) => (
+                  <tr key={tableName + "-row-" + i}>
+                    {cols
+                      .filter((col) => visibleCols.includes(col))
+                      .map((col) => (
+                        <td key={col}>{formatCell(col, row[col])}</td>
+                      ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       );
     }
 
-    return (
-      <div className="dynamic-table-wrapper">
-        <div className="dynamic-table-header">
-          <span className="fw-bold">{tableName}</span>
-          <div className="dropdown dropdown-columns">
-            <button
-              className="btn btn-outline-secondary btn-sm dropdown-toggle"
-              type="button"
-              onClick={() => setSelectShow((s) => !s)}
-            >
-              Select Columns
-            </button>
-            {selectShow && (
-              <div className="dropdown-menu show p-2 col-dropdown">
-                {cols.map((col) => (
-                  <div key={col} className="form-check">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id={`col-check-table-${tableName}-${col}`}
-                      checked={visibleCols.includes(col)}
-                      onChange={() => handleToggle(col)}
-                    />
-                    <label
-                      className="form-check-label"
-                      htmlFor={`col-check-table-${tableName}-${col}`}
-                    >
-                      {toLabel(col)}
-                    </label>
-                  </div>
-                ))}
+  const renderUnitDetails = () =>
+    unitDetails ? (
+      <div className="school-detail-view">
+        <SchoolContextHeader
+          schoolName={unitDetails.kendrashala_name}
+          semisNo={unitDetails.semis_no || "-"}
+          headmasterName={unitDetails.headmistress_name || "-"}
+          totalStudents={unitDetails.students?.length ?? 0}
+          totalTeachers={unitDetails.teachers?.length ?? 0}
+          onBack={() => {
+            setSelectedUnit(null);
+            setUnitDetails(null);
+            setSelectedSchoolTab("overview");
+          }}
+          onGenerateReport={() => {
+            setSidebarTab("reports");
+          }}
+        />
+
+        <TabNavigation
+          tabs={[
+            { id: "overview", label: "Overview", icon: "bi-grid-1x2" },
+            { id: "finance", label: "Finance", icon: "bi-cash-stack" },
+            { id: "teachers", label: "Teachers", icon: "bi-people" },
+            { id: "students", label: "Students", icon: "bi-mortarboard" },
+            { id: "payments", label: "Payments", icon: "bi-credit-card" },
+            { id: "banks", label: "Banks", icon: "bi-bank" },
+            { id: "cases", label: "Legal / Cases", icon: "bi-shield-shaded" },
+          ]}
+          activeTab={selectedSchoolTab}
+          onTabChange={setSelectedSchoolTab}
+        />
+
+        {/* TAB CONTENT - Overview */}
+        {selectedSchoolTab === "overview" && (
+          <div className="tab-pane-content">
+            <div className="row">
+              <div className="col-md-12">
+                <AdminCard header="Unit Overview Summary">
+                   <div className="metrics-grid">
+                     <div className="metric-box metric-staff">
+                       <span className="label">TOTAL STAFF</span>
+                       <span className="value">{unitDetails.teachers?.length ?? 0}</span>
+                     </div>
+                     <div className="metric-box metric-students">
+                       <span className="label">TOTAL STUDENTS</span>
+                       <span className="value">{unitDetails.students?.length ?? 0}</span>
+                     </div>
+                     <div className="metric-box metric-ratio">
+                       <span className="label">RATIO</span>
+                       <span className="value">
+                         {unitDetails.students?.length && unitDetails.teachers?.length
+                           ? (unitDetails.students.length / unitDetails.teachers.length).toFixed(1)
+                           : "0"}
+                       </span>
+                       <span className="sub-label">Student/Teacher</span>
+                     </div>
+                     <div className="metric-box metric-fees highlight">
+                       <span className="label">COLLECTED FEES</span>
+                       <span className="value">₹{(overviewMetrics?.feesCollectedFy ?? 0).toLocaleString()}</span>
+                       <span className="sub-label">Financial Snapshot</span>
+                     </div>
+                   </div>
+                   
+                   <div className="overview-info-strip mt-4">
+                      <div className="info-item">
+                        <span className="label">Unit ID:</span>
+                        <span className="value">{unitDetails.unit_id || "-"}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="label">SEMIS No:</span>
+                        <span className="value">{unitDetails.semis_no || "-"}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="label">Standards:</span>
+                        <span className="value">{unitDetails.standard_range || "-"}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="label">Shift:</span>
+                        <span className="value">{unitDetails.school_shift || "-"}</span>
+                      </div>
+                   </div>
+                </AdminCard>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB CONTENT - Finance */}
+        {selectedSchoolTab === "finance" && (
+          <div className="tab-pane-content">
+             <AdminCard header="Finance Insights">
+               <div className="d-flex justify-content-between align-items-center mb-4">
+                 <div>
+                   <h6 className="mb-0">Financial Metrics</h6>
+                   <p className="text-muted small mb-0">Overview of budget and expenses</p>
+                 </div>
+                 <select
+                   value={selectedOverviewFy}
+                   onChange={(e) => setSelectedOverviewFy(e.target.value)}
+                   className="form-select form-select-sm"
+                   style={{ width: '150px' }}
+                 >
+                   <option value="2023-24">2023-24</option>
+                   <option value="2024-25">2024-25</option>
+                   <option value="2025-26">2025-26</option>
+                 </select>
+               </div>
+               
+               <div className="finance-summary-grid">
+                 <div className="finance-item budget">
+                    <span className="label">BUDGET SUMMARY</span>
+                    <span className="value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                    <span className="sub">Expected Fees</span>
+                 </div>
+                 <div className="finance-item collected">
+                    <span className="label">FEES COLLECTED</span>
+                    <span className="value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                    <span className="sub">Actual Amount</span>
+                 </div>
+                 <div className="finance-item pending">
+                    <span className="label">PENDING FEES</span>
+                    <span className="value">₹ {( (overviewMetrics?.feesCollectedFy || 0) * 0.1).toLocaleString()}</span>
+                    <span className="sub">To be Collected</span>
+                 </div>
+                 <div className="finance-item spent">
+                    <span className="label">SALARY SPENT</span>
+                    <span className="value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                    <span className="sub">Total Payroll</span>
+                 </div>
+               </div>
+             </AdminCard>
+          </div>
+        )}
+
+            {/* TAB CONTENT - Teachers */}
+            {selectedSchoolTab === "teachers" && (
+              <div className="tab-pane-content">
+                <AdminCard>
+                  <TableContainer
+                 title=""
+                 toolbar={
+                   <Toolbar
+                     left={
+                       <h6 className="mb-0 text-dark fw-bold">Staff Directory</h6>
+                     }
+                     right={
+                       <div className="d-flex align-items-center gap-3">
+                         <div className="d-flex align-items-center gap-2 bg-light px-3 py-1 rounded-pill">
+                           <i className="bi bi-search text-muted"></i>
+                           <input
+                             type="text"
+                             className="form-control form-control-sm border-0 bg-transparent"
+                             placeholder="Search teachers..."
+                             style={{ width: 200 }}
+                             value={teacherSearch}
+                             onChange={(e) => setTeacherSearch(e.target.value)}
+                           />
+                         </div>
+                         <div className="position-relative">
+                           <button
+                             className="btn btn-sm btn-light border d-flex align-items-center gap-2"
+                             onClick={() => setTeachersShowColDropdown(!teachersShowColDropdown)}
+                           >
+                               <i className="bi bi-columns-gap"></i> Columns
+                             </button>
+  
+                           {teachersShowColDropdown && (
+                             <div className="col-dropdown p-3 border rounded shadow bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '220px' }}>
+                               <div className="d-flex justify-content-between align-items-center mb-2">
+                                 <span className="fw-bold small">Manage Columns</span>
+                                 <button className="btn-close" style={{fontSize: '0.6rem'}} onClick={() => setTeachersShowColDropdown(false)}></button>
+                               </div>
+                               {teacherFields.map(([key, label]) => (
+                                 <div key={key} className="form-check mb-1">
+                                   <input
+                                     className="form-check-input"
+                                     type="checkbox"
+                                     id={`col-check-teacher-${key}`}
+                                     checked={teacherVisibleColumns.includes(key)}
+                                     onChange={() => handleTeacherColumnToggle(key)}
+                                   />
+                                   <label className="form-check-label small" htmlFor={`col-check-teacher-${key}`}>
+                                     {label}
+                                   </label>
+                                 </div>
+                               ))}
+                             </div>
+                           )}
+                         </div>
+                       </div>
+                     }
+                   />
+                 }
+               >
+                   {filteredTeachers.length === 0 ? (
+                     <EmptyState title="No Records" description="No teacher records found for this unit." />
+                   ) : (
+                     <div className="table-responsive professional-table">
+                       <table className="table table-hover align-middle">
+                         <thead>
+                           <tr>
+                             {teacherFields
+                               .filter(([key]) => teacherVisibleColumns.includes(key))
+                               .map(([key, label]) => <th key={key}>{label}</th>)}
+                           </tr>
+                         </thead>
+                         <tbody>
+                           {filteredTeachers.map((tch) => (
+                             <tr key={tch.staff_id}>
+                               {teacherFields
+                                 .filter(([key]) => teacherVisibleColumns.includes(key))
+                                 .map(([key]) => (
+                                   <td key={key}>
+                                     {key === "full_name" ? (
+                                       <div className="d-flex align-items-center gap-2">
+                                         <div className="avatar-circle">
+                                           {tch[key] ? tch[key].charAt(0).toUpperCase() : "T"}
+                                         </div>
+                                         <span className="fw-semibold">{tch[key] || "Unknown"}</span>
+                                       </div>
+                                     ) : key === "designation" || key === "qualification" ? (
+                                       <span className={`erp-badge ${key === "designation" ? "badge-designation" : "badge-qualification"}`}>
+                                         {tch[key] || "-"}
+                                       </span>
+                                     ) : key === "joining_date" || key.includes("updated_at") ? (
+                                       <span className="text-muted small">
+                                         {tch[key] ? new Date(tch[key]).toLocaleDateString(undefined, {
+                                           year: 'numeric', month: 'short', day: 'numeric'
+                                         }) : "-"}
+                                       </span>
+                                     ) : key === "email" ? (
+                                       <span className="text-primary small">{tch[key]}</span>
+                                     ) : (
+                                       tch[key] || "-"
+                                     )}
+                                   </td>
+                                 ))}
+                             </tr>
+                           ))}
+                         </tbody>
+                       </table>
+                     </div>
+                   )}
+               </TableContainer>
+            </AdminCard>
+          </div>
+        )}
+
+            {/* TAB CONTENT - Students */}
+            {selectedSchoolTab === "students" && (
+              <div className="tab-pane-content">
+              <AdminCard>
+                 <TableContainer
+                 title=""
+                 toolbar={
+                   <Toolbar
+                     left={
+                       <h6 className="mb-0 text-dark fw-bold">Student Enrollment</h6>
+                     }
+                     right={
+                       <div className="d-flex align-items-center gap-3">
+                         <div className="d-flex align-items-center gap-2 bg-light px-3 py-1 rounded-pill">
+                           <i className="bi bi-search text-muted"></i>
+                           <input
+                             type="text"
+                             className="form-control form-control-sm border-0 bg-transparent"
+                             placeholder="Search students..."
+                             style={{ width: 180 }}
+                             value={studentSearch}
+                             onChange={(e) => setStudentSearch(e.target.value)}
+                           />
+                         </div>
+                         <div className="d-flex align-items-center gap-2 bg-light px-3 py-1 rounded-pill">
+                           <span className="small text-muted fw-bold text-nowrap">Year:</span>
+                           <select
+                             value={studentsYear}
+                             onChange={(e) => setStudentsYear(e.target.value)}
+                             className="form-select form-select-sm border-0 bg-transparent w-auto py-0"
+                             style={{ fontSize: '0.75rem' }}
+                           >
+                             <option value="">All</option>
+                             {allStudentYears.map(y => <option key={y} value={y}>{y}</option>)}
+                           </select>
+                         </div>
+                         <div className="position-relative">
+                          <button
+                            className="btn btn-sm btn-light border d-flex align-items-center gap-2"
+                            onClick={() => setStudentsShowColDropdown(!studentsShowColDropdown)}
+                          >
+                            <i className="bi bi-columns-gap"></i> Columns
+                          </button>
+                          {studentsShowColDropdown && (
+                            <div className="col-dropdown p-3 border rounded shadow bg-white position-absolute end-0 mt-2" style={{ zIndex: 1000, minWidth: '220px' }}>
+                               <div className="d-flex justify-content-between align-items-center mb-2">
+                                 <span className="fw-bold small">Manage Columns</span>
+                                 <button className="btn-close" style={{fontSize: '0.6rem'}} onClick={() => setStudentsShowColDropdown(false)}></button>
+                               </div>
+                              {studentFields.map(([key, label]) => (
+                                <div key={key} className="form-check mb-1">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id={`col-check-student-${key}`}
+                                    checked={studentVisibleColumns.includes(key)}
+                                    onChange={() => handleStudentColumnToggle(key)}
+                                  />
+                                  <label className="form-check-label small" htmlFor={`col-check-student-${key}`}>
+                                    {label}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                       </div>
+                     }
+                   />
+                 }
+               >
+                   {filteredStudents.length === 0 ? (
+                     <EmptyState title="No Records" description="No student records found." />
+                   ) : (
+                     <div className="table-responsive professional-table">
+                       <table className="table table-hover align-middle">
+                         <thead>
+                           <tr>
+                             {studentFields
+                               .filter(([key]) => studentVisibleColumns.includes(key))
+                               .map(([key, label]) => <th key={key}>{label}</th>)}
+                           </tr>
+                         </thead>
+                         <tbody>
+                           {filteredStudents.map((s) => (
+                             <tr key={s.student_id}>
+                               {studentFields
+                                 .filter(([key]) => studentVisibleColumns.includes(key))
+                                 .map(([key]) => (
+                                   <td key={key}>
+                                     {key === "full_name" ? (
+                                       <div className="d-flex align-items-center gap-2">
+                                         <div className="avatar-circle student">
+                                           {s[key] ? s[key].charAt(0).toUpperCase() : "S"}
+                                         </div>
+                                         <span className="fw-semibold">{s[key] || "Unknown"}</span>
+                                       </div>
+                                     ) : key === "passed" ? (
+                                       <span className={`erp-badge ${s[key] ? "badge-success" : "badge-danger"}`}>
+                                         {s[key] ? "Passed" : "Failed / In-Progress"}
+                                       </span>
+                                     ) : key === "academic_year" ? (
+                                       <span className="erp-badge badge-year">{s[key]}</span>
+                                     ) : (
+                                       s[key] || "-"
+                                     )}
+                                   </td>
+                                 ))}
+                             </tr>
+                           ))}
+                         </tbody>
+                       </table>
+                     </div>
+                    )}
+                </TableContainer>
+              </AdminCard>
+            </div>
+          )}
+
+          {/* TAB CONTENT - Generic tables */}
+          {["payments", "banks", "cases"].includes(selectedSchoolTab) && (
+            <div className="tab-pane-content">
+              <AdminCard header={
+                <div className="d-flex align-items-center gap-2">
+                  <i className={`bi ${
+                    selectedSchoolTab === 'payments' ? 'bi-credit-card text-info' :
+                    selectedSchoolTab === 'banks' ? 'bi-bank text-warning' :
+                    'bi-shield-shaded text-danger'
+                  }`}></i>
+                  <span>{selectedSchoolTab.charAt(0).toUpperCase() + selectedSchoolTab.slice(1)} Registry</span>
+                </div>
+              }>
+                <DynamicDropdownTable
+                  tableName={selectedSchoolTab.charAt(0).toUpperCase() + selectedSchoolTab.slice(1)}
+                  data={unitDetails[selectedSchoolTab] ?? []}
+                />
+              </AdminCard>
+            </div>
+          )}
+      </div>
+    ) : null;
+
+  const renderDashboardMain = () => (
+    <div className="dashboard-main-view">
+      <div className="section-header-pro">
+        <h3>School Overview</h3>
+        <p>Monitor and manage all MKSSS educational units</p>
+      </div>
+      
+      <div className="row school-grid">
+        {safeUnits.length === 0 ? (
+          <div className="col-12 text-center py-5">
+            <div className="premium-loader">
+              <div className="spinner-border text-primary" role="status"></div>
+              <p className="mt-2 text-muted">Loading schools...</p>
+            </div>
+          </div>
+        ) : (
+            safeUnits.map((unit, idx) => (
+              <div key={unit.unit_id} className="col-md-4 col-sm-6 mb-4">
+                <div className="school-card-pro" onClick={() => handleUnitCardClick(unit.unit_id)}>
+                   <div className="card-accent" style={{ backgroundColor: idx % 3 === 0 ? '#002E6D' : idx % 3 === 1 ? '#00A9A5' : '#0057D9' }}></div>
+                   <div className="card-header-pro">
+                     <div className="school-symbol">
+                       <i className="bi bi-building"></i>
+                     </div>
+                     <span className="school-idx">#{idx + 1}</span>
+                   </div>
+                   <div className="card-body-pro">
+                     <h5 className="school-name-text" title={unit.kendrashala_name || `School ${unit.unit_id}`}>
+                       {unit.kendrashala_name || `School ${unit.unit_id}`}
+                     </h5>
+                     <div className="school-id-tag">UNIT ID: {unit.unit_id}</div>
+                     
+                     <div className="school-stats-row">
+                       <div className="stat-item">
+                         <div className="stat-icon staff">
+                           <i className="bi bi-people-fill"></i>
+                         </div>
+                         <div className="stat-info">
+                           <span className="stat-count">{unit.staff_count || 0}</span>
+                           <span className="stat-label">Staff</span>
+                         </div>
+                       </div>
+                       <div className="stat-item">
+                         <div className="stat-icon students">
+                           <i className="bi bi-mortarboard-fill"></i>
+                         </div>
+                         <div className="stat-info">
+                           <span className="stat-count">{unit.student_count || 0}</span>
+                           <span className="stat-label">Students</span>
+                         </div>
+                       </div>
+                     </div>
+                   </div>
+                   <div className="card-footer-pro">
+                     <span>View Institutional Details</span>
+                     <i className="bi bi-arrow-right-short"></i>
+                   </div>
+                </div>
+              </div>
+            ))
+        )}
+      </div>
+    </div>
+  );
+
+    const [selectedNotificationTab, setSelectedNotificationTab] = useState("send_notification");
+
+    const renderNotificationsModule = () => {
+      return (
+        <div className="notifications-page erp-container">
+          <TabNavigation
+            tabs={[
+              { id: "send_notification", label: "Send Notification", icon: "bi-send-fill" },
+              { id: "create_form", label: "Create Form", icon: "bi-file-earmark-plus-fill" },
+              { id: "activity", label: "Recent Activity", icon: "bi-clock-history" },
+            ]}
+            activeTab={selectedNotificationTab}
+            onTabChange={setSelectedNotificationTab}
+          />
+
+          <div className="tab-pane-container mt-3" style={{ height: 'calc(100vh - 220px)', overflowY: 'auto' }}>
+            {selectedNotificationTab === "send_notification" && (
+              <div className="row g-4">
+                <div className="col-lg-8 mx-auto">
+                  <AdminCard header={
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="bi bi-megaphone-fill text-primary"></i>
+                      <span>Official Announcement</span>
+                    </div>
+                  }>
+                    <form onSubmit={addNotification}>
+                      <div className="mb-3">
+                        <label className="form-label small fw-bold text-muted">RECEIVER ROLE</label>
+                        <select className="form-select border-primary-subtle" value={notifRole} onChange={(e) => setNotifRole(e.target.value)}>
+                          <option value="principal">Principal</option>
+                          <option value="teacher">Teacher</option>
+                        </select>
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label small fw-bold text-muted">TITLE</label>
+                        <input type="text" className="form-control" value={notifTitle} onChange={(e) => setNotifTitle(e.target.value)} required />
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label small fw-bold text-muted">MESSAGE</label>
+                        <textarea className="form-control" rows={4} value={notifMsg} onChange={(e) => setNotifMsg(e.target.value)} required />
+                      </div>
+                      <button className="btn btn-primary w-100 py-2 shadow-sm" disabled={notifLoading} type="submit">
+                        {notifLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-send me-2"></i>}
+                        Dispatch Notification
+                      </button>
+                    </form>
+                  </AdminCard>
+                </div>
+              </div>
+            )}
+
+            {selectedNotificationTab === "create_form" && (
+              <div className="row g-4">
+                <div className="col-lg-8 mx-auto">
+                  <AdminCard header={
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="bi bi-file-earmark-plus-fill text-success"></i>
+                      <span>Data Collection Campaign</span>
+                    </div>
+                  }>
+                    <form onSubmit={addForm}>
+                      <div className="row g-3">
+                        <div className="col-md-6">
+                          <label className="form-label small fw-bold text-muted">TARGET ROLE</label>
+                          <select className="form-select border-success-subtle" value={formRole} onChange={(e) => setFormRole(e.target.value)}>
+                            <option value="principal">Principal</option>
+                            <option value="teacher">Teacher</option>
+                          </select>
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label small fw-bold text-muted">DEADLINE</label>
+                          <input type="datetime-local" className="form-control" value={formDeadline} onChange={(e) => setFormDeadline(e.target.value)} />
+                        </div>
+                        <div className="col-md-12">
+                          <label className="form-label small fw-bold text-muted">FORM TITLE</label>
+                          <input type="text" className="form-control" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required />
+                        </div>
+                        <div className="col-md-12">
+                          <div className="d-flex justify-content-between align-items-center mb-2">
+                            <label className="form-label small fw-bold text-muted mb-0">QUESTIONS</label>
+                            <button type="button" className="btn btn-link btn-sm p-0 text-decoration-none" onClick={addFormQuestion}>+ Add More</button>
+                          </div>
+                          {formQuestions.map((q, idx) => (
+                            <div key={idx} className="p-3 border rounded bg-light mb-2 shadow-sm">
+                              <input placeholder="Enter question text..." className="form-control mb-2" value={q.question_text} required onChange={(e) => handleQuestionChange(idx, "question_text", e.target.value)} />
+                              <div className="d-flex gap-2">
+                                <select className="form-select w-auto" value={q.question_type} onChange={(e) => handleQuestionChange(idx, "question_type", e.target.value)}>
+                                  <option value="text">Input Text</option>
+                                  <option value="mcq">Multiple Choice</option>
+                                </select>
+                                {q.question_type === "mcq" && (
+                                  <input placeholder="Options (comma separated)" className="form-control" value={q.options} onChange={(e) => handleQuestionChange(idx, "options", e.target.value)} />
+                                )}
+                                <button type="button" className="btn btn-outline-danger" onClick={() => removeFormQuestion(idx)} disabled={formQuestions.length === 1}><i className="bi bi-trash"></i></button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="col-md-12 mt-3">
+                          <button className="btn btn-success w-100 py-2 shadow-sm" disabled={formLoading} type="submit">
+                            {formLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-rocket-takeoff me-2"></i>}
+                            Launch Campaign
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </AdminCard>
+                </div>
+              </div>
+            )}
+
+            {selectedNotificationTab === "activity" && (
+              <div className="row g-4">
+                <div className="col-lg-10 mx-auto">
+                  <AdminCard header={
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="bi bi-clock-history text-info"></i>
+                      <span>Recent Communication Registry</span>
+                    </div>
+                  }>
+                    <div className="list-group list-group-flush professional-list">
+                      {notifications.length === 0 && forms.length === 0 ? (
+                        <div className="text-center py-5">
+                          <i className="bi bi-inbox text-muted fs-1"></i>
+                          <p className="text-muted mt-2">No recent activity found</p>
+                        </div>
+                      ) : (
+                        <>
+                          {notifications.slice(0, 10).map(n => (
+                            <div key={n.id} className="list-group-item py-4 border-bottom">
+                              <div className="d-flex w-100 justify-content-between align-items-center mb-2">
+                                <h6 className="mb-0 fw-bold">{n.title}</h6>
+                                <span className="badge bg-soft-primary text-primary px-3 py-2">NOTIFICATION</span>
+                              </div>
+                              <p className="mb-2 text-muted small lh-lg">{n.message}</p>
+                              <div className="d-flex gap-3 small text-muted">
+                                <span><i className="bi bi-person me-1"></i> {n.receiver_role}</span>
+                                <span><i className="bi bi-clock me-1"></i> {new Date().toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                          ))}
+                          {forms.slice(0, 10).map(f => (
+                            <div key={f.id} className="list-group-item py-4 border-bottom">
+                              <div className="d-flex w-100 justify-content-between align-items-center mb-2">
+                                <h6 className="mb-0 fw-bold text-success">{f.title}</h6>
+                                <span className="badge bg-soft-success text-success px-3 py-2">ACTIVE FORM</span>
+                              </div>
+                              <div className="d-flex justify-content-between align-items-center mt-3">
+                                <span className="text-danger small fw-bold"><i className="bi bi-calendar-event me-1"></i> Deadline: {f.deadline ? new Date(f.deadline).toLocaleDateString() : 'No limit'}</span>
+                                <button className="btn btn-sm btn-outline-success px-3" onClick={() => window.open(`http://localhost:3000/forms/${f.id}`, '_blank')}>View Form</button>
+                              </div>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  </AdminCard>
+                </div>
               </div>
             )}
           </div>
         </div>
-        <div className="table-responsive">
-          <table className="table table-striped table-bordered">
-            <thead>
-              <tr>
-                {cols
-                  .filter((col) => visibleCols.includes(col))
-                  .map((col) => (
-                    <th key={col}>{toLabel(col)}</th>
-                  ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((row, i) => (
-                <tr key={tableName + "-row-" + i}>
-                  {cols
-                    .filter((col) => visibleCols.includes(col))
-                    .map((col) => (
-                      <td key={col}>
-                        {row[col] != null ? row[col].toString() : ""}
-                      </td>
-                    ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  }
+      );
+    };
 
-  const renderSchoolDetailView = () => {
-    if (!unitDetails) return null;
-
-    const detailTabs = [
-      { id: "overview", label: "Overview", icon: "bi-grid-1x2" },
-      { id: "finance", label: "Finance", icon: "bi-cash-stack" },
-      { id: "teachers", label: "Teachers", icon: "bi-people" },
-      { id: "students", label: "Students", icon: "bi-mortarboard" },
-      { id: "payments", label: "Payments", icon: "bi-credit-card" },
-      { id: "banks", label: "Banks", icon: "bi-bank" },
-      { id: "legal", label: "Legal / Cases", icon: "bi-shield-shaded" },
-    ];
-
-    return (
-      <div className="school-detail-view-container">
-        {/* Static School Information Card */}
-        <div className="school-static-info-card shadow-sm">
-          <div className="info-card-header">
-            <div className="school-identity">
-              <h2 className="school-name">{unitDetails.kendrashala_name}</h2>
-              <div className="school-meta-pills">
-                <span className="meta-pill">
-                  <i className="bi bi-hash"></i> SEMIS No: {unitDetails.semis_no}
-                </span>
-                <span className="meta-pill">
-                  <i className="bi bi-person-badge"></i> Headmaster: {unitDetails.headmistress_name || "N/A"}
-                </span>
-              </div>
-            </div>
-            
-            <div className="info-card-actions">
-              <div className="academic-year-badge">
-                <span className="label">ACADEMIC YEAR</span>
-                <span className="value">AY 2024-25</span>
-              </div>
-              <button 
-                className="btn btn-dark btn-back"
-                onClick={() => {
-                  setSelectedUnit(null);
-                  setUnitDetails(null);
-                }}
-              >
-                <i className="bi bi-arrow-left"></i> Back to Units
-              </button>
-              <button className="btn btn-outline-primary btn-generate">
-                <i className="bi bi-file-earmark-text"></i> Generate Report
-              </button>
-            </div>
-
-            {/* Unit Import Component */}
-            <AdminUnitImport />
-          </div>
-
-          <div className="info-card-stats-row">
-            <div className="mini-stat-box">
-              <span className="label">TOTAL STUDENTS</span>
-              <span className="value">{unitDetails.students?.length || 0}</span>
-            </div>
-            <div className="mini-stat-box">
-              <span className="label">TOTAL TEACHERS</span>
-              <span className="value">{unitDetails.teachers?.length || 0}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Horizontal Detail Tabs */}
-        <div className="school-detail-tabs shadow-sm">
-          {detailTabs.map((tab) => (
-            <button
-              key={tab.id}
-              className={`detail-tab-item ${selectedDetailTab === tab.id ? "active" : ""}`}
-              onClick={() => setSelectedDetailTab(tab.id)}
-            >
-              <i className={`bi ${tab.icon}`}></i>
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content Area */}
-        <div className="school-tab-content-area">
-          {selectedDetailTab === "overview" && (
-            <div className="tab-pane-fade-in">
-              <div className="content-section-title">Unit Overview Summary</div>
-              <div className="overview-summary-grid">
-                <div className="overview-card staff">
-                  <span className="label">TOTAL STAFF</span>
-                  <span className="value">{unitDetails.teachers?.length || 0}</span>
-                </div>
-                <div className="overview-card students">
-                  <span className="label">TOTAL STUDENTS</span>
-                  <span className="value">{unitDetails.students?.length || 0}</span>
-                </div>
-                <div className="overview-card ratio">
-                  <span className="label">RATIO</span>
-                  <span className="value">
-                    {(unitDetails.students?.length / (unitDetails.teachers?.length || 1)).toFixed(1)}
-                  </span>
-                  <span className="sub">Student/Teacher</span>
-                </div>
-                <div className="overview-card finance">
-                  <span className="label">COLLECTED FEES</span>
-                  <span className="value">₹0</span>
-                  <span className="sub">Financial Snapshot</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {selectedDetailTab === "finance" && (
-            <div className="tab-pane-fade-in">
-               <div className="content-section-title">Financial Data</div>
-               <div className="empty-tab-state">
-                 <i className="bi bi-cash-stack"></i>
-                 <p>No financial records found for this academic year.</p>
-               </div>
-            </div>
-          )}
-
-          {selectedDetailTab === "teachers" && (
-            <div className="tab-pane-fade-in h-100">
-               <div className="table-fixed-wrapper">
-                 <table className="table table-hover modern-table">
-                   <thead>
-                     <tr>
-                       <th>Staff ID</th>
-                       <th>Full Name</th>
-                       <th>Designation</th>
-                       <th>Subject</th>
-                       <th>Phone</th>
-                     </tr>
-                   </thead>
-                   <tbody>
-                     {unitDetails.teachers?.slice(0, 10).map(t => (
-                       <tr key={t.staff_id}>
-                         <td>{t.staff_id}</td>
-                         <td>{t.full_name}</td>
-                         <td>{t.designation}</td>
-                         <td>{t.subject}</td>
-                         <td>{t.phone}</td>
-                       </tr>
-                     ))}
-                   </tbody>
-                 </table>
-               </div>
-            </div>
-          )}
-
-          {selectedDetailTab === "students" && (
-            <div className="tab-pane-fade-in h-100">
-               <div className="table-fixed-wrapper">
-                 <table className="table table-hover modern-table">
-                   <thead>
-                     <tr>
-                       <th>Student ID</th>
-                       <th>Full Name</th>
-                       <th>Standard</th>
-                       <th>Division</th>
-                       <th>Roll No</th>
-                     </tr>
-                   </thead>
-                   <tbody>
-                     {unitDetails.students?.slice(0, 10).map(s => (
-                       <tr key={s.student_id}>
-                         <td>{s.student_id}</td>
-                         <td>{s.full_name}</td>
-                         <td>{s.standard}</td>
-                         <td>{s.division}</td>
-                         <td>{s.roll_number}</td>
-                       </tr>
-                     ))}
-                   </tbody>
-                 </table>
-               </div>
-            </div>
-          )}
-
-          {["payments", "banks", "legal"].includes(selectedDetailTab) && (
-            <div className="tab-pane-fade-in">
-               <div className="empty-tab-state">
-                 <i className="bi bi-info-circle"></i>
-                 <p>No data available for {selectedDetailTab} yet.</p>
-               </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  const renderContent = () => {
-    switch (sidebarTab) {
+    const renderContent = () => {
+      switch (sidebarTab) {
         case "dashboard":
-          if (selectedUnit && unitDetails) return renderSchoolDetailView();
+          if (selectedUnit && unitDetails) return renderUnitDetails();
+          return renderDashboardMain();
+
+        case "charts":
           return (
-            <div className="page-inner">
-              <PageHeader
-                title={t("school_overview")}
-                subtitle={t("manage_monitor_all_schools")}
-              />
-
-                {/* Import Units Section */}
-                <div className="admin-import-container mb-5">
-                  <div className="card admin-import-card border-0 shadow-sm rounded-4">
-                    <div className="card-body p-4">
-                      <div className="row g-4">
-                        {/* Left: Upload + Action */}
-                        <div className="col-lg-6 border-end pe-lg-4">
-                          <div className="d-flex align-items-center gap-3 mb-4">
-                            <div className="import-icon-box bg-soft-primary text-primary">
-                              <i className="bi bi-file-earmark-spreadsheet fs-4"></i>
-                            </div>
-                            <div>
-                              <h5 className="mb-0 fw-bold">Import Units from Excel</h5>
-                              <p className="text-muted small">Select your file to bulk import schools</p>
-                            </div>
-                          </div>
-
-                          <form onSubmit={handleImportSubmit} className="import-form">
-                            <div className="upload-box mb-4 p-4 border-2 border-dashed rounded-3 text-center bg-light">
-                              <i className="bi bi-cloud-arrow-up fs-1 text-primary mb-2 d-block"></i>
-                              <input
-                                type="file"
-                                id="excelImport"
-                                className="form-control d-none"
-                                accept=".xlsx,.xls"
-                                onChange={handleImportFileChange}
-                              />
-                              <label htmlFor="excelImport" className="btn btn-outline-primary btn-sm mb-2">
-                                {importFile ? importFile.name : "Choose Excel File"}
-                              </label>
-                              <p className="text-muted x-small mb-0">Support: .xlsx, .xls (Max 10MB)</p>
-                            </div>
-
-                            {importMessage && (
-                              <div className={`alert ${importIsSuccess ? "alert-success" : "alert-danger"} py-2 small mb-3 border-0 shadow-sm`}>
-                                <i className={`bi ${importIsSuccess ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill"} me-2`}></i>
-                                {importMessage}
-                              </div>
-                            )}
-
-                            <div className="d-flex gap-3">
-                              <button
-                                type="submit"
-                                className="btn btn-primary btn-lg flex-grow-1 py-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow"
-                                disabled={importLoading || !importFile}
-                              >
-                                {importLoading ? (
-                                  <span className="spinner-border spinner-border-sm" />
-                                ) : (
-                                  <>
-                                    <i className="bi bi-cloud-arrow-up-fill fs-5"></i>
-                                    <span>Import Units</span>
-                                  </>
-                                )}
-                              </button>
-                              <button type="button" className="btn btn-light border btn-lg px-3" title="Download Sample">
-                                <i className="bi bi-download"></i>
-                              </button>
-                            </div>
-                          </form>
-                        </div>
-
-                        {/* Right: Instructions & Format */}
-                        <div className="col-lg-6 ps-lg-4">
-                          <div className="instruction-header mb-3">
-                            <h6 className="fw-bold text-dark d-flex align-items-center gap-2">
-                              <i className="bi bi-info-circle-fill text-primary"></i>
-                              Quick Instructions
-                            </h6>
-                          </div>
-                          
-                          <div className="instructions-body">
-                            <ul className="instruction-list-modern mb-4">
-                              <li className="mb-2">
-                                <span className="step-num">1</span>
-                                <span>Ensure each school has a unique <strong>unit_id</strong> and <strong>semis_no</strong>.</span>
-                              </li>
-                              <li className="mb-2">
-                                <span className="step-num">2</span>
-                                <span>Follow the exact column naming as per the system requirements.</span>
-                              </li>
-                              <li className="mb-2">
-                                <span className="step-num">3</span>
-                                <span>Download and verify with the <strong>sample template</strong> before uploading.</span>
-                              </li>
-                            </ul>
-
-                            <div className="required-columns-box p-3 rounded-3 bg-light border mb-3">
-                              <p className="fw-bold x-small text-uppercase text-muted mb-2 letter-spacing-1">Important Required Columns</p>
-                              <div className="d-flex flex-wrap gap-2">
-                                {['unit_id', 'semis_no', 'kendrashala_name'].map(c => (
-                                  <span key={c} className="badge bg-white text-dark border shadow-sm py-2 px-3">{c}</span>
-                                ))}
-                                <span className="badge bg-soft-primary text-primary py-2 px-3">+ 18 more</span>
-                              </div>
-                            </div>
-
-                            <div className="format-toggle">
-                              <button
-                                className="btn btn-link btn-sm p-0 text-decoration-none fw-bold d-flex align-items-center gap-1"
-                                onClick={() => setShowFullFormat(!showFullFormat)}
-                              >
-                                <i className={`bi ${showFullFormat ? "bi-dash-circle" : "bi-plus-circle"}`}></i>
-                                {showFullFormat ? "Hide full format" : "View full Excel format"}
-                              </button>
-
-                              {showFullFormat && (
-                                <div className="full-format-scroll mt-3 p-3 bg-white rounded border small text-muted shadow-inner">
-                                  <strong>Allowed Headers:</strong>
-                                  <p className="mb-0 mt-1">unit_id, semis_no, dcf_no, nmms_no, scholarship_code, first_grant_in_aid_year, type_of_management, school_jurisdiction, competent_authority_name, authority_number, authority_zone, kendrashala_name, info_authority_name, appellate_authority_name, midday_meal_org_name, midday_meal_org_contact, standard_range, headmistress_name, headmistress_phone, headmistress_email, school_shift</p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="row school-grid g-4">
-                  {safeUnits.map((unit, idx) => (
-                    <div key={unit.unit_id} className="col-md-4 col-lg-3 col-sm-6 mb-4">
-                      <div
-                        className="school-card-modern"
-                        onClick={() => handleUnitCardClick(unit.unit_id)}
-                      >
-                        <div className="card-top-accent"></div>
-                        
-                        <div className="card-header-modern">
-                          <div className="symbol-container">
-                            <i className="bi bi-building"></i>
-                          </div>
-                          <div className="index-badge">#{idx + 1}</div>
-                        </div>
-                        
-                        <div className="card-body-modern">
-                          <h5 className="school-title">{unit.kendrashala_name}</h5>
-                          <div className="unit-id-label">UNIT ID: {unit.unit_id}</div>
-                          
-                          <div className="stats-pills-row">
-                            <div className="stat-pill staff">
-                              <div className="pill-icon">
-                                <i className="bi bi-people-fill"></i>
-                              </div>
-                              <div className="pill-data">
-                                <span className="count">{unit.staff_count || 0}</span>
-                                <span className="label">Staff</span>
-                              </div>
-                            </div>
-                            <div className="stat-pill students">
-                              <div className="pill-icon">
-                                <i className="bi bi-mortarboard-fill"></i>
-                              </div>
-                              <div className="pill-data">
-                                <span className="count">{unit.student_count || 0}</span>
-                                <span className="label">Students</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="card-footer-modern">
-                          <span className="footer-link">View Institutional Details</span>
-                          <i className="bi bi-arrow-right"></i>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-
-
-      case "charts":
-        return (
-          <div className="page-inner">
-            <PageHeader
-              title={t("charts")}
-              subtitle={t("visualize_school_data")}
-            />
             <AdminCharts units={units} />
+          );
+
+        case "notifications":
+          return renderNotificationsModule();
+
+        case "reports":
+          return renderReportsPage();
+
+        default:
+          return null;
+      }
+    };
+
+  return (
+    <AdminLayout
+      activeSidebarTab={sidebarTab}
+      onSidebarTabChange={setSidebarTab}
+      schoolName={unitDetails?.kendrashala_name}
+      semisId={unitDetails?.semis_no}
+    >
+      <div className="dashboard-wrapper">
+        {loading || unitLoading ? (
+          <div className="d-flex flex-column align-items-center justify-content-center py-5">
+            <div className="spinner-grow text-primary" role="status"></div>
+            <span className="mt-3 text-muted fw-bold">Syncing Dashboard Data...</span>
           </div>
-        );
-
-      case "notifications":
-        return (
-          <div className="page-inner notifications-page">
-            <PageHeader
-              title="Admin Notification Panel"
-              subtitle="Send notifications or create and manage forms"
-            />
-
-            <div className="row g-3">
-              <div className="col-lg-6">
-                <AdminCard header="Send Notification">
-                  <form onSubmit={addNotification}>
-                    <div className="mb-3">
-                      <label className="form-label">Select School</label>
-                      <select
-                        className="form-select"
-                        value={notifUnitId}
-                        onChange={(e) => setNotifUnitId(e.target.value)}
-                        required
-                      >
-                        <option value="">Select</option>
-                        {units.map((u) => (
-                          <option key={u.unit_id} value={u.unit_id}>
-                            {u.unit_name || u.kendrashala_name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Send To</label>
-                      <select
-                        className="form-select"
-                        value={notifRole}
-                        onChange={(e) => {
-                          setNotifRole(e.target.value);
-                          setSendAllTeachers(true);
-                          setSelectedTeachers([]);
-                        }}
-                        disabled={!notifUnitId}
-                      >
-                        <option value="principal">Principal</option>
-                        <option value="teacher">Teacher</option>
-                      </select>
-                    </div>
-
-                    {notifRole === "teacher" && notifUnitId && (
-                      <>
-                        <div className="form-check mb-3">
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            id="dashboardAllTeachers"
-                            checked={sendAllTeachers}
-                            onChange={() => {
-                              setSendAllTeachers(!sendAllTeachers);
-                              setSelectedTeachers([]);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="dashboardAllTeachers"
-                          >
-                            Send to all teachers ({teachers.length} teachers)
-                          </label>
-                        </div>
-
-                        {!sendAllTeachers && (
-                          <div className="mb-3">
-                            <label className="form-label">
-                              Select Specific Teachers
-                            </label>
-                            <select
-                              multiple
-                              className="form-select mb-2"
-                              value={selectedTeachers}
-                              onChange={(e) =>
-                                setSelectedTeachers(
-                                  [...e.target.selectedOptions].map((o) => o.value)
-                                )
-                              }
-                              style={{ minHeight: 160 }}
-                            >
-                              {teachers.length === 0 ? (
-                                <option disabled>No teachers found</option>
-                              ) : (
-                                teachers.map((tch) => (
-                                  <option key={tch.user_id} value={tch.user_id}>
-                                    {tch.full_name}{" "}
-                                    {tch.designation ? ` (${tch.designation})` : ""}
-                                    {tch.subject ? ` ${tch.subject}` : ""}
-                                  </option>
-                                ))
-                              )}
-                            </select>
-                            <small className="text-muted">
-                              Hold Ctrl/Cmd to select multiple. Selected:{" "}
-                              {selectedTeachers.length}
-                            </small>
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    <div className="mb-3">
-                      <label className="form-label">Title</label>
-                      <input
-                        className="form-control"
-                        value={notifTitle}
-                        onChange={(e) => setNotifTitle(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Message</label>
-                      <textarea
-                        className="form-control"
-                        rows={4}
-                        value={notifMsg}
-                        onChange={(e) => setNotifMsg(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <button
-                      className="btn btn-primary w-100"
-                      disabled={notifLoading || !notifUnitId}
-                    >
-                      {notifLoading ? "Sending..." : "Send ✓"}
-                    </button>
-                  </form>
-                </AdminCard>
-              </div>
-
-              <div className="col-lg-6">
-                <AdminCard header="Create and Send Form">
-                  <form onSubmit={addForm}>
-                    <div className="mb-3">
-                      <label className="form-label">Select School</label>
-                      <select
-                        className="form-select"
-                        value={notifUnitId}
-                        onChange={(e) => setNotifUnitId(e.target.value)}
-                        required
-                      >
-                        <option value="">Select</option>
-                        {units.map((u) => (
-                          <option key={u.unit_id} value={u.unit_id}>
-                            {u.unit_name || u.kendrashala_name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Send To</label>
-                      <select
-                        className="form-select"
-                        value={formRole}
-                        onChange={(e) => {
-                          setFormRole(e.target.value);
-                          setSendAllTeachers(true);
-                          setSelectedTeachers([]);
-                        }}
-                        disabled={!notifUnitId}
-                      >
-                        <option value="principal">Principal</option>
-                        <option value="teacher">Teacher</option>
-                      </select>
-                    </div>
-
-                    {formRole === "teacher" && notifUnitId && (
-                      <>
-                        <div className="form-check mb-3">
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            id="formAllTeachers"
-                            checked={sendAllTeachers}
-                            onChange={() => {
-                              setSendAllTeachers(!sendAllTeachers);
-                              setSelectedTeachers([]);
-                            }}
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="formAllTeachers"
-                          >
-                            Send to all teachers ({teachers.length} teachers)
-                          </label>
-                        </div>
-
-                        {!sendAllTeachers && (
-                          <div className="mb-3">
-                            <label className="form-label">
-                              Select Specific Teachers
-                            </label>
-                            <select
-                              multiple
-                              className="form-select mb-2"
-                              value={selectedTeachers}
-                              onChange={(e) =>
-                                setSelectedTeachers(
-                                  [...e.target.selectedOptions].map((o) => o.value)
-                                )
-                              }
-                              style={{ minHeight: 160 }}
-                            >
-                              {teachers.length === 0 ? (
-                                <option disabled>No teachers found</option>
-                              ) : (
-                                teachers.map((tch) => (
-                                  <option key={tch.user_id} value={tch.user_id}>
-                                    {tch.full_name}{" "}
-                                    {tch.designation ? ` (${tch.designation})` : ""}
-                                    {tch.subject ? ` ${tch.subject}` : ""}
-                                  </option>
-                                ))
-                              )}
-                            </select>
-                            <small className="text-muted">
-                              Hold Ctrl/Cmd to select multiple. Selected:{" "}
-                              {selectedTeachers.length}
-                            </small>
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    <div className="mb-3">
-                      <label className="form-label">Form Title</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="e.g., Monthly Report"
-                        value={formTitle}
-                        onChange={(e) => setFormTitle(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Description (optional)</label>
-                      <textarea
-                        className="form-control"
-                        rows={2}
-                        placeholder="Brief description"
-                        value={formDesc}
-                        onChange={(e) => setFormDesc(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Deadline</label>
-                      <input
-                        type="datetime-local"
-                        className="form-control"
-                        value={formDeadline}
-                        onChange={(e) => setFormDeadline(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label fw-semibold">Questions</label>
-                      <div style={{ maxHeight: 250, overflowY: "auto" }}>
-                        {formQuestions.map((q, idx) => (
-                          <div
-                            key={idx}
-                            className="border rounded p-2 mb-2 bg-light"
-                          >
-                            <div className="d-flex justify-content-between mb-2">
-                              <small>
-                                <strong>Question {idx + 1}</strong>
-                              </small>
-                              {formQuestions.length > 1 && (
-                                <button
-                                  type="button"
-                                  className="btn btn-danger btn-sm"
-                                  onClick={() => removeFormQuestion(idx)}
-                                >
-                                  Remove
-                                </button>
-                              )}
-                            </div>
-
-                            <input
-                              placeholder="Question text"
-                              className="form-control form-control-sm mb-2"
-                              value={q.questiontext}
-                              required
-                              onChange={(e) =>
-                                handleQuestionChange(
-                                  idx,
-                                  "questiontext",
-                                  e.target.value
-                                )
-                              }
-                            />
-
-                            <select
-                              className="form-select form-select-sm mb-2"
-                              value={q.questiontype}
-                              onChange={(e) =>
-                                handleQuestionChange(
-                                  idx,
-                                  "questiontype",
-                                  e.target.value
-                                )
-                              }
-                            >
-                              <option value="text">Text</option>
-                              <option value="number">Number</option>
-                              <option value="date">Date</option>
-                              <option value="select">Select</option>
-                            </select>
-
-                            {q.questiontype === "select" && (
-                              <input
-                                placeholder="Options: A, B, C"
-                                className="form-control form-control-sm"
-                                value={q.options}
-                                onChange={(e) =>
-                                  handleQuestionChange(idx, "options", e.target.value)
-                                }
-                              />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-
-                      <button
-                        type="button"
-                        className="btn btn-secondary btn-sm w-100 mt-2"
-                        onClick={addFormQuestion}
-                      >
-                        + Add Question
-                      </button>
-                    </div>
-
-                    <button
-                      className="btn btn-success w-100"
-                      disabled={formLoading || !notifUnitId}
-                      type="submit"
-                    >
-                      {formLoading
-                        ? "Creating..."
-                        : "Create Form & Send Notification ✓"}
-                    </button>
-                  </form>
-                </AdminCard>
-              </div>
-            </div>
-
-            <div className="row g-3 mt-2">
-              <div className="col-lg-6">
-                <AdminCard header={`Active Forms (${forms.length})`}>
-                  {forms.length === 0 ? (
-                    <div className="text-muted text-center py-4">
-                      <p className="mb-1">No active forms</p>
-                      <small>When you create a form, it will appear here.</small>
-                    </div>
-                  ) : (
-                    <div
-                      className="list-group"
-                      style={{ maxHeight: 500, overflowY: "auto" }}
-                    >
-                      {forms.map((f) => (
-                        <div
-                          key={f.id}
-                          className={`list-group-item list-group-item-action ${
-                            selectedFormId === f.id ? "active" : ""
-                          }`}
-                          onClick={() => {
-                            setSelectedFormId(f.id);
-                            loadRecipientStatus(f.id);
-                            loadFormResponsesForDashboard(f.id);
-                          }}
-                          style={{ cursor: "pointer" }}
-                        >
-                          <div className="d-flex w-100 justify-content-between">
-                            <h6 className="mb-1">{f.title}</h6>
-                            <span className="badge bg-primary rounded-pill">
-                              #{f.id}
-                            </span>
-                          </div>
-                          <small
-                            className={
-                              selectedFormId === f.id ? "text-white-50" : "text-muted"
-                            }
-                          >
-                            Deadline:{" "}
-                            {f.deadline ? new Date(f.deadline).toLocaleString() : "—"}
-                          </small>
-                          <br />
-                          <small
-                            className={
-                              selectedFormId === f.id ? "text-white-50" : "text-muted"
-                            }
-                          >
-                            Click to view responses
-                          </small>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </AdminCard>
-              </div>
-
-              <div className="col-lg-6">
-                <AdminCard header="Form Responses">
-                  {!selectedFormId ? (
-                    <div className="text-muted text-center py-5">
-                      <i className="bi bi-arrow-left-circle fs-1 mb-3 d-block"></i>{" "}
-                      Select a form on the left to view responses.
-                    </div>
-                  ) : responsesLoading ? (
-                    <div className="d-flex justify-content-center py-5">
-                      <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                    </div>
-                  ) : formResponses.length === 0 ? (
-                    <div className="text-muted text-center py-5">
-                      <i className="bi bi-inbox fs-1 mb-3 d-block"></i>
-                      <p>No responses yet</p>
-                      <small>
-                        Responses will appear here when users submit the form.
-                      </small>
-                    </div>
-                  ) : (
-                    <>
-                      {(() => {
-                        const receivedCount =
-                          recipientStatus.length > 0
-                            ? recipientStatus.filter((r) => r.has_responded === true)
-                                .length
-                            : formResponses.length;
-
-                        const pendingCount =
-                          recipientStatus.length > 0
-                            ? recipientStatus.filter((r) => r.has_responded === false)
-                                .length
-                            : 0;
-
-                        return (
-                          <div className="d-flex justify-content-around mb-3 p-3 bg-light rounded">
-                            <div className="text-center">
-                              <div className="fs-4 fw-bold text-success">
-                                {receivedCount}
-                              </div>
-                              <small className="text-muted">Received</small>
-                            </div>
-                            <div className="text-center">
-                              <div className="fs-4 fw-bold text-warning">
-                                {pendingCount}
-                              </div>
-                              <small className="text-muted">Pending</small>
-                            </div>
-                          </div>
-                        );
-                      })()}
-
-                      <div style={{ maxHeight: 420, overflowY: "auto" }}>
-                        {formResponses.map((resp) => (
-                          <div
-                            key={resp.response_id}
-                            className="border rounded p-3 mb-2"
-                          >
-                            <div className="d-flex justify-content-between align-items-start">
-                              <div>
-                                <div className="fw-semibold">
-                                  {resp.submitted_by_name || "User"}
-                                </div>
-                                <small className="text-muted">
-                                  {(resp.submitted_by_role || "").toString()}
-                                  {resp.unit_name ? ` • ${resp.unit_name}` : ""}
-                                </small>
-                              </div>
-                              <small className="text-muted">
-                                {resp.submitted_at
-                                  ? new Date(resp.submitted_at).toLocaleString()
-                                  : ""}
-                              </small>
-                            </div>
-
-                            <hr />
-
-                            {(resp.answers || []).map((a, idx) => (
-                              <div key={idx} className="mb-2">
-                                <div
-                                  className="fw-semibold"
-                                  style={{ fontSize: "0.92rem" }}
-                                >
-                                  {a.question}
-                                </div>
-                                <div style={{ fontSize: "0.95rem" }}>
-                                  {a.answer?.toString?.() ?? ""}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </AdminCard>
-              </div>
+        ) : error ? (
+          <div className="alert alert-custom-danger d-flex align-items-center" role="alert">
+            <i className="bi bi-exclamation-triangle-fill me-3 fs-3"></i>
+            <div>
+              <div className="fw-bold">Configuration Error</div>
+              {error}
             </div>
           </div>
-        );
-
-      case "reports":
-        return renderReportsPage();
-
-      case "budgets":
-      case "tables":
-      default:
-        return null;
-    }
-  };
-
-  function NotificationBell() {
-    return null;
-  }
-
-    return (
-      <AdminLayout 
-        activeSidebarTab={sidebarTab} 
-        onSidebarTabChange={setSidebarTab}
-        schoolName={unitDetails?.kendrashala_name}
-        semisId={unitDetails?.semis_no}
-      >
-      {loading ? (
-        <div className="loading-spinner">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">{t("loading")}...</span>
-          </div>
-        </div>
-      ) : error ? (
-        <div className="alert alert-danger m-4">{error}</div>
-      ) : unitLoading ? (
-        <div className="loading-spinner">
-          <div className="spinner-border text-secondary" role="status">
-            <span className="visually-hidden">{t("loading")}...</span>
-          </div>
-        </div>
-      ) : (
-        renderContent()
-      )}
-
+        ) : (
+          renderContent()
+        )}
+      </div>
       <ChatWidget />
     </AdminLayout>
   );
