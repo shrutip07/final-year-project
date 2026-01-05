@@ -117,8 +117,8 @@ export default function PrincipalDashboard() {
     return (
       <div className="sub-tab-content">
         <AdminCard header="Headmistress Information">
-          <div className="profile-modern-card" style={{ borderLeft: '5px solid #0057D9' }}>
-            <div className="profile-avatar-large" style={{ backgroundColor: '#0057D9' }}>
+          <div className="profile-modern-card headmistress-card">
+            <div className="profile-avatar-large">
               {school.headmistress_name?.charAt(0).toUpperCase() || "H"}
             </div>
             <div className="profile-info-grid">
