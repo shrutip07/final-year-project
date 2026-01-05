@@ -66,71 +66,71 @@ $danger-text: #dc2626;
     }
   }
 
-  .principal-metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    margin-bottom: 24px;
+    .principal-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 24px;
 
-    .principal-metric-card {
-      background: $white;
-      height: 100px; // Fixed height
-      padding: 0 24px; // Horizontal padding
-      border-radius: 12px;
-      display: flex;
-      align-items: center; // Center content vertically
-      gap: 16px;
-      border: 1px solid $border-color;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-      transition: all 0.2s ease;
-
-      .metric-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
+      .principal-metric-card {
+        background: $white;
+        height: 100px; // Fixed height
+        padding: 0 24px; // Horizontal padding
+        border-radius: 12px;
         display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        opacity: 0.7; // Subtle icons
-      }
+        align-items: center; // Center content vertically
+        justify-content: flex-start;
+        gap: 16px;
+        border: 1px solid $border-color;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
 
-      .metric-info {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-
-        .metric-label {
-          font-size: 11px;
-          font-weight: 600;
-          color: $text-muted;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
+        .metric-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 20px;
+          opacity: 0.5; // More subtle icons
+          background: rgba($primary, 0.05); // Consistent light navy tint
+          color: $primary;
         }
 
-        .metric-value {
-          font-size: 24px;
-          font-weight: 700;
-          color: $text-dark;
-          line-height: 1.2;
-        }
-      }
+        .metric-info {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          margin: 0; // Reset margin
 
-      // Contextual Tints (Muted)
-      &.teachers {
-        .metric-icon { background: $info-tint; color: $info-text; }
-      }
-      &.students {
-        .metric-icon { background: rgba($primary, 0.05); color: $primary; }
-      }
-      &.ratio {
-        .metric-icon { background: $warning-tint; color: $warning-text; }
-      }
-      &.budget {
-        .metric-icon { background: $success-tint; color: $success-text; }
+          .metric-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: $text-muted;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+          }
+
+          .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: $text-dark;
+            line-height: 1.2;
+            margin-top: 2px;
+          }
+        }
+
+        // Remove Contextual Tints - Use consistent soft navy tint
+        &.teachers, &.students, &.ratio, &.budget {
+          .metric-icon { 
+            background: rgba($primary, 0.05); 
+            color: $primary; 
+          }
+        }
       }
     }
-  }
 
   .principal-sub-tabs {
     display: flex;
@@ -201,7 +201,7 @@ $danger-text: #dc2626;
         width: 64px;
         height: 64px;
         border-radius: 12px;
-        background: $primary; // Solid
+        background: $primary; // Solid Navy
         color: $white;
         display: flex;
         align-items: center;
@@ -210,7 +210,7 @@ $danger-text: #dc2626;
         font-weight: 700;
 
         &.hm {
-          background: #475569; // Different solid for HM
+          background: lighten($primary, 15%); // Consistent Navy family for HM
         }
       }
 
@@ -226,7 +226,7 @@ $danger-text: #dc2626;
           display: inline-block;
           margin-top: 4px;
           padding: 2px 10px;
-          background: rgba($primary, 0.05);
+          background: rgba($primary, 0.08);
           color: $primary;
           font-size: 11px;
           font-weight: 600;
@@ -234,8 +234,8 @@ $danger-text: #dc2626;
           border-radius: 4px;
 
           &.hm {
-            background: rgba(#475569, 0.05);
-            color: #475569;
+            background: rgba($primary, 0.08);
+            color: $primary;
           }
         }
       }
@@ -244,52 +244,55 @@ $danger-text: #dc2626;
     .info-cards-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 24px;
+      gap: 20px; // Slightly reduced gap for better fit
 
       .info-card {
         display: flex;
         flex-direction: column;
-        gap: 8px;
-        padding: 0; // Remove individual card padding
-        background: transparent; // Clean white look
+        gap: 12px;
+        padding: 20px; 
+        background: rgba($primary, 0.03); // Consistent light navy tint
+        border: 1px solid rgba($primary, 0.08);
+        border-radius: 12px;
+        transition: all 0.2s ease;
 
         .info-card-icon {
-          width: 32px;
-          height: 32px;
+          width: 36px;
+          height: 36px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 16px;
+          font-size: 18px;
+          background: rgba($primary, 0.08); // Slightly darker tint for icon
           color: $primary;
-          opacity: 0.6;
-          margin-bottom: 4px;
+          border-radius: 8px;
+          margin-bottom: 0;
         }
 
         .info-card-content {
           display: flex;
           flex-direction: column;
-          gap: 2px;
+          gap: 4px;
 
           .info-label {
             font-size: 11px;
             font-weight: 600;
-            color: $text-muted;
+            color: $text-muted; // Muted grey
             text-transform: uppercase;
+            letter-spacing: 0.5px;
           }
 
           .info-value {
             font-size: 14px;
             font-weight: 600;
-            color: $text-dark;
+            color: $primary; // Dark navy (using $primary as it is navy)
           }
         }
         
-        // Remove individual colors, keep it clean
+        // Remove individual colors - already cleaned up in the generic .info-card
         &.teal, &.purple, &.orange, &.blue, &.rose, &.emerald, &.indigo, &.amber {
-          background: transparent;
-          .info-card-icon { background: transparent; }
-          .info-label { color: $text-muted; }
-          .info-value { color: $text-dark; }
+          background: rgba($primary, 0.03);
+          .info-card-icon { background: rgba($primary, 0.08); color: $primary; }
         }
       }
     }
@@ -411,11 +414,14 @@ $danger-text: #dc2626;
           }
         }
         
-        // Muted contextual colors for finance
-        &.budget { .finance-icon { background: rgba($primary, 0.05); color: $primary; } }
-        &.collected { .finance-icon { background: $success-tint; color: $success-text; } }
-        &.pending { .finance-icon { background: $warning-tint; color: $warning-text; } }
-        &.spent { .finance-icon { background: $danger-tint; color: $danger-text; } }
+        // Consistent Navy colors for finance - following one primary color family
+        &.budget, &.collected, &.pending, &.spent { 
+          .finance-icon { 
+            background: rgba($primary, 0.08); 
+            color: $primary; 
+            opacity: 1;
+          } 
+        }
       }
     }
 
@@ -425,14 +431,14 @@ $danger-text: #dc2626;
       align-items: center;
       margin-top: 24px;
       padding: 16px 24px;
-      background: rgba($primary, 0.03);
-      border: 1px solid $border-color;
+      background: rgba($primary, 0.05);
+      border: 1px solid rgba($primary, 0.1);
       border-radius: 8px;
 
       .balance-label {
         font-size: 12px;
         font-weight: 700;
-        color: $text-muted;
+        color: $primary;
         text-transform: uppercase;
       }
 
@@ -441,8 +447,8 @@ $danger-text: #dc2626;
         font-weight: 700;
         color: $primary;
 
-        &.positive { color: $success-text; }
-        &.negative { color: $danger-text; }
+        &.positive { color: $primary; } // Keeping it professional navy
+        &.negative { color: $primary; }
       }
     }
   }
