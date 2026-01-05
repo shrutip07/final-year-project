@@ -223,6 +223,7 @@ import FireSafety from "./FireSafety";
 import PhysicalSafety from "./PhysicalSafety";
 import CapacityManager from "./CapacityManager";
 import ManageRetirements from "./ManageRetirements";
+import ChatWidget from "../../components/ChatWidget";
 
 import "./Dashboard.scss";
 
@@ -345,8 +346,8 @@ export default function ClerkDashboard() {
             </div>
           ) : (
             <div className="text-muted">No unit information found.</div>
-          )},
-          {/* Capacity summary */}
+            )}
+            {/* Capacity summary */}
 {dashboard?.academic_year && (
   <div className="clerk-capacity-summary" style={{ margin: '1rem 0' }}>
     <h4>Capacity — Academic Year: {dashboard.academic_year}</h4>
