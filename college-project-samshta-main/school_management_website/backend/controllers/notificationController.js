@@ -37,26 +37,39 @@ function extractFormId(message) {
 // Get notifications for any role (with optional targeting by id)
 exports.getNotifications = async (req, res) => {
   try {
-    const { role } = req.query;
+    // Role can be from query or extracted from user token
+    const role = req.query.role || (req.user ? req.user.role : null);
     const userId = req.user ? req.user.id : null;
+    const { unit_id } = req.query; // Explicitly passed unit_id
 
     if (!role) {
-      return res.status(400).json({ error: "Missing role query parameter" });
+      return res.status(400).json({ error: "Missing role parameter" });
     }
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized: user not found in request" });
     }
 
-    const query = `
+    // Base query for role and user-specific notifications
+    let query = `
       SELECT n.*, f.deadline
       FROM notifications n
       LEFT JOIN forms f ON 
         (substring(n.message from '/forms/(\\d+)')::int = f.id)
       WHERE n.receiver_role = $1 
       AND (n.receiver_id IS NULL OR n.receiver_id = $2)
-      ORDER BY n.created_at DESC
     `;
-    const result = await pool.query(query, [role, userId]);
+    const params = [role, userId];
+
+    // If unit_id is provided, filter by that unit OR global (unit_id IS NULL)
+    // If unit_id is NOT provided (e.g. Principal), return all notifications for that role
+    if (unit_id) {
+      query += ` AND (n.unit_id = $3 OR n.unit_id IS NULL)`;
+      params.push(unit_id);
+    }
+
+    query += ` ORDER BY n.created_at DESC`;
+    
+    const result = await pool.query(query, params);
     return res.json(result.rows);
   } catch (err) {
     console.error('Database error:', err);
@@ -71,15 +84,26 @@ exports.getNotifications = async (req, res) => {
 exports.getPrincipalNotifications = async (req, res) => {
   try {
     const userId = req.user.id;
-    const query = `
+    const { unit_id } = req.query;
+
+    let query = `
       SELECT n.*, f.deadline
       FROM notifications n
       LEFT JOIN forms f ON 
         (substring(n.message from '/forms/(\\d+)')::int = f.id)
-      WHERE (n.receiver_role = 'principal' AND (n.receiver_id = $1 OR n.receiver_id IS NULL))
-      ORDER BY n.created_at DESC
+      WHERE n.receiver_role = 'principal' 
+      AND (n.receiver_id = $1 OR n.receiver_id IS NULL)
     `;
-    const result = await pool.query(query, [userId]);
+    const params = [userId];
+
+    if (unit_id) {
+      query += ` AND (n.unit_id = $2 OR n.unit_id IS NULL)`;
+      params.push(unit_id);
+    }
+
+    query += ` ORDER BY n.created_at DESC`;
+    
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (err) {
     console.error("Error fetching notifications:", err);
@@ -91,15 +115,26 @@ exports.getPrincipalNotifications = async (req, res) => {
 exports.getTeacherNotifications = async (req, res) => {
   try {
     const teacherId = req.user.id;
-    const query = `
+    const { unit_id } = req.query;
+
+    let query = `
       SELECT n.*, f.deadline
       FROM notifications n
       LEFT JOIN forms f ON 
         (substring(n.message from '/forms/(\\d+)')::int = f.id)
-      WHERE n.receiver_role = 'teacher' AND (n.receiver_id IS NULL OR n.receiver_id = $1)
-      ORDER BY n.created_at DESC
+      WHERE n.receiver_role = 'teacher' 
+      AND (n.receiver_id IS NULL OR n.receiver_id = $1)
     `;
-    const result = await pool.query(query, [teacherId]);
+    const params = [teacherId];
+
+    if (unit_id) {
+      query += ` AND (n.unit_id = $2 OR n.unit_id IS NULL)`;
+      params.push(unit_id);
+    }
+
+    query += ` ORDER BY n.created_at DESC`;
+
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (err) {
     console.error("Error fetching teacher notifications:", err);
