@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
 
-// Components
 import Profile from "./Profile";
 import Teachers from "./Teachers";
 import Students from "./Students";
@@ -19,12 +18,12 @@ export default function PrincipalDashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [activeSubTab, setActiveSubTab] = useState("principal_profile");
-  
+  const [sidebarTab, setSidebarTab] = useState("dashboard");
   const [dashboardData, setDashboardData] = useState(null);
   const [profile, setProfile] = useState(null);
   const [students, setStudents] = useState([]);
+  const [selectedFy, setSelectedFy] = useState("2024-25");
+  const [fyMetrics, setFyMetrics] = useState(null);
   const [selectedOverviewFy, setSelectedOverviewFy] = useState("2024-25");
   const [overviewMetrics, setOverviewMetrics] = useState(null);
 
@@ -36,7 +35,7 @@ export default function PrincipalDashboard() {
     async function fetchAllData() {
       try {
         const token = localStorage.getItem("token");
-        const [profileRes, studentsRes, dashboardRes, overviewRes] =
+        const [profileRes, studentsRes, dashboardRes, fyRes, overviewRes] =
           await Promise.all([
             axios.get("http://localhost:5000/api/principal/me", {
               headers: { Authorization: `Bearer ${token}` },
@@ -48,8 +47,16 @@ export default function PrincipalDashboard() {
               headers: { Authorization: `Bearer ${token}` },
             }),
             axios.get(
+              `http://localhost:5000/api/principal/finance-by-year?financial_year=${selectedFy}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            ),
+            axios.get(
               `http://localhost:5000/api/principal/finance-by-year?financial_year=${selectedOverviewFy}`,
-              { headers: { Authorization: `Bearer ${token}` } }
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
             ),
           ]);
 
@@ -61,6 +68,7 @@ export default function PrincipalDashboard() {
         setProfile(profileRes.data);
         setStudents(studentsRes.data || []);
         setDashboardData(dashboardRes.data);
+        setFyMetrics(fyRes.data);
         setOverviewMetrics(overviewRes.data);
       } catch (err) {
         if (err.response?.status === 404) {
@@ -74,324 +82,202 @@ export default function PrincipalDashboard() {
     }
 
     fetchAllData();
-  }, [navigate, t, selectedOverviewFy]);
+  }, [navigate, t, selectedFy, selectedOverviewFy]);
 
-  // ========= DASHBOARD SUB-TABS RENDERERS =========
-
-  const renderPrincipalProfile = () => {
-    const { principal } = dashboardData || {};
-    return (
-      <div className="sub-tab-content">
-        <AdminCard header="Principal Profile">
-          <div className="profile-modern-card">
-            <div className="profile-avatar-large">
-              {principal?.full_name?.charAt(0).toUpperCase()}
-            </div>
-            <div className="profile-info-grid">
-              <div className="profile-item">
-                <div className="label">Name</div>
-                <div className="value">{principal?.full_name || "-"}</div>
-              </div>
-              <div className="profile-item">
-                <div className="label">Email</div>
-                <div className="value">{principal?.email || "-"}</div>
-              </div>
-              <div className="profile-item">
-                <div className="label">Phone</div>
-                <div className="value">{principal?.phone || "-"}</div>
-              </div>
-              <div className="profile-item">
-                <div className="label">Qualification</div>
-                <div className="value">{principal?.qualification || "-"}</div>
-              </div>
-            </div>
-          </div>
-        </AdminCard>
-      </div>
-    );
-  };
-
-  const renderHeadmistressInfo = () => {
-    const { unit } = dashboardData || {};
-    const school = Array.isArray(unit) && unit.length > 0 ? unit[0] : {};
-    return (
-      <div className="sub-tab-content">
-        <AdminCard header="Headmistress Information">
-          <div className="profile-modern-card headmistress-card">
-            <div className="profile-avatar-large">
-              {school.headmistress_name?.charAt(0).toUpperCase() || "H"}
-            </div>
-            <div className="profile-info-grid">
-              <div className="profile-item">
-                <div className="label">Headmistress Name</div>
-                <div className="value">{school.headmistress_name || "-"}</div>
-              </div>
-              <div className="profile-item">
-                <div className="label">Headmistress Email</div>
-                <div className="value">{school.headmistress_email || "-"}</div>
-              </div>
-              <div className="profile-item">
-                <div className="label">Headmistress Phone</div>
-                <div className="value">{school.headmistress_phone || "-"}</div>
-              </div>
-              <div className="profile-item">
-                <div className="label">Designation</div>
-                <div className="value">Headmistress</div>
-              </div>
-            </div>
-          </div>
-        </AdminCard>
-      </div>
-    );
-  };
-
-  const renderUnitDetails = () => {
-    const { unit } = dashboardData || {};
-    const school = Array.isArray(unit) && unit.length > 0 ? unit[0] : {};
-    return (
-      <div className="sub-tab-content">
-        <AdminCard header="Unit Details">
-          <div className="unit-details-modern-grid">
-            <div className="info-tile blue">
-              <div className="info-label">Unit Name</div>
-              <div className="info-value">{school.unit_name || "-"}</div>
-            </div>
-            <div className="info-tile indigo">
-              <div className="info-label">SEMIS No</div>
-              <div className="info-value">{school.semis_no || "-"}</div>
-            </div>
-            <div className="info-tile teal">
-              <div className="info-label">School Shift</div>
-              <div className="info-value">{school.school_shift || "-"}</div>
-            </div>
-            <div className="info-tile violet">
-              <div className="info-label">Management</div>
-              <div className="info-value">{school.management || "MKSSS"}</div>
-            </div>
-            <div className="info-tile amber">
-              <div className="info-label">Standard Range</div>
-              <div className="info-value">{school.standard_range || "-"}</div>
-            </div>
-            <div className="info-tile green">
-              <div className="info-label">Jurisdiction</div>
-              <div className="info-value">{school.jurisdiction || "-"}</div>
-            </div>
-          </div>
-        </AdminCard>
-      </div>
-    );
-  };
-
-  const renderFinanceOverview = () => {
-    if (!overviewMetrics) return null;
-    const collected = overviewMetrics.feesCollectedFy || 0;
-    const spent = overviewMetrics.salarySpentFy || 0;
-    const pending = Math.floor(collected * 0.12);
-    const budget = collected + pending;
-    const balance = collected - spent;
-
-    return (
-      <div className="sub-tab-content">
-        <div className="finance-stacked-sections">
-          {/* 1. Finance Overview */}
-          <AdminCard 
-            header={
-              <div className="d-flex justify-content-between align-items-center w-100">
-                <span>Finance Overview</span>
-                <div className="d-flex align-items-center gap-2">
-                  <span className="small fw-bold text-muted">Financial Year:</span>
-                  <select
-                    value={selectedOverviewFy}
-                    onChange={(e) => setSelectedOverviewFy(e.target.value)}
-                    className="form-select form-select-sm"
-                    style={{ width: '110px' }}
-                  >
-                    <option value="2023-24">2023-24</option>
-                    <option value="2024-25">2024-25</option>
-                    <option value="2025-26">2025-26</option>
-                  </select>
-                </div>
-              </div>
-            }
-          >
-            <div className="finance-cards-row">
-              <div className="finance-card-pro budget">
-                <div className="fin-label">Total Budget</div>
-                <div className="fin-sub">Expected sum from fee_master table</div>
-                <div className="fin-value">₹ {budget.toLocaleString()}</div>
-              </div>
-              <div className="finance-card-pro spent">
-                <div className="fin-label">Total Spent</div>
-                <div className="fin-sub">Teacher salaries paid this year</div>
-                <div className="fin-value">₹ {spent.toLocaleString()}</div>
-              </div>
-            </div>
-          </AdminCard>
-
-          {/* 2. Budget Summary */}
-          <AdminCard 
-            header={
-              <div className="d-flex justify-content-between align-items-center w-100">
-                <span>Budget Summary</span>
-                <div className="d-flex align-items-center gap-2">
-                  <select
-                    value={selectedOverviewFy}
-                    onChange={(e) => setSelectedOverviewFy(e.target.value)}
-                    className="form-select form-select-sm"
-                    style={{ width: '110px' }}
-                  >
-                    <option value="2023-24">2023-24</option>
-                    <option value="2024-25">2024-25</option>
-                    <option value="2025-26">2025-26</option>
-                  </select>
-                </div>
-              </div>
-            }
-          >
-            <div className="finance-cards-row">
-              <div className="finance-card-pro collected">
-                <div className="fin-label">Fees Collected</div>
-                <div className="fin-sub">Actual fees received from students</div>
-                <div className="fin-value">₹ {collected.toLocaleString()}</div>
-              </div>
-              <div className="finance-card-pro pending">
-                <div className="fin-label">Pending Fees</div>
-                <div className="fin-sub">Fees yet to be collected</div>
-                <div className="fin-value">₹ {pending.toLocaleString()}</div>
-              </div>
-            </div>
-            <div className="balance-strip mt-4">
-              <div className="balance-calc">
-                <span className="label">Balance (Fees Collected minus Salary Spent)</span>
-                <span className="formula">₹ {collected.toLocaleString()} - ₹ {spent.toLocaleString()} = </span>
-              </div>
-              <div className="balance-result">₹ {balance.toLocaleString()}</div>
-            </div>
-          </AdminCard>
-
-          {/* 3. Financial Year Metrics */}
-          <AdminCard 
-            header={
-              <div className="d-flex justify-content-between align-items-center w-100">
-                <span>Financial Year {selectedOverviewFy}</span>
-                <div className="d-flex align-items-center gap-2">
-                  <select
-                    value={selectedOverviewFy}
-                    onChange={(e) => setSelectedOverviewFy(e.target.value)}
-                    className="form-select form-select-sm"
-                    style={{ width: '110px' }}
-                  >
-                    <option value="2023-24">2023-24</option>
-                    <option value="2024-25">2024-25</option>
-                    <option value="2025-26">2025-26</option>
-                  </select>
-                </div>
-              </div>
-            }
-          >
-            <div className="finance-cards-row">
-              <div className="finance-card-pro collected">
-                <div className="fin-label">Fees Collected in FY</div>
-                <div className="fin-value">₹ {collected.toLocaleString()}</div>
-              </div>
-              <div className="finance-card-pro spent">
-                <div className="fin-label">Salary Spent in FY</div>
-                <div className="fin-value">₹ {spent.toLocaleString()}</div>
-              </div>
-            </div>
-          </AdminCard>
-        </div>
-      </div>
-    );
-  };
-
-  // ========= MAIN RENDERER =========
-
+  // ========= DASHBOARD (HOME) =========
   const renderDashboard = () => {
     if (!dashboardData) return null;
 
-    const { teacherCount, studentCount } = dashboardData;
-    const ratio = studentCount && teacherCount ? (studentCount / teacherCount).toFixed(1) : 0;
+    const { principal, unit, teacherCount, studentCount } =
+      dashboardData || {};
+
+    const school = Array.isArray(unit) && unit.length > 0 ? unit[0] : {};
+
+    const ratio =
+      studentCount && teacherCount
+        ? (studentCount / teacherCount).toFixed(1)
+        : 0;
 
     return (
       <div className="principal-page-inner">
-        <div className="section-header-pro">
-          <h3>Dashboard Overview</h3>
-          <p>School metrics and administrative highlights</p>
+        <div className="principal-section-header">
+          <h3>{t("principal_dashboard")}</h3>
+          <p>{t("school_overview")}</p>
         </div>
 
-        {/* HERO METRICS - Colorful and Admin-style */}
-          <div className="metrics-grid-modern">
-            <div className="metric-card teachers">
-              <span className="metric-label">Total Teachers</span>
-              <span className="metric-value">{teacherCount || 0}</span>
-              <i className="bi bi-people metric-icon"></i>
+        {/* HERO METRICS */}
+        <div className="principal-metrics-grid">
+          <div className="principal-metric-box principal-metric-teachers">
+            <span className="principal-metric-label">{t("total_teachers")}</span>
+            <span className="principal-metric-value">{teacherCount || 0}</span>
+          </div>
+          <div className="principal-metric-box principal-metric-students">
+            <span className="principal-metric-label">{t("total_students")}</span>
+            <span className="principal-metric-value">{studentCount || 0}</span>
+          </div>
+          <div className="principal-metric-box principal-metric-ratio">
+            <span className="principal-metric-label">{t("teacher_student_ratio")}</span>
+            <span className="principal-metric-value">{ratio}</span>
+          </div>
+          <div className="principal-metric-box principal-metric-finance">
+            <span className="principal-metric-label">{t("budget_status")}</span>
+            <span className="principal-metric-value">Healthy</span>
+          </div>
+        </div>
+
+        <div className="principal-layout-grid">
+            <div className="principal-card">
+              <div className="principal-card-header">
+                <h4>{t("institutional_details")}</h4>
+                <i className="bi bi-building text-primary"></i>
+              </div>
+              <div className="principal-card-body">
+                <div className="principal-details-grid">
+                  <div className="principal-details-row">
+                    <span className="principal-details-key">{t("unit_name")}</span>
+                    <span className="principal-details-value">{school.unit_name || "-"}</span>
+                  </div>
+                  <div className="principal-details-row">
+                    <span className="principal-details-key">SEMIS No</span>
+                    <span className="principal-details-value">{school.semis_no || "-"}</span>
+                  </div>
+                  <div className="principal-details-row">
+                    <span className="principal-details-key">{t("school_shift")}</span>
+                    <span className="principal-details-value">{school.school_shift || "-"}</span>
+                  </div>
+                  <div className="principal-details-row">
+                    <span className="principal-details-key">{t("standard_range")}</span>
+                    <span className="principal-details-value">{school.standard_range || "-"}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="metric-card students">
-              <span className="metric-label">Total Students</span>
-              <span className="metric-value">{studentCount || 0}</span>
-              <i className="bi bi-mortarboard metric-icon"></i>
+
+            <div className="principal-card">
+              <div className="principal-card-header">
+                <h4>{t("leadership_overview")}</h4>
+                <i className="bi bi-person-workspace text-accent"></i>
+              </div>
+              <div className="principal-card-body">
+                <div className="principal-details-grid">
+                  <div className="principal-details-row">
+                    <span className="principal-details-key">{t("principal")}</span>
+                    <span className="principal-details-value">{principal?.full_name}</span>
+                  </div>
+                  <div className="principal-details-row">
+                    <span className="principal-details-key">{t("headmistress")}</span>
+                    <span className="principal-details-value">{school.headmistress_name || "-"}</span>
+                  </div>
+                  <div className="principal-details-row">
+                    <span className="principal-details-key">{t("qualification")}</span>
+                    <span className="principal-details-value">{principal?.qualification || "-"}</span>
+                  </div>
+                  <div className="principal-details-row">
+                    <span className="principal-details-key">{t("status")}</span>
+                    <span className="principal-details-value">
+                        <span className="erp-badge badge-success">Active</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="metric-card ratio">
-              <span className="metric-label">Student-Teacher Ratio</span>
-              <span className="metric-value">{ratio}</span>
-              <i className="bi bi-graph-up-arrow metric-icon"></i>
+        </div>
+      </div>
+    );
+  };
+
+  const renderFinance = () => {
+    if (!overviewMetrics) return null;
+    const collected = overviewMetrics.feesCollectedFy || 0;
+    const spent = overviewMetrics.salarySpentFy || 0;
+    const pending = Math.floor(collected * 0.12); // Placeholder logic
+    const budget = collected + pending;
+
+    return (
+      <div className="principal-page-inner">
+        <div className="principal-section-header">
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <h3>{t("financial_dashboard")}</h3>
+              <p>{t("monitor_unit_finances")}</p>
             </div>
-            <div className="metric-card status">
-              <span className="metric-label">Budget Status</span>
-              <span className="metric-value">Healthy</span>
-              <i className="bi bi-check-circle metric-icon"></i>
+            <div className="d-flex align-items-center gap-2">
+              <span className="small fw-bold text-muted">{t("academic_year")}</span>
+              <select
+                value={selectedOverviewFy}
+                onChange={(e) => setSelectedOverviewFy(e.target.value)}
+                className="form-select form-select-sm"
+                style={{ width: '130px' }}
+              >
+                <option value="2023-24">2023-24</option>
+                <option value="2024-25">2024-25</option>
+                <option value="2025-26">2025-26</option>
+              </select>
             </div>
           </div>
-
-        {/* DASHBOARD SUB-TABS */}
-        <div className="sub-tabs-nav">
-          <button 
-            className={`sub-tab-item ${activeSubTab === "principal_profile" ? "active" : ""}`}
-            onClick={() => setActiveSubTab("principal_profile")}
-          >
-            <i className="bi bi-person-badge"></i> Principal Profile
-          </button>
-          <button 
-            className={`sub-tab-item ${activeSubTab === "headmistress_info" ? "active" : ""}`}
-            onClick={() => setActiveSubTab("headmistress_info")}
-          >
-            <i className="bi bi-person-workspace"></i> Headmistress Information
-          </button>
-          <button 
-            className={`sub-tab-item ${activeSubTab === "unit_details" ? "active" : ""}`}
-            onClick={() => setActiveSubTab("unit_details")}
-          >
-            <i className="bi bi-building"></i> Unit Details
-          </button>
-          <button 
-            className={`sub-tab-item ${activeSubTab === "finance_overview" ? "active" : ""}`}
-            onClick={() => setActiveSubTab("finance_overview")}
-          >
-            <i className="bi bi-cash-stack"></i> Finance Overview
-          </button>
         </div>
 
-        <div className="sub-tab-container">
-          {activeSubTab === "principal_profile" && renderPrincipalProfile()}
-          {activeSubTab === "headmistress_info" && renderHeadmistressInfo()}
-          {activeSubTab === "unit_details" && renderUnitDetails()}
-          {activeSubTab === "finance_overview" && renderFinanceOverview()}
+        <div className="principal-finance-grid">
+          <div className="principal-finance-item budget">
+            <span className="label">Budget Summary</span>
+            <span className="value">₹ {budget.toLocaleString()}</span>
+            <span className="sub">Annual Allocation</span>
+          </div>
+          <div className="principal-finance-item collected">
+            <span className="label">Fees Collected</span>
+            <span className="value">₹ {collected.toLocaleString()}</span>
+            <span className="sub">Realized Revenue</span>
+          </div>
+          <div className="principal-finance-item pending">
+            <span className="label">Pending Fees</span>
+            <span className="value">₹ {pending.toLocaleString()}</span>
+            <span className="sub">Expected Recovery</span>
+          </div>
+          <div className="principal-finance-item spent">
+            <span className="label">Salary Spent</span>
+            <span className="value">₹ {spent.toLocaleString()}</span>
+            <span className="sub">Total Payroll</span>
+          </div>
+        </div>
+
+        <div className="principal-card">
+          <div className="principal-card-header">
+            <h4>Fiscal Health Status</h4>
+            <i className="bi bi-shield-check text-success"></i>
+          </div>
+          <div className="principal-card-body">
+            <div className="principal-balance-strip">
+              <span className="principal-balance-label">Current Net Balance</span>
+              <span className={`principal-balance-value ${
+                collected - spent >= 0 ? "principal-balance-positive" : "principal-balance-negative"
+              }`}>
+                ₹ {(collected - spent).toLocaleString()}
+              </span>
+            </div>
+            
+            <div className="mt-4">
+                <p className="text-muted small">
+                    <i className="bi bi-info-circle me-1"></i>
+                    This financial snapshot is based on the selected academic year: <strong>{selectedOverviewFy}</strong>. 
+                    All values are subject to audit and verification by the central MKSSS finance office.
+                </p>
+            </div>
+          </div>
         </div>
       </div>
     );
   };
 
   const renderContent = () => {
-    switch (activeTab) {
+    switch (sidebarTab) {
       case "dashboard":
         return renderDashboard();
       case "profile":
         return (
           <div className="principal-page-inner">
-            <div className="section-header-pro">
-              <h3>Principal Profile</h3>
-              <p>Manage your personal and professional information</p>
+            <div className="principal-section-header">
+              <h3>{t("principal_profile")}</h3>
+              <p>{t("manage_personal_information")}</p>
             </div>
             <Profile />
           </div>
@@ -399,9 +285,9 @@ export default function PrincipalDashboard() {
       case "teachers":
         return (
           <div className="principal-page-inner">
-            <div className="section-header-pro">
-              <h3>Staff Directory</h3>
-              <p>Comprehensive list of all teachers in this unit</p>
+            <div className="principal-section-header">
+              <h3>{t("teachers")}</h3>
+              <p>{t("staff_directory_management")}</p>
             </div>
             <Teachers />
           </div>
@@ -409,19 +295,21 @@ export default function PrincipalDashboard() {
       case "students":
         return (
           <div className="principal-page-inner">
-            <div className="section-header-pro">
-              <h3>Student Registry</h3>
-              <p>Official enrollment records for the current academic cycle</p>
+            <div className="principal-section-header">
+              <h3>{t("students")}</h3>
+              <p>{t("student_enrollment_records")}</p>
             </div>
             <Students students={students} />
           </div>
         );
+      case "finance":
+        return renderFinance();
       case "charts":
         return (
           <div className="principal-page-inner">
-            <div className="section-header-pro">
-              <h3>Analytics Dashboard</h3>
-              <p>Visual representation of school performance and trends</p>
+            <div className="principal-section-header">
+              <h3>{t("analytics_dashboard")}</h3>
+              <p>{t("visualize_school_performance")}</p>
             </div>
             <Charts unitId={dashboardData?.principal?.unit_id} />
           </div>
@@ -429,9 +317,9 @@ export default function PrincipalDashboard() {
       case "notifications":
         return (
           <div className="principal-page-inner">
-            <div className="section-header-pro">
-              <h3>Official Notifications</h3>
-              <p>Internal communication and announcements hub</p>
+            <div className="principal-section-header">
+              <h3>{t("official_notifications")}</h3>
+              <p>{t("communication_hub")}</p>
             </div>
             <PrincipalNotificationsPage />
           </div>
@@ -443,8 +331,8 @@ export default function PrincipalDashboard() {
 
   return (
     <PrincipalLayout
-      activeSidebarTab={activeTab}
-      onSidebarTabChange={setActiveTab}
+      activeSidebarTab={sidebarTab}
+      onSidebarTabChange={setSidebarTab}
     >
       <div className="principal-portal-redesign">
         <div className="principal-dashboard-wrapper">
