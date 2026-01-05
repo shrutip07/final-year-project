@@ -4,6 +4,7 @@ import axios from "axios";
 import { useTranslation } from "react-i18next";
 import "./Dashboard.scss";
 import axiosInstance from "../../api/axiosInstance";
+import AdminLayout from "../../components/admin/AdminLayout";
 
 import AdminCharts from "./Charts";
 import ChatWidget from "../../components/ChatWidget";
@@ -1873,67 +1874,29 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="dashboard-container d-flex">
-      <div className="sidebar">
-        <div className="sidebar-header">
-          <div className="app-icon">
-            <i className="bi bi-buildings-fill"></i>
+    <AdminLayout 
+      activeSidebarTab={sidebarTab} 
+      onSidebarTabChange={setSidebarTab}
+    >
+      {loading ? (
+        <div className="loading-spinner">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">{t("loading")}...</span>
           </div>
-          <h3>{t("admin_panel")}</h3>
         </div>
-        <nav className="sidebar-nav">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.key}
-              className={`nav-link ${sidebarTab === item.key ? "active" : ""}`}
-              onClick={() => {
-                if (item.key === "tables") {
-                  navigate("/admin/tables");
-                } else {
-                  setSidebarTab(item.key);
-                }
-              }}
-            >
-              <i className={`bi ${item.icon}`}></i>
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar-footer">
-          <button
-            className="nav-link logout-btn"
-            onClick={() => {
-              localStorage.removeItem("token");
-              navigate("/login");
-            }}
-          >
-            <i className="bi bi-box-arrow-left"></i>
-            <span>{t("logout")}</span>
-          </button>
+      ) : error ? (
+        <div className="alert alert-danger m-4">{error}</div>
+      ) : unitLoading ? (
+        <div className="loading-spinner">
+          <div className="spinner-border text-secondary" role="status">
+            <span className="visually-hidden">{t("loading")}...</span>
+          </div>
         </div>
-      </div>
-
-      <main className="main-content">
-        {loading ? (
-          <div className="loading-spinner">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">{t("loading")}...</span>
-            </div>
-          </div>
-        ) : error ? (
-          <div className="alert alert-danger m-4">{error}</div>
-        ) : unitLoading ? (
-          <div className="loading-spinner">
-            <div className="spinner-border text-secondary" role="status">
-              <span className="visually-hidden">{t("loading")}...</span>
-            </div>
-          </div>
-        ) : (
-          renderContent()
-        )}
-      </main>
+      ) : (
+        renderContent()
+      )}
 
       <ChatWidget />
-    </div>
+    </AdminLayout>
   );
 }
