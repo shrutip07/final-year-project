@@ -463,32 +463,32 @@ export default function PrincipalDashboard() {
                     </div>
                   </div>
                   <div className="finance-card-body">
-                    <div className="row g-4">
-                      <div className="col-md-6">
-                        <div className="finance-stat-card metric-fy-card">
-                          <div className="stat-info">
-                            <span className="stat-label">Annual Income (Fees)</span>
-                            <span className="stat-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                      <div className="row g-4">
+                        <div className="col-md-6">
+                          <div className="finance-stat-card metric-fy-card">
+                            <div className="stat-info">
+                              <span className="stat-label">Annual Income (Fees)</span>
+                              <span className="stat-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="col-md-6">
-                        <div className="finance-stat-card metric-fy-card">
-                          <div className="stat-info">
-                            <span className="stat-label">Annual Expenditure (Salaries)</span>
-                            <span className="stat-value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                        <div className="col-md-6">
+                          <div className="finance-stat-card metric-fy-card">
+                            <div className="stat-info">
+                              <span className="stat-label">Annual Expenditure (Salaries)</span>
+                              <span className="stat-value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+          </div>
         </div>
-      </div>
-    );
-  };
+      );
+    };
 
   const renderContent = () => {
     switch (sidebarTab) {
