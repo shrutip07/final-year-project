@@ -373,76 +373,133 @@ $lavender-accent: #818cf8;
     display: flex;
     flex-direction: column;
     gap: 24px;
+    padding-bottom: 40px;
 
     .finance-card-container {
       background: $white;
-      border-radius: 12px;
+      border-radius: 16px;
       border: 1px solid $border-color;
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
 
       .finance-card-header {
-        padding: 16px 24px;
-        background: $primary;
+        padding: 20px 24px;
+        background: linear-gradient(135deg, $primary, darken($primary, 10%));
         color: $white;
         display: flex;
         justify-content: space-between;
         align-items: center;
 
-        h3 { margin: 0; font-size: 18px; font-weight: 600; }
+        .header-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          i { font-size: 20px; opacity: 0.9; }
+          h3 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+        }
 
         .fy-dropdown-wrap {
           display: flex;
           align-items: center;
-          gap: 10px;
-          label { font-size: 14px; font-weight: 500; margin: 0; }
+          gap: 12px;
+          label { font-size: 13px; font-weight: 600; margin: 0; text-transform: uppercase; opacity: 0.8; }
           .finance-select {
             width: 130px;
-            height: 34px;
-            padding: 0 10px;
+            height: 36px;
+            padding: 0 12px;
             font-size: 14px;
-            border-radius: 6px;
-            border: 1px solid rgba($white, 0.2);
-            background: rgba($white, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba($white, 0.3);
+            background: rgba($white, 0.15);
             color: $white;
-            font-weight: 600;
+            font-weight: 700;
+            cursor: pointer;
+            outline: none;
             
-            option { background: $primary; color: $white; }
+            option { background: $primary; color: $white; font-weight: 500; }
           }
         }
       }
 
       .finance-card-body {
-        padding: 24px;
+        padding: 30px;
 
         .finance-stat-card {
-          background: #F1F5F9;
-          padding: 20px;
-          border-radius: 12px;
+          background: #F8FAFC;
+          padding: 24px;
+          border-radius: 14px;
+          border: 1px solid $border-color;
           height: 100%;
           display: flex;
-          flex-direction: column;
+          align-items: flex-start;
+          gap: 20px;
+          transition: transform 0.2s ease;
 
-          .stat-label { font-size: 14px; font-weight: 700; color: $text-dark; display: block; margin-bottom: 2px; }
-          .stat-subtitle { font-size: 12px; color: $text-muted; display: block; margin-bottom: 12px; }
-          .stat-value { font-size: 22px; font-weight: 700; color: $primary; margin-top: auto; }
+          &:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); }
+
+          .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: $white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+          }
+
+          .stat-info {
+            display: flex;
+            flex-direction: column;
+            .stat-label { font-size: 15px; font-weight: 700; color: $text-dark; margin-bottom: 2px; }
+            .stat-subtitle { font-size: 12px; color: $text-muted; margin-bottom: 12px; line-height: 1.4; }
+            .stat-value { font-size: 24px; font-weight: 800; color: $primary; }
+          }
+
+          &.budget-card .stat-icon { color: $indigo-accent; }
+          &.spent-card .stat-icon { color: #ef4444; }
+          &.collected-card .stat-icon { color: $green-accent; }
+          &.pending-card .stat-icon { color: $amber-accent; }
+          &.metric-fy-card {
+            padding: 16px 20px;
+            background: $white;
+            .stat-label { font-size: 13px; color: $text-muted; }
+            .stat-value { font-size: 20px; }
+          }
         }
 
-        .balance-strip {
-          margin-top: 16px;
-          background: #F8FAFC;
-          border: 1px dashed $border-color;
-          padding: 16px 24px;
-          border-radius: 8px;
+        .balance-strip-modern {
+          margin-top: 10px;
+          background: linear-gradient(to right, #F1F5F9, $white);
+          border: 1px solid $border-color;
+          padding: 20px 30px;
+          border-radius: 12px;
           display: flex;
           justify-content: space-between;
           align-items: center;
 
-          .balance-calc {
-            span { font-size: 14px; color: $text-muted; font-weight: 500; }
-            .calc-details { font-family: monospace; color: $text-dark; font-weight: 600; margin-left: 8px; font-size: 15px; }
+          .balance-label-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            i { font-size: 24px; color: $primary; opacity: 0.8; }
+            .label-text {
+              display: flex;
+              flex-direction: column;
+              .main-label { font-size: 15px; font-weight: 700; color: $text-dark; }
+              .calc-formula { font-family: 'Courier New', Courier, monospace; font-size: 14px; color: $text-muted; font-weight: 600; }
+            }
           }
-          .balance-amount { font-size: 20px; font-weight: 700; color: $primary; }
+
+          .balance-result {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            .equals { font-size: 20px; font-weight: 300; color: $text-muted; }
+            .final-amount { font-size: 28px; font-weight: 900; color: $primary; text-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+          }
         }
       }
     }
@@ -585,5 +642,6 @@ $lavender-accent: #818cf8;
       align-items: stretch;
       .search-box { max-width: 100%; }
     }
+    .modern-finance-section .balance-strip-modern { flex-direction: column; gap: 10px; text-align: center; }
   }
 }
