@@ -378,38 +378,69 @@ $danger-text: #dc2626;
   }
 
   .principal-finance-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+
+    .finance-section-card {
+      background: $white;
+      border: 1px solid $border-color;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+
+      &.mt-4 {
+        margin-top: 24px !important;
+      }
+    }
+
     .finance-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba($primary, 0.05);
 
       h4 {
         margin: 0;
         font-size: 16px;
         font-weight: 700;
-        color: $text-dark;
+        color: $primary;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .fy-label {
+          font-size: 12px;
+          font-weight: 600;
+          color: $text-muted;
+        }
       }
 
       .form-select {
-        width: 130px;
+        width: 120px;
         padding: 6px 12px;
         border-radius: 6px;
         border-color: $border-color;
-        font-weight: 500;
+        font-weight: 600;
         font-size: 12px;
+        color: $primary;
         background-color: $white;
 
         &:focus {
           border-color: $primary;
-          box-shadow: none;
+          box-shadow: 0 0 0 2px rgba($primary, 0.1);
         }
       }
     }
 
-    .finance-cards-grid {
+    .finance-cards-row {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: 1fr 1fr;
       gap: 20px;
 
       .finance-card {
@@ -417,79 +448,85 @@ $danger-text: #dc2626;
         align-items: center;
         gap: 16px;
         padding: 20px;
-        background: $white;
-        border: 1px solid $border-color;
-        border-radius: 12px;
+        background: rgba($primary, 0.02);
+        border: 1px solid rgba($primary, 0.05);
+        border-radius: 10px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: rgba($primary, 0.04);
+        }
 
         .finance-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 8px;
+          width: 44px;
+          height: 44px;
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 18px;
-          opacity: 0.7;
+          font-size: 20px;
+          background: rgba($primary, 0.08);
+          color: $primary;
         }
 
         .finance-info {
           display: flex;
           flex-direction: column;
+          gap: 2px;
 
           .finance-label {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 600;
             color: $text-muted;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
           }
 
           .finance-value {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
             color: $text-dark;
           }
 
           .finance-sub {
-            font-size: 10px;
+            font-size: 11px;
             color: $text-muted;
+            font-style: italic;
           }
-        }
-        
-        // Consistent Navy colors for finance - following one primary color family
-        &.budget, &.collected, &.pending, &.spent { 
-          .finance-icon { 
-            background: rgba($primary, 0.08); 
-            color: $primary; 
-            opacity: 1;
-          } 
         }
       }
     }
 
-    .finance-balance-bar {
+    .finance-balance-strip {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 24px;
       padding: 16px 24px;
-      background: rgba($primary, 0.05);
-      border: 1px solid rgba($primary, 0.1);
+      background: $primary;
       border-radius: 8px;
+      color: $white;
 
-      .balance-label {
-        font-size: 12px;
-        font-weight: 700;
-        color: $primary;
-        text-transform: uppercase;
+      .balance-calc {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .calc-label {
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          opacity: 0.8;
+        }
+
+        .calc-details {
+          font-size: 14px;
+          font-weight: 500;
+        }
       }
 
-      .balance-value {
-        font-size: 20px;
+      .balance-result {
+        font-size: 22px;
         font-weight: 700;
-        color: $primary;
-
-        &.positive { color: $primary; } // Keeping it professional navy
-        &.negative { color: $primary; }
       }
     }
   }
