@@ -3,10 +3,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
-
 import ChatWidget from "../../components/ChatWidget";
-import EmptyState from "../../components/admin/EmptyState";
-import "./Dashboard.scss";
+import TeacherLayout from "../../components/teacher/TeacherLayout";
+import AdminCard from "../../components/admin/AdminCard";
+import "../teacher/Dashboard.scss";
 
 function getCurrentAcademicYear() {
   const now = new Date();
@@ -34,40 +34,6 @@ export default function Students() {
   const [error, setError] = useState("");
   const [yearFilter, setYearFilter] = useState(currentYear);
   const [allYears, setAllYears] = useState([]);
-
-  // sidebar active tab
-  const [activeTab, setActiveTab] = useState("students");
-
-  const sidebarItems = [
-    { key: "dashboard", label: t("dashboard", "Dashboard"), icon: "bi-speedometer2" },
-    { key: "profile", label: t("profile", "Profile"), icon: "bi-person" },
-    { key: "students", label: t("students", "Students"), icon: "bi-people" },
-    { key: "charts", label: t("charts", "Charts"), icon: "bi-bar-chart" },
-    { key: "notifications", label: t("notifications", "Notifications"), icon: "bi-bell" }
-  ];
-
-  const handleSidebarClick = (key) => {
-    setActiveTab(key);
-    switch (key) {
-      case "dashboard":
-        navigate("/teacher");
-        break;
-      case "profile":
-        navigate("/teacher/profile");
-        break;
-      case "students":
-        navigate("/teacher/students");
-        break;
-      case "charts":
-        navigate("/teacher/charts");
-        break;
-      case "notifications":
-        navigate("/teacher/notifications");
-        break;
-      default:
-        break;
-    }
-  };
 
   // Fetch academic years on mount
   useEffect(() => {
@@ -127,7 +93,6 @@ export default function Students() {
     );
   }
 
-  // Modal open functions
   function handleView(student) {
     setSelectedStudent(student);
     setModalType("view");
@@ -206,455 +171,220 @@ export default function Students() {
     }
   }
 
-  // ----- MAIN CONTENT -----
-  const renderMainContent = () => {
+  const renderContent = () => {
     if (loadingCurrent) {
       return (
-        <div className="loading-state">{t("loading_students")}...</div>
+        <div className="d-flex flex-column align-items-center justify-content-center py-5">
+          <div className="spinner-grow text-primary" role="status"></div>
+          <span className="mt-3 text-muted fw-bold">Loading Students...</span>
+        </div>
       );
     }
 
     if (error) {
-      return <div className="error-state">{error}</div>;
+      return (
+        <div className="alert alert-custom-danger d-flex align-items-center" role="alert">
+          <i className="bi bi-exclamation-triangle-fill me-3 fs-3"></i>
+          <div>{error}</div>
+        </div>
+      );
     }
 
-    const visibleStudents = filteredStudents(
-      studentsCurrentYear,
-      searchCurrentYear
-    );
+    const visibleStudents = filteredStudents(studentsCurrentYear, searchCurrentYear);
 
     return (
-      <>
-        {/* Header with subtitle */}
-        <div className="page-header page-header-tight">
-          <div>
-            <h2>
-              {t("student_management", "Student Management")} - {yearFilter}
-            </h2>
-            <div className="page-subtitle">
-              {t(
-                "student_management_subtitle",
-                "Manage student details for your assigned classes."
-              )}
-            </div>
-          </div>
+      <div className="teacher-main-inner">
+        <div className="section-header-pro">
+          <h3>Student Management</h3>
+          <p>Manage student details and academic performance for {yearFilter}</p>
         </div>
 
-        {/* Main card */}
-        <div className="teacher-students-card">
-          <div className="card-header">
-            <h3>{t("students")}</h3>
-            <span className="students-count-badge">
-              {visibleStudents.length} {t("students_label", "students")}
-            </span>
-          </div>
-
-          <div className="card-body">
-            {/* Filter row: Academic Year + Search */}
-            <div className="students-filter-row">
-              <div className="filter-group">
-                <label className="form-label">
-                  {t("academic_year", "Academic Year")}
-                </label>
-                <select
-                  className="form-control"
-                  value={yearFilter}
-                  onChange={(e) => setYearFilter(e.target.value)}
-                >
-                  {allYears.length === 0 && (
-                    <option value="">{t("loading")}</option>
-                  )}
-                  {allYears.map((year) => (
-                    <option value={year} key={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
+        <AdminCard 
+          header={
+            <div className="d-flex justify-content-between align-items-center w-100">
+              <div className="d-flex align-items-center gap-3">
+                <h4 className="mb-0">My Students</h4>
+                <span className="badge bg-soft-primary text-primary border-0 rounded-pill px-3">
+                  {visibleStudents.length} Students
+                </span>
               </div>
-
-              <div className="filter-group filter-group-search">
-                <label className="form-label">
-                  {t("search", "Search")}
-                </label>
-                <input
-                  className="form-control"
-                  placeholder={t(
-                    "search_placeholder",
-                    "Search by name, roll no, standard, or division"
-                  )}
-                  value={searchCurrentYear}
-                  onChange={handleSearchChange}
-                />
+              <div className="d-flex gap-3">
+                <div className="d-flex align-items-center gap-2">
+                  <span className="text-muted small fw-bold">Year:</span>
+                  <select
+                    className="form-select form-select-sm"
+                    style={{ width: '130px' }}
+                    value={yearFilter}
+                    onChange={(e) => setYearFilter(e.target.value)}
+                  >
+                    {allYears.map((year) => (
+                      <option value={year} key={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="search-box-pro">
+                  <i className="bi bi-search"></i>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm"
+                    placeholder="Search students..."
+                    value={searchCurrentYear}
+                    onChange={handleSearchChange}
+                  />
+                </div>
               </div>
             </div>
-
-            <div className="table-responsive">
-              <table className="teacher-students-table">
+          }
+        >
+          {visibleStudents.length === 0 ? (
+            <div className="empty-state-centered py-5">
+              <div className="empty-icon-wrapper mb-3">
+                <i className="bi bi-people text-muted"></i>
+              </div>
+              <h5 className="fw-bold text-dark">No Students Found</h5>
+              <p className="text-muted small">No student records match your current filter or search criteria.</p>
+            </div>
+          ) : (
+            <div className="table-responsive professional-table">
+              <table className="table align-middle">
                 <thead>
                   <tr>
-                    <th>{t("roll_no")}</th>
-                    <th>{t("full_name")}</th>
-                    <th>{t("standard")}</th>
-                    <th>{t("division")}</th>
-                    <th>{t("dob")}</th>
-                    <th>{t("gender")}</th>
-                    <th>{t("parent_name")}</th>
-                    <th>{t("parent_phone")}</th>
-                    <th>{t("address")}</th>
-                    <th>{t("admission_date")}</th>
-                    <th>{t("percentage")}</th>
-                    <th>{t("passed")}</th>
-                    <th>{t("actions")}</th>
+                    <th>Roll No</th>
+                    <th>Full Name</th>
+                    <th>Class</th>
+                    <th>Parent Info</th>
+                    <th>Results</th>
+                    <th className="text-end">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {visibleStudents.map((st) => (
-                    <tr
-                      key={
-                        st.enrollment_id ||
-                        st.student_id + "-" + st.academic_year
-                      }
-                    >
-                      <td>{st.roll_number || ""}</td>
-                      <td>{st.full_name || ""}</td>
-                      <td>{st.standard || ""}</td>
-                      <td>{st.division || ""}</td>
-                      <td>{st.dob || ""}</td>
-                      <td>{st.gender || ""}</td>
-                      <td>{st.parent_name || ""}</td>
-                      <td>{st.parent_phone || ""}</td>
-                      <td>{st.address || ""}</td>
-                      <td>{st.admission_date || ""}</td>
-                      <td>{st.percentage ?? ""}</td>
+                    <tr key={st.enrollment_id || st.student_id}>
+                      <td><span className="erp-badge badge-year">{st.roll_number || '-'}</span></td>
                       <td>
-                        {st.passed === true ? (
-                          <span className="badge-soft badge-soft-success">
-                            {t("yes")}
-                          </span>
-                        ) : st.passed === false ? (
-                          <span className="badge-soft badge-soft-danger">
-                            {t("no")}
-                          </span>
-                        ) : (
-                          "-"
-                        )}
+                        <div className="fw-bold">{st.full_name}</div>
+                        <div className="text-muted small">{st.gender} | {st.dob}</div>
                       </td>
                       <td>
-                        <div className="students-actions">
-                          <button
-                            type="button"
-                            className="students-action-btn"
-                            onClick={() => handleView(st)}
-                          >
-                            <i className="bi bi-eye" />
-                            <span>{t("view")}</span>
+                        <span className="fw-bold text-primary">{st.standard} - {st.division}</span>
+                      </td>
+                      <td>
+                        <div className="small fw-bold">{st.parent_name}</div>
+                        <div className="text-muted small">{st.parent_phone}</div>
+                      </td>
+                      <td>
+                        {st.passed !== null ? (
+                          <div className="d-flex align-items-center gap-2">
+                            <span className={`badge rounded-pill ${st.passed ? 'bg-soft-success text-success' : 'bg-soft-danger text-danger'}`}>
+                              {st.passed ? 'PASSED' : 'FAILED'}
+                            </span>
+                            <span className="fw-bold small">{st.percentage}%</span>
+                          </div>
+                        ) : (
+                          <span className="text-muted small italic">Not Graded</span>
+                        )}
+                      </td>
+                      <td className="text-end">
+                        <div className="d-flex gap-2 justify-content-end">
+                          <button className="btn btn-light btn-sm rounded-circle" onClick={() => handleView(st)} title="View Details">
+                            <i className="bi bi-eye text-primary"></i>
                           </button>
-                          <button
-                            type="button"
-                            className="students-action-btn"
-                            onClick={() => handleEdit(st)}
-                          >
-                            <i className="bi bi-pencil-square" />
-                            <span>{t("edit")}</span>
+                          <button className="btn btn-light btn-sm rounded-circle" onClick={() => handleEdit(st)} title="Edit Results">
+                            <i className="bi bi-pencil-square text-warning"></i>
                           </button>
                         </div>
                       </td>
                     </tr>
                   ))}
-
-                  {visibleStudents.length === 0 && (
-                    <tr>
-                      <td colSpan="13" style={{ padding: "24px 0" }}>
-                        <EmptyState
-                          icon="🎓"
-                          title={t("no_students_found", "No students found")}
-                          description={t(
-                            "no_students_year",
-                            "No students found for this academic year."
-                          )}
-                        />
-                      </td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
             </div>
-          </div>
-        </div>
-      </>
+          )}
+        </AdminCard>
+      </div>
     );
   };
 
-  // ----- LAYOUT WITH SIDEBAR -----
   return (
-    <div className="teacher-dashboard-container">
-      {/* Sidebar – same as other teacher pages */}
-      <aside className="teacher-sidebar">
-        <div className="teacher-sidebar-header">
-          <div className="teacher-sidebar-icon">
-            <i className="bi bi-person-workspace" />
-          </div>
-          <h3>{t("teacher_portal", "Teacher Portal")}</h3>
-        </div>
+    <TeacherLayout activeSidebarTab="students" customGreeting="Welcome, Teacher 👋">
+      <div className="dashboard-wrapper">
+        {renderContent()}
+      </div>
+      <ChatWidget />
 
-        <div className="teacher-sidebar-nav">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.key}
-              className={`teacher-nav-link ${
-                activeTab === item.key ? "active" : ""
-              }`}
-              onClick={() => handleSidebarClick(item.key)}
-              type="button"
-            >
-              <i className={`bi ${item.icon}`} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="teacher-sidebar-footer">
-          <button
-            className="teacher-nav-link logout-btn"
-            type="button"
-            onClick={() => {
-              localStorage.removeItem("token");
-              navigate("/login");
-            }}
-          >
-            <i className="bi bi-box-arrow-left" />
-            <span>{t("logout", "Logout")}</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Main content */}
-      <main className="teacher-main-content">
-        <div className="teacher-main-inner">{renderMainContent()}</div>
-        <ChatWidget />
-      </main>
-
-      {/* Modal overlay (same as before) */}
+      {/* Modern Modal */}
       {(modalType === "view" || modalType === "edit") && (
-        <div
-          className="modal show d-block"
-          tabIndex="-1"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0,0,0,0.5)",
-            zIndex: 1000,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}
-        >
-          <div
-            className="modal-dialog"
-            style={{ maxWidth: "600px", width: "90%" }}
-          >
-            <div
-              className="modal-content"
-              style={{
-                background: "white",
-                borderRadius: "12px",
-                padding: "24px"
-              }}
-            >
-              <div
-                className="modal-header"
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "20px",
-                  paddingBottom: "16px",
-                  borderBottom: "1px solid #E5E7EB"
-                }}
-              >
-                <h5
-                  className="modal-title"
-                  style={{
-                    margin: 0,
-                    color: "#0A2540",
-                    fontSize: "20px",
-                    fontWeight: 600
-                  }}
-                >
-                  {modalType === "view"
-                    ? t("student_details")
-                    : t("edit_student")}
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={closeModal}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    fontSize: "24px",
-                    cursor: "pointer"
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-
-              <div className="modal-body">
-                {modalType === "view" ? (
-                  <div>
-                    <div>
-                      <strong>{t("full_name")}:</strong>{" "}
-                      {selectedStudent.full_name}
-                    </div>
-                    <div>
-                      <strong>{t("roll_no")}:</strong>{" "}
-                      {selectedStudent.roll_number}
-                    </div>
-                    <div>
-                      <strong>{t("standard")}:</strong>{" "}
-                      {selectedStudent.standard}
-                    </div>
-                    <div>
-                      <strong>{t("division")}:</strong>{" "}
-                      {selectedStudent.division}
-                    </div>
-                    <div>
-                      <strong>{t("dob")}:</strong> {selectedStudent.dob}
-                    </div>
-                    <div>
-                      <strong>{t("gender")}:</strong>{" "}
-                      {selectedStudent.gender}
-                    </div>
-                    <div>
-                      <strong>{t("parent_name")}:</strong>{" "}
-                      {selectedStudent.parent_name}
-                    </div>
-                    <div>
-                      <strong>{t("parent_phone")}:</strong>{" "}
-                      {selectedStudent.parent_phone}
-                    </div>
-                    <div>
-                      <strong>{t("address")}:</strong>{" "}
-                      {selectedStudent.address}
-                    </div>
-                    <div>
-                      <strong>{t("admission_date")}:</strong>{" "}
-                      {selectedStudent.admission_date}
-                    </div>
-                    <div>
-                      <strong>{t("passed")}:</strong>{" "}
-                      {selectedStudent.passed === true
-                        ? t("yes")
-                        : selectedStudent.passed === false
-                        ? t("no")
-                        : ""}
+        <div className="modal-backdrop-pro">
+          <div className="modal-content-pro shadow-lg">
+            <div className="modal-header-pro">
+              <h4>{modalType === "view" ? "Student Profile" : "Edit Academic Results"}</h4>
+              <button className="btn-close-pro" onClick={closeModal}>&times;</button>
+            </div>
+            <div className="modal-body-pro">
+              {modalType === "view" ? (
+                <div className="student-detail-view">
+                  <div className="detail-section">
+                    <h6>Personal Information</h6>
+                    <div className="detail-grid">
+                      <div className="detail-item"><label>Name</label><span>{selectedStudent.full_name}</span></div>
+                      <div className="detail-item"><label>DOB</label><span>{selectedStudent.dob}</span></div>
+                      <div className="detail-item"><label>Gender</label><span>{selectedStudent.gender}</span></div>
+                      <div className="detail-item"><label>Address</label><span>{selectedStudent.address}</span></div>
                     </div>
                   </div>
-                ) : (
-                  <form onSubmit={handleUpdate}>
-                    <input
-                      type="text"
-                      className="form-control mb-2"
-                      name="standard"
-                      value={form.standard}
-                      readOnly
-                    />
-                    <input
-                      type="text"
-                      className="form-control mb-2"
-                      name="division"
-                      value={form.division}
-                      readOnly
-                    />
-                    <input
-                      type="number"
-                      className="form-control mb-2"
-                      name="roll_number"
-                      value={form.roll_number}
-                      readOnly
-                    />
-                    <input
-                      type="number"
-                      step="0.01"
-                      className="form-control mb-2"
-                      name="percentage"
-                      value={form.percentage}
-                      onChange={handleFormChange}
-                      placeholder={t("percentage")}
-                    />
-                    <div className="mb-2">
-                      <label className="form-label">{t("passed")}</label>
-                      <select
+                  <div className="detail-section mt-4">
+                    <h6>Academic & Parent Info</h6>
+                    <div className="detail-grid">
+                      <div className="detail-item"><label>Roll No</label><span>{selectedStudent.roll_number}</span></div>
+                      <div className="detail-item"><label>Class</label><span>{selectedStudent.standard} - {selectedStudent.division}</span></div>
+                      <div className="detail-item"><label>Parent</label><span>{selectedStudent.parent_name}</span></div>
+                      <div className="detail-item"><label>Contact</label><span>{selectedStudent.parent_phone}</span></div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleUpdate} className="professional-form">
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <label className="form-label small fw-bold">Percentage (%)</label>
+                      <input
+                        type="number"
+                        step="0.01"
                         className="form-control"
+                        name="percentage"
+                        value={form.percentage}
+                        onChange={handleFormChange}
+                        placeholder="e.g. 85.50"
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label small fw-bold">Result Status</label>
+                      <select
+                        className="form-select"
                         name="passed"
-                        value={
-                          form.passed === ""
-                            ? ""
-                            : form.passed
-                            ? "true"
-                            : "false"
-                        }
+                        value={form.passed === "" ? "" : form.passed ? "true" : "false"}
                         onChange={handleFormChange}
                       >
-                        <option value="">{t("select_status")}</option>
-                        <option value="true">{t("yes")}</option>
-                        <option value="false">{t("no")}</option>
+                        <option value="">Select Status</option>
+                        <option value="true">Passed</option>
+                        <option value="false">Failed</option>
                       </select>
                     </div>
-                    <div
-                      className="form-actions"
-                      style={{
-                        marginTop: "24px",
-                        display: "flex",
-                        gap: "12px"
-                      }}
-                    >
-                      <button
-                        className="save-btn"
-                        type="submit"
-                        disabled={updating}
-                        style={{
-                          padding: "10px 20px",
-                          borderRadius: "8px",
-                          background: "#0B63E5",
-                          color: "white",
-                          border: "none",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          fontWeight: 500
-                        }}
-                      >
-                        {updating ? t("saving") : t("save")}
-                      </button>
-                      <button
-                        type="button"
-                        className="cancel-btn"
-                        onClick={closeModal}
-                        style={{
-                          padding: "10px 20px",
-                          borderRadius: "8px",
-                          background: "#F9FAFB",
-                          color: "#0A2540",
-                          border: "1px solid #E5E7EB",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          fontWeight: 500
-                        }}
-                      >
-                        {t("cancel")}
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
+                  </div>
+                  <div className="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                    <button type="submit" className="btn btn-primary px-4 rounded-pill fw-bold" disabled={updating}>
+                      {updating ? 'Saving...' : 'Save Results'}
+                    </button>
+                    <button type="button" className="btn btn-outline-secondary px-4 rounded-pill fw-bold" onClick={closeModal}>
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         </div>
       )}
-    </div>
+    </TeacherLayout>
   );
 }

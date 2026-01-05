@@ -3,11 +3,11 @@ import DashboardLayout from '../admin/DashboardLayout';
 
 export default function TeacherLayout(props) {
   const sidebarItems = [
-    { key: "dashboard", label: "Dashboard", icon: "bi-speedometer2" },
-    { key: "profile", label: "Profile", icon: "bi-person" },
-    { key: "students", label: "Students", icon: "bi-people" },
-    { key: "charts", label: "Charts", icon: "bi-bar-chart" },
-    { key: "notifications", label: "Notifications", icon: "bi-bell" }
+    { key: "dashboard", label: "Dashboard", icon: "bi-speedometer2", path: "/teacher" },
+    { key: "profile", label: "Profile", icon: "bi-person", path: "/teacher/profile" },
+    { key: "students", label: "Students", icon: "bi-people", path: "/teacher/students" },
+    { key: "charts", label: "Charts", icon: "bi-bar-chart", path: "/teacher/charts" },
+    { key: "notifications", label: "Notifications", icon: "bi-bell", path: "/teacher/notifications" }
   ];
 
   return (

@@ -13,8 +13,9 @@ import {
 } from "recharts";
 
 import ChatWidget from "../../components/ChatWidget";
-import "../teacher/Dashboard.scss";   // sidebar + general teacher styles
-import "./Charts.scss";              // charts-specific styles
+import TeacherLayout from "../../components/teacher/TeacherLayout";
+import AdminCard from "../../components/admin/AdminCard";
+import "../teacher/Dashboard.scss";
 
 const GENDER_COLORS = ["#278BCD", "#E9B949"];
 const PASS_COLORS = ["#56C596", "#F37272"];
@@ -29,40 +30,6 @@ export default function Charts() {
   const [passData, setPassData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // sidebar active tab
-  const [activeTab, setActiveTab] = useState("charts");
-
-  const sidebarItems = [
-    { key: "dashboard", label: t("dashboard", "Dashboard"), icon: "bi-speedometer2" },
-    { key: "profile", label: t("profile", "Profile"), icon: "bi-person" },
-    { key: "students", label: t("students", "Students"), icon: "bi-people" },
-    { key: "charts", label: t("charts", "Charts"), icon: "bi-bar-chart" },
-    { key: "notifications", label: t("notifications", "Notifications"), icon: "bi-bell" }
-  ];
-
-  const handleSidebarClick = (key) => {
-    setActiveTab(key);
-    switch (key) {
-      case "dashboard":
-        navigate("/teacher");
-        break;
-      case "profile":
-        navigate("/teacher/profile");
-        break;
-      case "students":
-        navigate("/teacher/students");
-        break;
-      case "charts":
-        navigate("/teacher/charts");
-        break;
-      case "notifications":
-        navigate("/teacher/notifications");
-        break;
-      default:
-        break;
-    }
-  };
 
   // Load academic years
   useEffect(() => {
@@ -135,193 +102,146 @@ export default function Charts() {
   const noGenderData = !loading && genderData.every((d) => d.value === 0);
   const noPassData = !loading && passData.every((d) => d.value === 0);
 
-  return (
-    <div className="teacher-dashboard-container">
-      {/* Sidebar */}
-      <aside className="teacher-sidebar">
-        <div className="teacher-sidebar-header">
-          <div className="teacher-sidebar-icon">
-            <i className="bi bi-person-workspace" />
-          </div>
-          <h3>{t("teacher_portal", "Teacher Portal")}</h3>
+  const renderContent = () => {
+    return (
+      <div className="teacher-main-inner">
+        <div className="section-header-pro">
+          <h3>Academic Charts</h3>
+          <p>Visual representation of student demographics and performance metrics</p>
         </div>
 
-        <div className="teacher-sidebar-nav">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.key}
-              className={`teacher-nav-link ${
-                activeTab === item.key ? "active" : ""
-              }`}
-              onClick={() => handleSidebarClick(item.key)}
-              type="button"
-            >
-              <i className={`bi ${item.icon}`} />
-              <span>{item.label}</span>
-            </button>
-          ))}
+        <div className="charts-controls-pro mb-4">
+           <AdminCard header={
+             <div className="d-flex align-items-center justify-content-between w-100">
+               <h4 className="mb-0">Filter Data</h4>
+               <div className="d-flex align-items-center gap-3">
+                 <span className="text-muted small fw-bold text-uppercase">Academic Year:</span>
+                 <select
+                   className="form-select form-select-sm"
+                   style={{ width: '160px' }}
+                   value={academicYear}
+                   onChange={(e) => setAcademicYear(e.target.value)}
+                 >
+                   {allYears.length === 0 && (
+                     <option value="">{t("loading", "Loading")}</option>
+                   )}
+                   {allYears.map((year) => (
+                     <option key={year} value={year}>
+                       {year}
+                     </option>
+                   ))}
+                 </select>
+               </div>
+             </div>
+           }/>
         </div>
 
-        <div className="teacher-sidebar-footer">
-          <button
-            className="teacher-nav-link logout-btn"
-            type="button"
-            onClick={() => {
-              localStorage.removeItem("token");
-              navigate("/login");
-            }}
-          >
-            <i className="bi bi-box-arrow-left" />
-            <span>{t("logout", "Logout")}</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="teacher-main-content">
-        <div className="teacher-main-inner teacher-charts-container">
-          {/* Header */}
-          <div className="page-header">
-            <div>
-              <h2>{t("charts_dashboard", "Charts Dashboard")}</h2>
-              <div className="page-subtitle">
-                {t(
-                  "charts_dashboard_subtitle",
-                  "Visualize key student metrics for the selected academic year."
-                )}
-              </div>
-            </div>
+        {error && (
+          <div className="alert alert-custom-danger mb-4" role="alert">
+            <i className="bi bi-exclamation-octagon me-2"></i>
+            {error}
           </div>
+        )}
 
-          {/* Error */}
-          {error && <div className="error-state">{error}</div>}
-
-          {/* Controls */}
-          <div className="charts-controls">
-            <label htmlFor="year-select">
-              {t("select_academic_year", "Select academic year")}
-            </label>
-            <select
-              id="year-select"
-              className="form-control"
-              value={academicYear}
-              onChange={(e) => setAcademicYear(e.target.value)}
-            >
-              {allYears.length === 0 && (
-                <option value="">{t("loading", "Loading")}</option>
-              )}
-              {allYears.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Charts grid */}
-          <div className="charts-grid">
-            {/* Students by Gender */}
-            <div className="chart-card">
-              <h4>{t("students_by_gender", "Students by Gender")}</h4>
+        <div className="row g-4">
+          <div className="col-md-6">
+            <AdminCard header="Students by Gender">
               {loading ? (
-                <div className="loading-state">
-                  {t("loading_charts", "Loading charts")}...
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary" role="status"></div>
                 </div>
               ) : noGenderData ? (
-                <div className="loading-state">
-                  {t(
-                    "no_gender_data",
-                    "No gender data available for this year."
-                  )}
+                <div className="empty-state-centered py-5">
+                  <i className="bi bi-pie-chart text-muted mb-2 fs-1"></i>
+                  <p className="text-muted small">No gender data available for {academicYear}</p>
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={260}>
-                  <PieChart>
-                    <Pie
-                      data={genderData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="52%"
-                      outerRadius={90}
-                      label={({ value }) => value}
-                      labelLine={false}
-                    >
-                      {genderData.map((entry, idx) => (
-                        <Cell
-                          key={entry.name}
-                          fill={GENDER_COLORS[idx % GENDER_COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Legend
-                      verticalAlign="bottom"
-                      iconType="circle"
-                      formatter={(value) => (
-                        <span style={{ color: "#4b5563", fontWeight: 500 }}>
-                          {value}
-                        </span>
-                      )}
-                    />
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div style={{ height: '300px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={genderData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={5}
+                        label={({ value }) => value}
+                      >
+                        {genderData.map((entry, idx) => (
+                          <Cell
+                            key={entry.name}
+                            fill={GENDER_COLORS[idx % GENDER_COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                      />
+                      <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               )}
-            </div>
+            </AdminCard>
+          </div>
 
-            {/* Pass / Fail */}
-            <div className="chart-card">
-              <h4>{t("pass_fail_distribution", "Pass/Fail Distribution")}</h4>
+          <div className="col-md-6">
+            <AdminCard header="Pass / Fail Distribution">
               {loading ? (
-                <div className="loading-state">
-                  {t("loading_charts", "Loading charts")}...
+                <div className="text-center py-5">
+                  <div className="spinner-border text-success" role="status"></div>
                 </div>
               ) : noPassData ? (
-                <div className="loading-state">
-                  {t(
-                    "no_pass_data",
-                    "No pass/fail data available for this year."
-                  )}
+                <div className="empty-state-centered py-5">
+                  <i className="bi bi-bar-chart text-muted mb-2 fs-1"></i>
+                  <p className="text-muted small">No performance data available for {academicYear}</p>
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={260}>
-                  <PieChart>
-                    <Pie
-                      data={passData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="52%"
-                      outerRadius={90}
-                      label={({ value }) => value}
-                      labelLine={false}
-                    >
-                      {passData.map((entry, idx) => (
-                        <Cell
-                          key={entry.name}
-                          fill={PASS_COLORS[idx % PASS_COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Legend
-                      verticalAlign="bottom"
-                      iconType="circle"
-                      formatter={(value) => (
-                        <span style={{ color: "#4b5563", fontWeight: 500 }}>
-                          {value}
-                        </span>
-                      )}
-                    />
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div style={{ height: '300px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={passData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={5}
+                        label={({ value }) => value}
+                      >
+                        {passData.map((entry, idx) => (
+                          <Cell
+                            key={entry.name}
+                            fill={PASS_COLORS[idx % PASS_COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                      />
+                      <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               )}
-            </div>
+            </AdminCard>
           </div>
         </div>
+      </div>
+    );
+  };
 
-        <ChatWidget />
-      </main>
-    </div>
+  return (
+    <TeacherLayout activeSidebarTab="charts" customGreeting="Welcome, Teacher 👋">
+      <div className="dashboard-wrapper">
+        {renderContent()}
+      </div>
+      <ChatWidget />
+    </TeacherLayout>
   );
 }

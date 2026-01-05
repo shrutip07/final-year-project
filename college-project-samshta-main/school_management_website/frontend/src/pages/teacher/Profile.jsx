@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 import ChatWidget from "../../components/ChatWidget";
+import TeacherLayout from "../../components/teacher/TeacherLayout";
+import AdminCard from "../../components/admin/AdminCard";
 import "../teacher/Dashboard.scss";
 
 export default function TeacherProfile() {
@@ -14,15 +16,6 @@ export default function TeacherProfile() {
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState(null);
-  const [activeTab, setActiveTab] = useState("profile"); // sidebar highlight
-
-  const sidebarItems = [
-    { key: "dashboard", label: t("dashboard", "Dashboard"), icon: "bi-speedometer2" },
-    { key: "profile", label: t("profile", "Profile"), icon: "bi-person" },
-    { key: "students", label: t("students", "Students"), icon: "bi-people" },
-    { key: "charts", label: t("charts", "Charts"), icon: "bi-bar-chart" },
-    { key: "notifications", label: t("notifications", "Notifications"), icon: "bi-bell" }
-  ];
 
   // fetch profile
   useEffect(() => {
@@ -42,29 +35,6 @@ export default function TeacherProfile() {
     };
     fetchProfile();
   }, [t]);
-
-  const handleSidebarClick = (key) => {
-    setActiveTab(key);
-    switch (key) {
-      case "dashboard":
-        navigate("/teacher");
-        break;
-      case "profile":
-        navigate("/teacher/profile");
-        break;
-      case "students":
-        navigate("/teacher/students");
-        break;
-      case "charts":
-        navigate("/teacher/charts");
-        break;
-      case "notifications":
-        navigate("/teacher/notifications");
-        break;
-      default:
-        break;
-    }
-  };
 
   const handleEdit = () => setIsEditing(true);
 
@@ -96,206 +66,191 @@ export default function TeacherProfile() {
     }
   };
 
-  const renderMainContent = () => {
+  const ProfileInfoBlock = ({ icon, label, value, colorClass = "" }) => (
+    <div className={`profile-info-block ${colorClass}`}>
+      <div className="info-icon">
+        <i className={`bi ${icon}`}></i>
+      </div>
+      <div className="info-content">
+        <span className="info-label">{label}</span>
+        <span className="info-value">{value || "Not Set"}</span>
+      </div>
+    </div>
+  );
+
+  const renderContent = () => {
     if (loading) {
       return (
-        <div className="loading-state">
-          {t("loading_profile", "Loading profile")}...
+        <div className="d-flex flex-column align-items-center justify-content-center py-5">
+          <div className="spinner-grow text-primary" role="status"></div>
+          <span className="mt-3 text-muted fw-bold">Loading Profile...</span>
         </div>
       );
     }
 
     if (error) {
-      return <div className="error-state">{error}</div>;
+      return (
+        <div className="alert alert-custom-danger d-flex align-items-center" role="alert">
+          <i className="bi bi-exclamation-triangle-fill me-3 fs-3"></i>
+          <div>
+            <div className="fw-bold">Error</div>
+            {error}
+          </div>
+        </div>
+      );
     }
 
     if (!profile) return null;
 
     return (
-      <>
-        <div className="teacher-profile-card">
-          <div className="card-header">
-            <h3>{t("teacher_profile", "Teacher Profile")}</h3>
-            {!isEditing && (
-              <button className="edit-profile-btn" onClick={handleEdit} type="button">
-                {t("edit_profile", "Edit Profile")}
-              </button>
-            )}
-          </div>
+      <div className="teacher-main-inner">
+        <div className="section-header-pro">
+          <h3>Teacher Profile</h3>
+          <p>Manage and update your personal and professional information</p>
+        </div>
 
-          <div className="card-body">
-            {isEditing ? (
-              <form onSubmit={handleSubmit}>
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="mb-3">
-                      <label className="form-label">{t("full_name", "Full Name")}</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="full_name"
-                        value={editedProfile.full_name}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label">{t("email", "Email")}</label>
-                      <input
-                        type="email"
-                        className="form-control"
-                        name="email"
-                        value={editedProfile.email}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label">{t("phone", "Phone")}</label>
-                      <input
-                        type="tel"
-                        className="form-control"
-                        name="phone"
-                        value={editedProfile.phone}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label">{t("qualification", "Qualification")}</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="qualification"
-                        value={editedProfile.qualification}
-                        onChange={handleChange}
-                      />
-                    </div>
+        <AdminCard 
+          header={
+            <div className="d-flex justify-content-between align-items-center w-100">
+              <h4 className="mb-0">{t("profile_details", "Profile Details")}</h4>
+              {!isEditing && (
+                <button 
+                  className="btn btn-primary btn-sm px-3 rounded-pill" 
+                  onClick={handleEdit} 
+                  type="button"
+                  style={{ fontSize: '0.8rem', fontWeight: '600' }}
+                >
+                  <i className="bi bi-pencil-square me-2"></i>
+                  {t("edit_profile", "Edit Profile")}
+                </button>
+              )}
+            </div>
+          }
+        >
+          {isEditing ? (
+            <form onSubmit={handleSubmit} className="professional-form">
+              <div className="row g-4">
+                <div className="col-md-6">
+                  <div className="form-group mb-3">
+                    <label className="form-label fw-bold small text-muted text-uppercase mb-2">{t("full_name", "Full Name")}</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="full_name"
+                      value={editedProfile.full_name}
+                      onChange={handleChange}
+                    />
                   </div>
-
-                  <div className="col-md-6">
-                    <div className="mb-3">
-                      <label className="form-label">{t("designation", "Designation")}</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="designation"
-                        value={editedProfile.designation}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label">{t("subject", "Subject")}</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        name="subject"
-                        value={editedProfile.subject}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label className="form-label">{t("joining_date", "Joining Date")}</label>
-                      <input
-                        type="date"
-                        className="form-control"
-                        name="joining_date"
-                        value={editedProfile.joining_date?.split("T")[0]}
-                        onChange={handleChange}
-                        disabled
-                      />
-                    </div>
+                  <div className="form-group mb-3">
+                    <label className="form-label fw-bold small text-muted text-uppercase mb-2">{t("email", "Email Address")}</label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      name="email"
+                      value={editedProfile.email}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="form-group mb-3">
+                    <label className="form-label fw-bold small text-muted text-uppercase mb-2">{t("phone", "Phone Number")}</label>
+                    <input
+                      type="tel"
+                      className="form-control"
+                      name="phone"
+                      value={editedProfile.phone}
+                      onChange={handleChange}
+                    />
                   </div>
                 </div>
 
-                <div className="form-actions">
-                  <button type="submit" className="save-btn">
-                    {t("save_changes", "Save Changes")}
-                  </button>
-                  <button
-                    type="button"
-                    className="cancel-btn"
-                    onClick={handleCancel}
-                  >
-                    {t("cancel", "Cancel")}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="row">
                 <div className="col-md-6">
-                  <p><strong>{t("staff_id", "Staff ID")}</strong> {profile.staff_id}</p>
-                  <p><strong>{t("full_name", "Full Name")}</strong> {profile.full_name}</p>
-                  <p><strong>{t("email", "Email")}</strong> {profile.email}</p>
-                  <p><strong>{t("phone", "Phone")}</strong> {profile.phone}</p>
-                  <p><strong>{t("qualification", "Qualification")}</strong> {profile.qualification}</p>
-                </div>
-                <div className="col-md-6">
-                  <p><strong>{t("designation", "Designation")}</strong> {profile.designation}</p>
-                  <p><strong>{t("subject", "Subject")}</strong> {profile.subject}</p>
-                  <p>
-                    <strong>{t("joining_date", "Joining Date")}</strong>{" "}
-                    {new Date(profile.joining_date).toLocaleDateString()}
-                  </p>
-                  <p>
-                    <strong>{t("last_updated", "Last Updated")}</strong>{" "}
-                    {new Date(profile.updatedat).toLocaleDateString()}
-                  </p>
+                  <div className="form-group mb-3">
+                    <label className="form-label fw-bold small text-muted text-uppercase mb-2">{t("designation", "Designation")}</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="designation"
+                      value={editedProfile.designation}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="form-group mb-3">
+                    <label className="form-label fw-bold small text-muted text-uppercase mb-2">{t("subject", "Primary Subject")}</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="subject"
+                      value={editedProfile.subject}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="form-group mb-3">
+                    <label className="form-label fw-bold small text-muted text-uppercase mb-2">{t("qualification", "Qualification")}</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="qualification"
+                      value={editedProfile.qualification}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
-      </>
+
+              <div className="mt-4 pt-3 border-top d-flex gap-2 justify-content-end">
+                <button type="submit" className="btn btn-primary px-4 rounded-pill fw-bold">
+                  {t("save_changes", "Save Changes")}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary px-4 rounded-pill fw-bold"
+                  onClick={handleCancel}
+                >
+                  {t("cancel", "Cancel")}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="profile-info-grid">
+              <div className="info-row">
+                <ProfileInfoBlock icon="bi-person" label="Full Name" value={profile.full_name} colorClass="profile-primary" />
+                <ProfileInfoBlock icon="bi-book" label="Primary Subject" value={profile.subject} colorClass="profile-info" />
+                <ProfileInfoBlock icon="bi-briefcase" label="Designation" value={profile.designation} colorClass="profile-warning" />
+              </div>
+              <div className="info-row">
+                <ProfileInfoBlock icon="bi-envelope" label="Email Address" value={profile.email} colorClass="profile-danger" />
+                <ProfileInfoBlock icon="bi-telephone" label="Phone Number" value={profile.phone} colorClass="profile-success" />
+                <ProfileInfoBlock icon="bi-mortarboard" label="Qualification" value={profile.qualification} colorClass="profile-secondary" />
+              </div>
+              <div className="info-row mt-4 pt-4 border-top">
+                <div className="d-flex gap-4">
+                  <div>
+                    <span className="text-muted small text-uppercase d-block mb-1 fw-bold">Joining Date</span>
+                    <span className="fw-bold">{new Date(profile.joining_date).toLocaleDateString()}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted small text-uppercase d-block mb-1 fw-bold">Staff ID</span>
+                    <span className="fw-bold text-primary">{profile.staff_id}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted small text-uppercase d-block mb-1 fw-bold">Last Updated</span>
+                    <span className="fw-bold">{new Date(profile.updatedat).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </AdminCard>
+      </div>
     );
   };
 
   return (
-    <div className="teacher-dashboard-container">
-      {/* Sidebar – same structure + colors as teacher dashboard */}
-      <aside className="teacher-sidebar">
-        <div className="teacher-sidebar-header">
-          <div className="teacher-sidebar-icon">
-            <i className="bi bi-person-workspace" />
-          </div>
-          <h3>{t("teacher_portal", "Teacher Portal")}</h3>
-        </div>
-
-        <div className="teacher-sidebar-nav">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.key}
-              className={`teacher-nav-link ${
-                activeTab === item.key ? "active" : ""
-              }`}
-              onClick={() => handleSidebarClick(item.key)}
-              type="button"
-            >
-              <i className={`bi ${item.icon}`} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="teacher-sidebar-footer">
-          <button
-            className="teacher-nav-link logout-btn"
-            type="button"
-            onClick={() => {
-              localStorage.removeItem("token");
-              navigate("/login");
-            }}
-          >
-            <i className="bi bi-box-arrow-left" />
-            <span>{t("logout", "Logout")}</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Main content – reuses same blue/white theme */}
-      <main className="teacher-main-content">
-        <div className="teacher-main-inner">
-          {renderMainContent()}
-        </div>
-        <ChatWidget />
-      </main>
-    </div>
+    <TeacherLayout activeSidebarTab="profile" customGreeting="Welcome, Teacher 👋">
+      <div className="dashboard-wrapper">
+        {renderContent()}
+      </div>
+      <ChatWidget />
+    </TeacherLayout>
   );
 }

@@ -5,8 +5,6 @@ import { useTranslation } from "react-i18next";
 
 import "./Dashboard.scss"; 
 import ChatWidget from "../../components/ChatWidget";
-import TeacherNotificationsPage from "./TeacherNotificationsPage";
-import Charts from "./Charts";
 import TeacherLayout from "../../components/teacher/TeacherLayout";
 import AdminCard from "../../components/admin/AdminCard";
 
@@ -14,13 +12,10 @@ export default function TeacherDashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const [sidebarTab, setSidebarTab] = useState("dashboard");
   const [profile, setProfile] = useState(null);
-
   const [allYears, setAllYears] = useState([]);
   const [academicYear, setAcademicYear] = useState("");
   const [classes, setClasses] = useState([]);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -121,7 +116,6 @@ export default function TeacherDashboard() {
 
   const renderDashboardContent = () => {
     const totalClasses = classes.length;
-    // Assuming each class might have students count, if not default to 0
     const totalStudents = classes.reduce((sum, cls) => sum + (cls.student_count || 0), 0);
 
     return (
@@ -132,8 +126,7 @@ export default function TeacherDashboard() {
         </div>
 
         <div className="row g-4">
-          {/* Profile card */}
-          <div className="col-lg-6">
+          <div className="col-12">
             {profile ? (
               <AdminCard header="Teacher Profile">
                 <div className="profile-info-grid">
@@ -159,8 +152,7 @@ export default function TeacherDashboard() {
             )}
           </div>
 
-          {/* My classes card */}
-          <div className="col-lg-6">
+          <div className="col-12">
             <AdminCard 
               header={
                 <div className="d-flex justify-content-between align-items-center w-100">
@@ -240,54 +232,9 @@ export default function TeacherDashboard() {
     );
   };
 
-  const renderMainContent = () => {
-    switch (sidebarTab) {
-      case "dashboard":
-        return renderDashboardContent();
-
-      case "profile":
-        navigate("/teacher/profile");
-        return null;
-
-      case "students":
-        navigate("/teacher/students");
-        return null;
-
-      case "charts":
-        return (
-          <div className="teacher-main-inner">
-             <div className="section-header-pro">
-              <h3>Academic Charts</h3>
-              <p>Visual representation of institutional performance</p>
-            </div>
-            <AdminCard>
-              <Charts />
-            </AdminCard>
-          </div>
-        );
-
-      case "notifications":
-        return (
-          <div className="teacher-main-inner">
-             <div className="section-header-pro">
-              <h3>Communication Center</h3>
-              <p>Recent announcements and official notifications</p>
-            </div>
-            <AdminCard>
-              <TeacherNotificationsPage />
-            </AdminCard>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
   return (
     <TeacherLayout
-      activeSidebarTab={sidebarTab}
-      onSidebarTabChange={setSidebarTab}
+      activeSidebarTab="dashboard"
       customGreeting="Welcome, Teacher 👋"
     >
       <div className="dashboard-wrapper">
@@ -306,7 +253,7 @@ export default function TeacherDashboard() {
           </div>
         ) : (
           <div className="dashboard-main-view">
-            {renderMainContent()}
+            {renderDashboardContent()}
           </div>
         )}
       </div>
