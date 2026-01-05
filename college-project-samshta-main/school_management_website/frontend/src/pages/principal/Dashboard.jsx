@@ -119,7 +119,7 @@ export default function PrincipalDashboard() {
             <div className="metric-icon"><i className="bi bi-wallet2"></i></div>
             <div className="metric-info">
               <span className="metric-label">Budget Status</span>
-              <span className="metric-value">Active</span>
+              <span className="metric-value text-success">Active</span>
             </div>
           </div>
         </div>
@@ -139,43 +139,50 @@ export default function PrincipalDashboard() {
 
         <div className="principal-sub-content">
           {dashboardSubTab === "principal_profile" && (
-            <div className="principal-info-section">
-              <div className="info-header">
-                <div className="info-avatar">
-                  {principal?.full_name ? principal.full_name.charAt(0).toUpperCase() : "P"}
+            <div className="modern-profile-section">
+              <div className="profile-header-card">
+                <div className="profile-main-info">
+                  <div className="profile-avatar">
+                    {principal?.full_name ? principal.full_name.charAt(0).toUpperCase() : "P"}
+                  </div>
+                  <div className="profile-name-block">
+                    <h2>{principal?.full_name || "Principal"}</h2>
+                    <span className="profile-badge">Senior Principal</span>
+                    <p className="profile-location"><i className="bi bi-geo-alt"></i> {school.unit_name || "MKSSS Campus"}</p>
+                  </div>
                 </div>
-                <div className="info-title">
-                  <h3>{principal?.full_name || "Principal"}</h3>
-                  <span className="role-badge">Principal</span>
+                <div className="profile-quick-actions">
+                  <button className="btn btn-outline-primary btn-sm"><i className="bi bi-pencil"></i> Edit Profile</button>
                 </div>
               </div>
-              <div className="info-cards-grid">
-                <div className="info-card">
-                  <div className="info-card-icon"><i className="bi bi-envelope-fill"></i></div>
-                  <div className="info-card-content">
-                    <span className="info-label">Email Address</span>
-                    <span className="info-value">{principal?.email || "-"}</span>
+
+              <div className="profile-details-grid">
+                <div className="detail-card">
+                  <div className="detail-icon"><i className="bi bi-envelope-at"></i></div>
+                  <div className="detail-text">
+                    <label>Official Email</label>
+                    <span>{principal?.email || "-"}</span>
                   </div>
                 </div>
-                <div className="info-card">
-                  <div className="info-card-icon"><i className="bi bi-telephone-fill"></i></div>
-                  <div className="info-card-content">
-                    <span className="info-label">Phone Number</span>
-                    <span className="info-value">{principal?.phone || "-"}</span>
+                <div className="detail-card">
+                  <div className="detail-icon"><i className="bi bi-phone-vibrate"></i></div>
+                  <div className="detail-text">
+                    <label>Contact Number</label>
+                    <span>{principal?.phone || "-"}</span>
                   </div>
                 </div>
-                <div className="info-card">
-                  <div className="info-card-icon"><i className="bi bi-award-fill"></i></div>
-                  <div className="info-card-content">
-                    <span className="info-label">Qualification</span>
-                    <span className="info-value">{principal?.qualification || "-"}</span>
+                <div className="detail-card">
+                  <div className="detail-icon"><i className="bi bi-mortarboard"></i></div>
+                  <div className="detail-text">
+                    <label>Academic Qualification</label>
+                    <span>{principal?.qualification || "-"}</span>
                   </div>
                 </div>
-                <div className="info-card">
-                  <div className="info-card-icon"><i className="bi bi-building"></i></div>
-                  <div className="info-card-content">
-                    <span className="info-label">Unit Name</span>
-                    <span className="info-value">{school.unit_name || "-"}</span>
+                <div className="detail-card">
+                  <div className="detail-icon"><i className="bi bi-building-gear"></i></div>
+                  <div className="detail-text">
+                    <label>Assigned Unit</label>
+                    <span>{school.unit_name || "-"}</span>
                   </div>
                 </div>
               </div>
@@ -183,147 +190,141 @@ export default function PrincipalDashboard() {
           )}
 
           {dashboardSubTab === "headmistress_info" && (
-            <div className="principal-info-section">
-              <div className="info-header">
-                <div className="info-avatar hm">
-                  {school.headmistress_name ? school.headmistress_name.charAt(0).toUpperCase() : "H"}
-                </div>
-                <div className="info-title">
-                  <h3>{school.headmistress_name || "Headmistress"}</h3>
-                  <span className="role-badge hm">Headmistress</span>
-                </div>
-              </div>
-              <div className="info-cards-grid">
-                <div className="info-card">
-                  <div className="info-card-icon"><i className="bi bi-envelope-fill"></i></div>
-                  <div className="info-card-content">
-                    <span className="info-label">Email Address</span>
-                    <span className="info-value">{school.headmistress_email || "-"}</span>
+            <div className="modern-profile-section">
+              <div className="profile-header-card hm-theme">
+                <div className="profile-main-info">
+                  <div className="profile-avatar hm">
+                    {school.headmistress_name ? school.headmistress_name.charAt(0).toUpperCase() : "H"}
                   </div>
-                </div>
-                <div className="info-card">
-                  <div className="info-card-icon"><i className="bi bi-telephone-fill"></i></div>
-                  <div className="info-card-content">
-                    <span className="info-label">Phone Number</span>
-                    <span className="info-value">{school.headmistress_phone || "-"}</span>
-                  </div>
-                </div>
-                <div className="info-card">
-                  <div className="info-card-icon"><i className="bi bi-hash"></i></div>
-                  <div className="info-card-content">
-                    <span className="info-label">SEMIS No</span>
-                    <span className="info-value">{school.semis_no || "-"}</span>
-                  </div>
-                </div>
-                <div className="info-card">
-                  <div className="info-card-icon"><i className="bi bi-clock-fill"></i></div>
-                  <div className="info-card-content">
-                    <span className="info-label">School Shift</span>
-                    <span className="info-value">{school.school_shift || "-"}</span>
+                  <div className="profile-name-block">
+                    <h2>{school.headmistress_name || "Headmistress"}</h2>
+                    <span className="profile-badge hm">Headmistress</span>
+                    <p className="profile-location"><i className="bi bi-shield-lock"></i> SEMIS: {school.semis_no || "-"}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="school-details-strip">
-                <div className="strip-item">
-                  <span className="strip-label">Standard Range</span>
-                  <span className="strip-value">{school.standard_range || "-"}</span>
+              <div className="profile-details-grid">
+                <div className="detail-card">
+                  <div className="detail-icon"><i className="bi bi-envelope"></i></div>
+                  <div className="detail-text">
+                    <label>Email Address</label>
+                    <span>{school.headmistress_email || "-"}</span>
+                  </div>
                 </div>
-                <div className="strip-item">
-                  <span className="strip-label">Management Type</span>
-                  <span className="strip-value">{school.type_of_management || "-"}</span>
+                <div className="detail-card">
+                  <div className="detail-icon"><i className="bi bi-telephone"></i></div>
+                  <div className="detail-text">
+                    <label>Phone Number</label>
+                    <span>{school.headmistress_phone || "-"}</span>
+                  </div>
                 </div>
-                <div className="strip-item">
-                  <span className="strip-label">Jurisdiction</span>
-                  <span className="strip-value">{school.school_jurisdiction || "-"}</span>
+                <div className="detail-card">
+                  <div className="detail-icon"><i className="bi bi-clock-history"></i></div>
+                  <div className="detail-text">
+                    <label>School Shift</label>
+                    <span>{school.school_shift || "-"}</span>
+                  </div>
+                </div>
+                <div className="detail-card">
+                  <div className="detail-icon"><i className="bi bi-journal-text"></i></div>
+                  <div className="detail-text">
+                    <label>Management</label>
+                    <span>{school.type_of_management || "-"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modern-info-strip">
+                <div className="strip-box">
+                  <label>Standard Range</label>
+                  <span>{school.standard_range || "-"}</span>
+                </div>
+                <div className="divider"></div>
+                <div className="strip-box">
+                  <label>Jurisdiction</label>
+                  <span>{school.school_jurisdiction || "-"}</span>
+                </div>
+                <div className="divider"></div>
+                <div className="strip-box">
+                  <label>Medium</label>
+                  <span>{school.school_medium || "-"}</span>
                 </div>
               </div>
             </div>
           )}
 
           {dashboardSubTab === "unit_details" && (
-            <div className="unit-details-container">
-              <div className="unit-section-card">
-                <div className="section-header">
-                  <i className="bi bi-info-circle-fill"></i>
-                  <h4>General Information</h4>
+            <div className="modern-unit-grid">
+              <div className="unit-card primary">
+                <div className="unit-card-header">
+                  <div className="icon-wrap"><i className="bi bi-info-square-fill"></i></div>
+                  <h3>General Information</h3>
                 </div>
-                <div className="section-body">
-                  <div className="detail-item">
-                    <span className="label">Kendrashala Name</span>
+                <div className="unit-card-body">
+                  <div className="data-row">
+                    <span className="label">Kendrashala</span>
                     <span className="value">{school.kendrashala_name || "-"}</span>
                   </div>
-                  <div className="detail-item">
+                  <div className="data-row">
                     <span className="label">SEMIS No</span>
-                    <span className="value">{school.semis_no || "-"}</span>
+                    <span className="value highlight">{school.semis_no || "-"}</span>
                   </div>
-                  <div className="detail-item">
+                  <div className="data-row">
                     <span className="label">DCF No</span>
                     <span className="value">{school.dcf_no || "-"}</span>
                   </div>
-                  <div className="detail-item">
+                  <div className="data-row">
                     <span className="label">NMMS No</span>
                     <span className="value">{school.nmms_no || "-"}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="label">School Jurisdiction</span>
-                    <span className="value">{school.school_jurisdiction || "-"}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="label">Medium</span>
-                    <span className="value">{school.school_medium || "-"}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="unit-section-card">
-                <div className="section-header">
-                  <i className="bi bi-shield-check"></i>
-                  <h4>Authority Details</h4>
+              <div className="unit-card accent">
+                <div className="unit-card-header">
+                  <div className="icon-wrap"><i className="bi bi-shield-shaded"></i></div>
+                  <h3>Authority Details</h3>
                 </div>
-                <div className="section-body">
-                  <div className="detail-item">
-                    <span className="label">Competent Authority</span>
-                    <span className="value">{school.competent_authority_name || "-"}</span>
+                <div className="unit-card-body">
+                  <div className="data-row">
+                    <span className="label">Competent Auth</span>
+                    <span className="value fw-bold">{school.competent_authority_name || "-"}</span>
                   </div>
-                  <div className="detail-item">
-                    <span className="label">Authority Number</span>
+                  <div className="data-row">
+                    <span className="label">Auth Number</span>
                     <span className="value">{school.competent_authority_no || "-"}</span>
                   </div>
-                  <div className="detail-item">
-                    <span className="label">Authority Zone</span>
+                  <div className="data-row">
+                    <span className="label">Auth Zone</span>
                     <span className="value">{school.competent_authority_zone || "-"}</span>
                   </div>
-                  <div className="detail-item">
-                    <span className="label">Info Authority</span>
-                    <span className="value">{school.info_authority || "-"}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="label">Appellate Authority</span>
+                  <div className="data-row">
+                    <span className="label">Appellate Auth</span>
                     <span className="value">{school.appellate_authority || "-"}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="unit-section-card">
-                <div className="section-header">
-                  <i className="bi bi-gift-fill"></i>
-                  <h4>Midday Meal & Scholarship</h4>
+              <div className="unit-card success">
+                <div className="unit-card-header">
+                  <div className="icon-wrap"><i className="bi bi-box2-heart-fill"></i></div>
+                  <h3>Welfare & Grants</h3>
                 </div>
-                <div className="section-body">
-                  <div className="detail-item">
+                <div className="unit-card-body">
+                  <div className="data-row">
                     <span className="label">Midday Meal Org</span>
                     <span className="value">{school.midday_meal_org || "-"}</span>
                   </div>
-                  <div className="detail-item">
-                    <span className="label">Midday Meal Contact</span>
+                  <div className="data-row">
+                    <span className="label">Meal Contact</span>
                     <span className="value">{school.midday_meal_contact || "-"}</span>
                   </div>
-                  <div className="detail-item">
+                  <div className="data-row">
                     <span className="label">Scholarship Code</span>
                     <span className="value">{school.scholarship_code || "-"}</span>
                   </div>
-                  <div className="detail-item">
+                  <div className="data-row">
                     <span className="label">First Grant Year</span>
                     <span className="value">{school.first_grant_year || "-"}</span>
                   </div>
@@ -333,115 +334,97 @@ export default function PrincipalDashboard() {
           )}
 
           {dashboardSubTab === "finance_overview" && (
-            <div className="principal-finance-section">
-              <div className="finance-section-card">
-                <div className="finance-header">
-                  <h4>Finance Overview</h4>
-                  <div className="header-right">
-                    <span className="fy-label">Financial Year</span>
-                    <select
-                      value={selectedOverviewFy}
-                      onChange={(e) => setSelectedOverviewFy(e.target.value)}
-                      className="form-select"
-                    >
-                      <option value="2023-24">2023-24</option>
-                      <option value="2024-25">2024-25</option>
-                      <option value="2025-26">2025-26</option>
-                    </select>
+            <div className="modern-finance-section">
+              <div className="finance-top-bar">
+                <div className="title-area">
+                  <h3>Financial Analytics</h3>
+                  <p>Comprehensive overview of school finances for {selectedOverviewFy}</p>
+                </div>
+                <div className="filter-area">
+                  <label>Selected FY:</label>
+                  <select
+                    value={selectedOverviewFy}
+                    onChange={(e) => setSelectedOverviewFy(e.target.value)}
+                    className="form-select finance-select"
+                  >
+                    <option value="2023-24">2023-24</option>
+                    <option value="2024-25">2024-25</option>
+                    <option value="2025-26">2025-26</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="finance-main-grid">
+                <div className="finance-stat-card primary">
+                  <div className="stat-icon"><i className="bi bi-bank"></i></div>
+                  <div className="stat-content">
+                    <label>Total Budgeted</label>
+                    <div className="stat-value">₹ {(dashboardData.finance?.totalBudget || 0).toLocaleString()}</div>
+                    <div className="stat-progress">
+                      <div className="progress-bar" style={{ width: '100%' }}></div>
+                    </div>
                   </div>
                 </div>
-                <div className="finance-cards-row">
-                  <div className="finance-card">
-                    <div className="finance-icon"><i className="bi bi-wallet2"></i></div>
-                    <div className="finance-info">
-                      <span className="finance-label">Total Budget</span>
-                      <span className="finance-value">₹ {(dashboardData.finance?.totalBudget || 0).toLocaleString()}</span>
-                      <span className="finance-sub">Expected sum from fee_master table</span>
+
+                <div className="finance-stat-card warning">
+                  <div className="stat-icon"><i className="bi bi-cash-stack"></i></div>
+                  <div className="stat-content">
+                    <label>Fees Collected</label>
+                    <div className="stat-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</div>
+                    <div className="stat-progress">
+                      <div className="progress-bar" style={{ width: `${Math.min(100, (overviewMetrics?.feesCollectedFy / dashboardData.finance?.totalBudget) * 100 || 0)}%` }}></div>
                     </div>
+                    <span className="stat-sub">{((overviewMetrics?.feesCollectedFy / dashboardData.finance?.totalBudget) * 100 || 0).toFixed(1)}% of total budget</span>
                   </div>
-                  <div className="finance-card">
-                    <div className="finance-icon"><i className="bi bi-cash-stack"></i></div>
-                    <div className="finance-info">
-                      <span className="finance-label">Total Spent</span>
-                      <span className="finance-value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
-                      <span className="finance-sub">Teacher salaries paid this year</span>
+                </div>
+
+                <div className="finance-stat-card danger">
+                  <div className="stat-icon"><i className="bi bi-person-lines-fill"></i></div>
+                  <div className="stat-content">
+                    <label>Salary Expenditure</label>
+                    <div className="stat-value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</div>
+                    <div className="stat-progress">
+                      <div className="progress-bar" style={{ width: `${Math.min(100, (overviewMetrics?.salarySpentFy / overviewMetrics?.feesCollectedFy) * 100 || 0)}%` }}></div>
                     </div>
+                    <span className="stat-sub">{((overviewMetrics?.salarySpentFy / overviewMetrics?.feesCollectedFy) * 100 || 0).toFixed(1)}% of collected fees</span>
                   </div>
                 </div>
               </div>
 
-              <div className="finance-section-card">
-                <div className="finance-header">
-                  <h4>Budget Summary</h4>
-                  <div className="header-right">
-                    <select
-                      value={selectedOverviewFy}
-                      onChange={(e) => setSelectedOverviewFy(e.target.value)}
-                      className="form-select"
-                    >
-                      <option value="2023-24">2023-24</option>
-                      <option value="2024-25">2024-25</option>
-                      <option value="2025-26">2025-26</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="finance-cards-row">
-                  <div className="finance-card">
-                    <div className="finance-icon"><i className="bi bi-check-circle-fill"></i></div>
-                    <div className="finance-info">
-                      <span className="finance-label">Fees Collected</span>
-                      <span className="finance-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
-                      <span className="finance-sub">Actual fees received from students</span>
+              <div className="finance-summary-block">
+                <div className="summary-card">
+                  <h4>Net Balance Status</h4>
+                  <div className="balance-display">
+                    <div className="balance-item">
+                      <label>Collected</label>
+                      <span className="plus">+ ₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
                     </div>
-                  </div>
-                  <div className="finance-card">
-                    <div className="finance-icon"><i className="bi bi-hourglass-split"></i></div>
-                    <div className="finance-info">
-                      <span className="finance-label">Pending Fees</span>
-                      <span className="finance-value">₹ {(dashboardData.finance?.totalFeesPending || 0).toLocaleString()}</span>
-                      <span className="finance-sub">Fees yet to be collected</span>
+                    <div className="balance-operator"><i className="bi bi-dash-lg"></i></div>
+                    <div className="balance-item">
+                      <label>Spent (Salary)</label>
+                      <span className="minus">- ₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="balance-operator"><i className="bi bi-pause-fill rotate-90"></i></div>
+                    <div className="balance-item result">
+                      <label>Net Surplus</label>
+                      <span className="total">₹ {((overviewMetrics?.feesCollectedFy || 0) - (overviewMetrics?.salarySpentFy || 0)).toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
-                <div className="finance-balance-strip">
-                  <div className="balance-calc">
-                    <span className="calc-label">Balance (Fees Collected minus Salary Spent)</span>
-                    <span className="calc-details">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()} - ₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()} = ₹ {((overviewMetrics?.feesCollectedFy || 0) - (overviewMetrics?.salarySpentFy || 0)).toLocaleString()}</span>
-                  </div>
-                  <span className="balance-result">
-                    ₹ {((overviewMetrics?.feesCollectedFy || 0) - (overviewMetrics?.salarySpentFy || 0)).toLocaleString()}
-                  </span>
-                </div>
-              </div>
 
-              <div className="finance-section-card">
-                <div className="finance-header">
-                  <h4>Financial Year {selectedOverviewFy}</h4>
-                  <div className="header-right">
-                    <select
-                      value={selectedOverviewFy}
-                      onChange={(e) => setSelectedOverviewFy(e.target.value)}
-                      className="form-select"
-                    >
-                      <option value="2023-24">2023-24</option>
-                      <option value="2024-25">2024-25</option>
-                      <option value="2025-26">2025-26</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="finance-cards-row">
-                  <div className="finance-card">
-                    <div className="finance-icon"><i className="bi bi-graph-up-arrow"></i></div>
-                    <div className="finance-info">
-                      <span className="finance-label">Fees Collected in FY</span>
-                      <span className="finance-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                <div className="summary-info-cards">
+                  <div className="mini-card">
+                    <i className="bi bi-hourglass-split"></i>
+                    <div>
+                      <label>Outstanding Fees</label>
+                      <span>₹ {(dashboardData.finance?.totalFeesPending || 0).toLocaleString()}</span>
                     </div>
                   </div>
-                  <div className="finance-card">
-                    <div className="finance-icon"><i className="bi bi-graph-down-arrow"></i></div>
-                    <div className="finance-info">
-                      <span className="finance-label">Salary Spent in FY</span>
-                      <span className="finance-value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                  <div className="mini-card success">
+                    <i className="bi bi-check2-all"></i>
+                    <div>
+                      <label>Budget Status</label>
+                      <span>Balanced</span>
                     </div>
                   </div>
                 </div>
@@ -453,7 +436,7 @@ export default function PrincipalDashboard() {
     );
   };
 
-    const renderContent = () => {
+  const renderContent = () => {
     switch (sidebarTab) {
       case "dashboard":
         return renderDashboard();
