@@ -432,23 +432,44 @@ $lavender-accent: #818cf8;
           border: 1px solid $border-color;
           height: 100%;
           display: flex;
-          flex-direction: column;
-          gap: 8px;
+          align-items: flex-start;
+          gap: 20px;
           transition: transform 0.2s ease;
 
           &:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); }
 
+          .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: $white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+          }
+
           .stat-info {
             display: flex;
             flex-direction: column;
-            .stat-label { font-size: 14px; font-weight: 700; color: $text-muted; margin-bottom: 4px; text-transform: uppercase; }
-            .stat-value { font-size: 22px; font-weight: 800; color: $primary; }
+            .stat-label { font-size: 15px; font-weight: 700; color: $text-dark; margin-bottom: 2px; }
+            .stat-subtitle { font-size: 12px; color: $text-muted; margin-bottom: 12px; line-height: 1.4; }
+            .stat-value { font-size: 24px; font-weight: 800; color: $primary; }
           }
 
-          &.budget-card { border-top: 4px solid $indigo-accent; }
-          &.spent-card { border-top: 4px solid #ef4444; }
-          &.collected-card { border-top: 4px solid $green-accent; }
-          &.pending-card { border-top: 4px solid $amber-accent; }
+          &.budget-card .stat-icon { color: $indigo-accent; }
+          &.spent-card .stat-icon { color: #ef4444; }
+          &.income-card .stat-icon { color: $teal-accent; }
+          &.expenditure-card .stat-icon { color: $amber-accent; }
+          &.collected-card .stat-icon { color: $green-accent; }
+          &.pending-card .stat-icon { color: $amber-accent; }
+          &.metric-fy-card {
+            padding: 16px 20px;
+            background: $white;
+            .stat-label { font-size: 13px; color: $text-muted; }
+            .stat-value { font-size: 20px; }
+          }
         }
 
         .balance-strip-modern {

@@ -333,120 +333,130 @@ export default function PrincipalDashboard() {
             </div>
           )}
 
-          {dashboardSubTab === "finance_overview" && (
-            <div className="modern-finance-section">
-              <div className="finance-card-container top-section">
-                <div className="finance-card-header">
-                  <div className="header-left">
-                    <i className="bi bi-graph-up-arrow"></i>
-                    <h3>Finance Overview</h3>
+              {dashboardSubTab === "finance_overview" && (
+                <div className="modern-finance-section">
+                  {/* 1. Annual Performance Metrics (Top Section - 4 Cards) */}
+                  <div className="finance-card-container performance-section">
+                    <div className="finance-card-header">
+                      <div className="header-left">
+                        <i className="bi bi-graph-up-arrow"></i>
+                        <h3>Annual Performance Metrics ({selectedOverviewFy})</h3>
+                      </div>
+                      <div className="fy-dropdown-wrap">
+                        <label>Financial Year</label>
+                        <select 
+                          value={selectedOverviewFy} 
+                          onChange={(e) => setSelectedOverviewFy(e.target.value)}
+                          className="form-select finance-select"
+                        >
+                          <option value="2023-24">2023-24</option>
+                          <option value="2024-25">2024-25</option>
+                          <option value="2025-26">2025-26</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="finance-card-body">
+                      <div className="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4">
+                        <div className="col">
+                          <div className="finance-stat-card budget-card">
+                            <div className="stat-icon"><i className="bi bi-wallet2"></i></div>
+                            <div className="stat-info">
+                              <span className="stat-label">Total School Budget</span>
+                              <span className="stat-subtitle">Estimated funds from annual fee structures</span>
+                              <span className="stat-value">₹ {(dashboardData.finance?.totalBudget || 0).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col">
+                          <div className="finance-stat-card spent-card">
+                            <div className="stat-icon"><i className="bi bi-cash-stack"></i></div>
+                            <div className="stat-info">
+                              <span className="stat-label">Total Salaries Paid</span>
+                              <span className="stat-subtitle">Total teacher salaries distributed this year</span>
+                              <span className="stat-value text-danger">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col">
+                          <div className="finance-stat-card income-card">
+                            <div className="stat-icon"><i className="bi bi-piggy-bank"></i></div>
+                            <div className="stat-info">
+                              <span className="stat-label">Annual Income (Fees)</span>
+                              <span className="stat-subtitle">Total fees collected in this financial year</span>
+                              <span className="stat-value text-success">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col">
+                          <div className="finance-stat-card expenditure-card">
+                            <div className="stat-icon"><i className="bi bi-calculator"></i></div>
+                            <div className="stat-info">
+                              <span className="stat-label">Annual Expenditure (Salaries)</span>
+                              <span className="stat-subtitle">Salary expenses for this financial year</span>
+                              <span className="stat-value text-danger">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="fy-dropdown-wrap">
-                    <label>Financial Year</label>
-                    <select 
-                      value={selectedOverviewFy} 
-                      onChange={(e) => setSelectedOverviewFy(e.target.value)}
-                      className="form-select finance-select"
-                    >
-                      <option value="2023-24">2023-24</option>
-                      <option value="2024-25">2024-25</option>
-                      <option value="2025-26">2025-26</option>
-                    </select>
+  
+                  {/* 2. Budget Summary (Bottom Section) */}
+                  <div className="finance-card-container summary-section">
+                    <div className="finance-card-header">
+                      <div className="header-left">
+                        <i className="bi bi-calculator"></i>
+                        <h3>Budget & Collections Summary</h3>
+                      </div>
+                    </div>
+                    <div className="finance-card-body">
+                      <div className="row g-4 mb-4">
+                        <div className="col-md-6">
+                          <div className="finance-stat-card collected-card">
+                            <div className="stat-icon"><i className="bi bi-check-circle-fill"></i></div>
+                            <div className="stat-info">
+                              <span className="stat-label">Fees Successfully Collected</span>
+                              <span className="stat-subtitle">Actual payments received from students</span>
+                              <span className="stat-value text-success">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-md-6">
+                          <div className="finance-stat-card pending-card">
+                            <div className="stat-icon"><i className="bi bi-exclamation-octagon-fill"></i></div>
+                            <div className="stat-info">
+                              <span className="stat-label">Outstanding Fees</span>
+                              <span className="stat-subtitle">Fees currently due and yet to be collected</span>
+                              <span className="stat-value text-warning">₹ {(dashboardData.finance?.totalFeesPending || 0).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="balance-strip-modern">
+                        <div className="balance-label-group">
+                          <i className="bi bi-safe2"></i>
+                          <div className="label-text">
+                            <span className="main-label">Net Surplus (Fees - Salaries)</span>
+                            <span className="calc-formula">
+                              ₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()} - ₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="balance-result">
+                          <span className="equals">=</span>
+                          <span className="final-amount">
+                            ₹ {((overviewMetrics?.feesCollectedFy || 0) - (overviewMetrics?.salarySpentFy || 0)).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="finance-card-body">
-                  <div className="row g-4">
-                    <div className="col-md-3">
-                      <div className="finance-stat-card budget-card">
-                        <div className="stat-info">
-                          <span className="stat-label">Total School Budget</span>
-                          <span className="stat-value">₹ {(dashboardData.finance?.totalBudget || 0).toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-md-3">
-                      <div className="finance-stat-card spent-card">
-                        <div className="stat-info">
-                          <span className="stat-label">Total Salaries Paid</span>
-                          <span className="stat-value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-md-3">
-                      <div className="finance-stat-card collected-card">
-                        <div className="stat-info">
-                          <span className="stat-label">Annual Income (Fees)</span>
-                          <span className="stat-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-md-3">
-                      <div className="finance-stat-card pending-card">
-                        <div className="stat-info">
-                          <span className="stat-label">Annual Expenditure (Salaries)</span>
-                          <span className="stat-value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="finance-card-container middle-section">
-                <div className="finance-card-header">
-                  <div className="header-left">
-                    <i className="bi bi-calculator"></i>
-                    <h3>Budget Summary</h3>
-                  </div>
-                </div>
-                <div className="finance-card-body">
-                  <div className="row g-4 mb-4">
-                    <div className="col-md-6">
-                      <div className="finance-stat-card collected-card">
-                        <div className="stat-icon"><i className="bi bi-piggy-bank"></i></div>
-                        <div className="stat-info">
-                          <span className="stat-label">Fees Successfully Collected</span>
-                          <span className="stat-subtitle">Actual payments received from students</span>
-                          <span className="stat-value text-success">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="finance-stat-card pending-card">
-                        <div className="stat-icon"><i className="bi bi-exclamation-octagon"></i></div>
-                        <div className="stat-info">
-                          <span className="stat-label">Outstanding Fees</span>
-                          <span className="stat-subtitle">Fees currently due and yet to be collected</span>
-                          <span className="stat-value text-warning">₹ {(dashboardData.finance?.totalFeesPending || 0).toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="balance-strip-modern">
-                    <div className="balance-label-group">
-                      <i className="bi bi-safe2"></i>
-                      <div className="label-text">
-                        <span className="main-label">Net Surplus (Fees - Salaries)</span>
-                        <span className="calc-formula">
-                          ₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()} - ₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="balance-result">
-                      <span className="equals">=</span>
-                      <span className="final-amount">
-                        ₹ {((overviewMetrics?.feesCollectedFy || 0) - (overviewMetrics?.salarySpentFy || 0)).toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+              )}
+          </div>
         </div>
-      </div>
-    );
-  };
+      );
+    };
 
   const renderContent = () => {
     switch (sidebarTab) {
