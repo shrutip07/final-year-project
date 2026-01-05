@@ -12,18 +12,34 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
 } from "recharts";
 import { useTranslation } from "react-i18next";
+import "./Charts.scss";
 
-const GENDER_COLORS = ["#0B63E5", "#F59E0B"];
-const PASS_COLORS = ["#22C55E", "#EF4444"];
-const COLORS = ["#0B63E5", "#1D9BF0", "#22C55E", "#F97316", "#6366F1", "#EC4899"];
+const PASS_COLORS = ["#16a34a", "#dc2626"];
+const COLORS = ["#002E6D", "#4f46e5", "#16a34a", "#d97706", "#818cf8", "#db2777"];
 
 function formatNumber(n) {
   return n && !isNaN(n) ? n.toLocaleString("en-IN") : n;
 }
+
+const CustomTooltip = ({ active, payload, label, formatter }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="custom-tooltip">
+        <p className="label">{label}</p>
+        {payload.map((entry, index) => (
+          <p key={index} className="value" style={{ color: entry.color }}>
+            {entry.name}: {formatter ? formatter(entry.value) : entry.value}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function Charts({ unitId }) {
   const { t } = useTranslation();
@@ -39,7 +55,6 @@ export default function Charts({ unitId }) {
     { id: "historical_analysis", label: "Historical Analysis", icon: "bi-clock-history" },
   ];
 
-  // ========= Fetch analytics =========
   useEffect(() => {
     if (!unitId) return;
     setLoading(true);
@@ -74,7 +89,6 @@ export default function Charts({ unitId }) {
       .finally(() => setLoading(false));
   }, [unitId]);
 
-  // ========= Common dropdown years =========
   const allYears = useMemo(() => {
     if (!analytics) return [];
     const years = [
@@ -89,9 +103,6 @@ export default function Charts({ unitId }) {
     return years.length ? years : ["2024-25"];
   }, [analytics]);
 
-  // ========= Derived datasets =========
-
-  // Salary paid trend across all financial years
   const salaryTrendData = useMemo(() => {
     if (!analytics?.payments || analytics.payments.length === 0) return [];
     const yearMap = {};
@@ -107,14 +118,13 @@ export default function Charts({ unitId }) {
       }));
   }, [analytics]);
 
-  // Fees collected trend across all academic years (placeholder)
   const feesTrendData = useMemo(() => {
     if (!analytics?.allStudents || analytics.allStudents.length === 0)
       return [];
     const yearMap = {};
     analytics.allStudents.forEach((s) => {
       if (!yearMap[s.academic_year]) yearMap[s.academic_year] = 0;
-      yearMap[s.academic_year] += 5000; // placeholder per student
+      yearMap[s.academic_year] += 5000;
     });
     return Object.keys(yearMap)
       .sort()
@@ -124,7 +134,6 @@ export default function Charts({ unitId }) {
       }));
   }, [analytics]);
 
-  // Students by class (all years)
   const studentsByClass = useMemo(
     () =>
       analytics?.studentsByClass?.map((row) => ({
@@ -134,7 +143,6 @@ export default function Charts({ unitId }) {
     [analytics]
   );
 
-  // Admissions per year
   const admissionsData = useMemo(
     () =>
       analytics?.admissions?.map((row) => ({
@@ -144,7 +152,6 @@ export default function Charts({ unitId }) {
     [analytics]
   );
 
-  // Only students of selected year
   const yearStudents = useMemo(
     () =>
       analytics?.allStudents?.filter(
@@ -185,7 +192,6 @@ export default function Charts({ unitId }) {
     [yearStudents, t]
   );
 
-  // Students by standard for selected academic year
   const studentsByStandardYear = useMemo(() => {
     if (!analytics?.allStudents || !selectedYear) return [];
     const counts = {};
@@ -204,7 +210,6 @@ export default function Charts({ unitId }) {
       }));
   }, [analytics, selectedYear]);
 
-  // Payments by category for selected year
   const expenseCategories = useMemo(
     () =>
       analytics?.payments
@@ -213,7 +218,6 @@ export default function Charts({ unitId }) {
     [analytics, selectedYear]
   );
 
-  // Budget vs Expense for all financial years
   const budgetVsExpense = useMemo(
     () =>
       analytics?.budgets?.map((b) => ({
@@ -229,27 +233,17 @@ export default function Charts({ unitId }) {
     return <div style={{ padding: 24 }}>{t("loading")}...</div>;
   }
 
-  // Shared tooltip style (light card)
-  const tooltipStyle = {
-    background: "#FFFFFF",
-    border: "1px solid #E5E7EB",
-    borderRadius: 8,
-    boxShadow: "0 10px 25px rgba(15,23,42,0.08)",
-    fontSize: 12,
-  };
-
   return (
     <div className="charts-wrapper">
-      {/* Header row */}
       <div className="charts-header">
         <div>
           <p className="page-subtitle">
-            {"Visualize key school metrics"}
+            {"Visualize key school metrics and performance indicators"}
           </p>
         </div>
 
         <div className="d-flex align-items-center" style={{ gap: 8 }}>
-          <span style={{ fontSize: 14, fontWeight: 500 }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "#475569" }}>
             {t("financial_year_label") || "Financial Year:"}
           </span>
           <select
@@ -266,8 +260,7 @@ export default function Charts({ unitId }) {
         </div>
       </div>
 
-      {/* Tabs Navigation */}
-      <div className="principal-sub-tabs" style={{ marginBottom: 24 }}>
+      <div className="principal-sub-tabs" style={{ marginBottom: 32 }}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -280,50 +273,84 @@ export default function Charts({ unitId }) {
         ))}
       </div>
 
-      {/* Tab Content */}
       <div className="charts-tab-content">
         {activeTab === "year_overview" && (
           <div className="charts-grid">
             <div className="chart-card">
               <div className="chart-title">{t("students_by_gender") || "Students by Gender"}</div>
-              <ResponsiveContainer width="100%" height={260}>
+              <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
-                  <Pie data={genderData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
+                  <defs>
+                    <linearGradient id="maleGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#002E6D" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#002E6D" stopOpacity={1}/>
+                    </linearGradient>
+                    <linearGradient id="femaleGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#F59E0B" stopOpacity={1}/>
+                    </linearGradient>
+                  </defs>
+                  <Pie 
+                    data={genderData} 
+                    dataKey="value" 
+                    nameKey="name" 
+                    cx="50%" 
+                    cy="50%" 
+                    innerRadius={60}
+                    outerRadius={90} 
+                    paddingAngle={5}
+                    label={({ name, value }) => `${name}: ${value}`}
+                  >
                     {genderData.map((entry, idx) => (
-                      <Cell key={entry.name} fill={GENDER_COLORS[idx % GENDER_COLORS.length]} />
+                      <Cell key={entry.name} fill={idx === 0 ? "url(#maleGradient)" : "url(#femaleGradient)"} />
                     ))}
                   </Pie>
-                  <Legend />
-                  <Tooltip contentStyle={tooltipStyle} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend verticalAlign="bottom" height={36}/>
                 </PieChart>
               </ResponsiveContainer>
             </div>
 
             <div className="chart-card">
               <div className="chart-title">{t("pass_fail_distribution") || "Pass / Fail Distribution"}</div>
-              <ResponsiveContainer width="100%" height={260}>
+              <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
-                  <Pie data={passData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
+                  <Pie 
+                    data={passData} 
+                    dataKey="value" 
+                    nameKey="name" 
+                    cx="50%" 
+                    cy="50%" 
+                    innerRadius={60}
+                    outerRadius={90} 
+                    paddingAngle={5}
+                    label={({ name, value }) => `${name}: ${value}`}
+                  >
                     {passData.map((entry, idx) => (
                       <Cell key={entry.name} fill={PASS_COLORS[idx % PASS_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Legend />
-                  <Tooltip contentStyle={tooltipStyle} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend verticalAlign="bottom" height={36}/>
                 </PieChart>
               </ResponsiveContainer>
             </div>
 
             <div className="chart-card">
               <div className="chart-title">{t("students_by_class_year_specific") || "Students by Class (Year Specific)"}</div>
-              <ResponsiveContainer width="100%" height={260}>
+              <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={studentsByStandardYear}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="standard" stroke="#4B5563" />
-                  <YAxis stroke="#4B5563" />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Legend />
-                  <Bar dataKey="count" fill="#0B63E5" radius={[6, 6, 0, 0]} />
+                  <defs>
+                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#002E6D" stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor="#002E6D" stopOpacity={0.6}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="standard" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                  <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(0,46,109,0.05)'}} />
+                  <Bar dataKey="count" fill="url(#barGradient)" radius={[6, 6, 0, 0]} barSize={40} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -331,17 +358,28 @@ export default function Charts({ unitId }) {
             <div className="chart-card">
               <div className="chart-title">{t("payments_by_category") || "Payments by Category"}</div>
               {expenseCategories.length === 0 ? (
-                <div className="text-muted small mt-3">{t("no_payment_data") || "No payment data for this year."}</div>
+                <div className="d-flex align-items-center justify-content-center h-100 text-muted small">
+                  <i className="bi bi-info-circle me-2"></i> {t("no_payment_data") || "No payment data for this year."}
+                </div>
               ) : (
-                <ResponsiveContainer width="100%" height={260}>
+                <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
-                    <Pie data={expenseCategories} dataKey="total" nameKey="category" cx="50%" cy="50%" outerRadius={80} label={({ category, total }) => `${category}: ₹${formatNumber(total)}`} labelLine={false}>
+                    <Pie 
+                      data={expenseCategories} 
+                      dataKey="total" 
+                      nameKey="category" 
+                      cx="50%" 
+                      cy="50%" 
+                      outerRadius={90} 
+                      innerRadius={40}
+                      label={({ category }) => category}
+                    >
                       {expenseCategories.map((entry, idx) => (
                         <Cell key={entry.category} fill={COLORS[idx % COLORS.length]} />
                       ))}
                     </Pie>
+                    <Tooltip content={<CustomTooltip formatter={(val) => `₹${formatNumber(val)}`} />} />
                     <Legend />
-                    <Tooltip formatter={(value) => `₹${formatNumber(value)}`} contentStyle={tooltipStyle} />
                   </PieChart>
                 </ResponsiveContainer>
               )}
@@ -353,29 +391,55 @@ export default function Charts({ unitId }) {
           <div className="charts-grid">
             <div className="chart-card">
               <div className="chart-title">{t("salary_trend") || "Salary Trend"}</div>
-              <ResponsiveContainer width="100%" height={260}>
-                <LineChart data={salaryTrendData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="year" stroke="#4B5563" />
-                  <YAxis stroke="#4B5563" />
-                  <Tooltip formatter={(value) => `₹${formatNumber(value)}`} contentStyle={tooltipStyle} />
-                  <Legend />
-                  <Line type="monotone" dataKey="salary" stroke="#F97316" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} name={t("salary_paid") || "Salary Paid"} />
-                </LineChart>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={salaryTrendData}>
+                  <defs>
+                    <linearGradient id="salaryGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#F97316" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#F97316" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                  <Tooltip content={<CustomTooltip formatter={(val) => `₹${formatNumber(val)}`} />} />
+                  <Area 
+                    type="monotone" 
+                    dataKey="salary" 
+                    stroke="#F97316" 
+                    strokeWidth={3} 
+                    fillOpacity={1} 
+                    fill="url(#salaryGradient)" 
+                    name={t("salary_paid") || "Salary Paid"} 
+                  />
+                </AreaChart>
               </ResponsiveContainer>
             </div>
 
             <div className="chart-card">
               <div className="chart-title">{t("fees_trend") || "Fees Trend"}</div>
-              <ResponsiveContainer width="100%" height={260}>
-                <LineChart data={feesTrendData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="year" stroke="#4B5563" />
-                  <YAxis stroke="#4B5563" />
-                  <Tooltip formatter={(value) => `₹${formatNumber(value)}`} contentStyle={tooltipStyle} />
-                  <Legend />
-                  <Line type="monotone" dataKey="fees" stroke="#22C55E" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} name={t("fees_collected") || "Fees Collected"} />
-                </LineChart>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={feesTrendData}>
+                  <defs>
+                    <linearGradient id="feesGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#16a34a" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#16a34a" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                  <Tooltip content={<CustomTooltip formatter={(val) => `₹${formatNumber(val)}`} />} />
+                  <Area 
+                    type="monotone" 
+                    dataKey="fees" 
+                    stroke="#16a34a" 
+                    strokeWidth={3} 
+                    fillOpacity={1} 
+                    fill="url(#feesGradient)" 
+                    name={t("fees_collected") || "Fees Collected"} 
+                  />
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
@@ -384,29 +448,27 @@ export default function Charts({ unitId }) {
         {activeTab === "student_insights" && (
           <div className="charts-grid">
             <div className="chart-card">
-              <div className="chart-title">{t("students_by_class") || "Students by Class"}</div>
-              <ResponsiveContainer width="100%" height={260}>
+              <div className="chart-title">{t("students_by_class") || "Students by Class (Historical)"}</div>
+              <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={studentsByClass}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="standard" stroke="#4B5563" />
-                  <YAxis stroke="#4B5563" />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Legend />
-                  <Bar dataKey="count" fill="#0B63E5" radius={[6, 6, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="standard" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="count" fill="#002E6D" radius={[6, 6, 0, 0]} barSize={40} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
 
             <div className="chart-card">
               <div className="chart-title">{t("admissions_per_year") || "Admissions per Year"}</div>
-              <ResponsiveContainer width="100%" height={260}>
+              <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={admissionsData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="year" stroke="#4B5563" />
-                  <YAxis stroke="#4B5563" />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Legend />
-                  <Bar dataKey="count" fill="#22C55E" radius={[6, 6, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="count" fill="#16a34a" radius={[6, 6, 0, 0]} barSize={40} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -417,15 +479,15 @@ export default function Charts({ unitId }) {
           <div className="charts-grid">
             <div className="chart-card">
               <div className="chart-title">{t("budget_vs_expenses") || "Budget vs Expenses"}</div>
-              <ResponsiveContainer width="100%" height={260}>
+              <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={budgetVsExpense}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="year" stroke="#4B5563" />
-                  <YAxis stroke="#4B5563" />
-                  <Tooltip formatter={(value) => `₹${formatNumber(value)}`} contentStyle={tooltipStyle} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                  <Tooltip content={<CustomTooltip formatter={(val) => `₹${formatNumber(val)}`} />} />
                   <Legend />
-                  <Bar dataKey="Budget" fill="#0B63E5" radius={[6, 6, 0, 0]} />
-                  <Bar dataKey="Expenses" fill="#F97316" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="Budget" fill="#002E6D" radius={[6, 6, 0, 0]} barSize={30} />
+                  <Bar dataKey="Expenses" fill="#F97316" radius={[6, 6, 0, 0]} barSize={30} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
