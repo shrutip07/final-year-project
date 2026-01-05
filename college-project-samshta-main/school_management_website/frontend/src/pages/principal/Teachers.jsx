@@ -47,23 +47,22 @@ export default function Teachers() {
     setFiltered(
       teachers.filter(
         (te) =>
-          te.full_name.toLowerCase().includes(val) ||
+          te.full_name?.toLowerCase().includes(val) ||
           (te.email && te.email.toLowerCase().includes(val)) ||
           (te.subject && te.subject.toLowerCase().includes(val)) ||
           (te.designation &&
             te.designation.toLowerCase().includes(val)) ||
-          (te.phone && te.phone.toLowerCase().includes(val))
+          (te.phone && te.phone.toLowerCase().includes(val)) ||
+          (te.staff_id && te.staff_id.toString().includes(val))
       )
     );
   }
 
   if (loading) {
     return (
-      <div className="loading-spinner">
+      <div className="d-flex justify-content-center align-items-center py-5">
         <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">
-            {t("loading_teachers")}...
-          </span>
+          <span className="visually-hidden">{t("loading")}...</span>
         </div>
       </div>
     );
@@ -74,82 +73,93 @@ export default function Teachers() {
   }
 
   return (
-    // parent (PrincipalDashboard) already provides .page-inner + PageHeader
-    <AdminCard
-      header={t("teachers_directory")}
-      className="section-card section-card--table"
-    >
-      {/* Search toolbar */}
-      <div className="table-toolbar">
-        <div className="toolbar-search" style={{ maxWidth: 420 }}>
+    <div className="teachers-directory-wrapper">
+      <div className="directory-controls mb-4">
+        <div className="search-box">
+          <i className="bi bi-search search-icon"></i>
           <input
+            type="text"
             className="form-control"
-            placeholder={
-              t("search_by_teacher_details") ||
-              "Search by name, email, phone, subject, or designation"
-            }
+            placeholder="Search by name, ID, email, or subject..."
             value={search}
             onChange={handleSearchChange}
           />
         </div>
       </div>
 
-      {/* Table */}
-      {filtered.length === 0 ? (
-        <EmptyState
-          title={t("no_teachers") || "No teachers"}
-          description={
-            t("no_teachers_found") || "No teachers match your search."
-          }
-        />
-      ) : (
-        <div className="table-responsive">
-          <table className="table table-striped table-bordered">
-            <thead>
-              <tr>
-                <th>{t("full_name")}</th>
-                <th>{t("email")}</th>
-                <th>{t("phone")}</th>
-                <th>{t("qualification")}</th>
-                <th>{t("designation")}</th>
-                <th>{t("subject")}</th>
-                <th>{t("joining_date")}</th>
-                <th>{t("status")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((teacher) => (
-                <tr key={teacher.staff_id}>
-                  <td>{teacher.full_name}</td>
-                  <td>{teacher.email}</td>
-                  <td>{teacher.phone || "-"}</td>
-                  <td>{teacher.qualification || "-"}</td>
-                  <td>{teacher.designation || "-"}</td>
-                  <td>{teacher.subject || "-"}</td>
-                  <td>
-                    {teacher.joining_date
-                      ? new Date(
-                          teacher.joining_date
-                        ).toLocaleDateString()
-                      : "-"}
-                  </td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        teacher.status === "active"
-                          ? "bg-success"
-                          : "bg-secondary"
-                      }`}
-                    >
-                      {t(teacher.status)}
-                    </span>
-                  </td>
+      <div className="teacher-table-container">
+        {filtered.length === 0 ? (
+          <EmptyState
+            title={t("no_teachers") || "No teachers"}
+            description={t("no_teachers_found") || "No teachers match your search."}
+          />
+        ) : (
+          <div className="table-responsive custom-table-wrapper">
+            <table className="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Staff ID</th>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Qualification</th>
+                  <th>Designation</th>
+                  <th>Subject</th>
+                  <th>Joining Date</th>
+                  <th>Updated At</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </AdminCard>
+              </thead>
+              <tbody>
+                {filtered.map((teacher) => (
+                  <tr key={teacher.staff_id}>
+                    <td className="fw-bold text-primary">#{teacher.staff_id}</td>
+                    <td className="fw-semibold">{teacher.full_name}</td>
+                    <td>
+                      <a href={`mailto:${teacher.email}`} className="email-link">
+                        {teacher.email}
+                      </a>
+                    </td>
+                    <td className="text-muted">{teacher.phone || "-"}</td>
+                    <td>
+                      <span className="badge badge-qualification">
+                        {teacher.qualification || "-"}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="badge badge-designation">
+                        {teacher.designation || "-"}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="badge badge-subject">
+                        {teacher.subject || "-"}
+                      </span>
+                    </td>
+                    <td className="text-muted small">
+                      {teacher.joining_date
+                        ? new Date(teacher.joining_date).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "-"}
+                    </td>
+                    <td className="text-muted small">
+                      {teacher.updated_at
+                        ? new Date(teacher.updated_at).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "-"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
