@@ -1383,16 +1383,176 @@ export default function AdminDashboard() {
                 subtitle={t("manage_monitor_all_schools")}
               />
 
-              {/* Import Units Section */}
-              <div className="card admin-import-card mb-4 border-0 shadow-sm rounded-4">
-                <div className="card-body p-4">
-                  <div className="row align-items-center g-4">
-                    {/* Left: Upload */}
-                    <div className="col-lg-7 border-end">
-                      <div className="d-flex align-items-center gap-3 mb-3">
-                        <div className="import-icon-box">
-                          <i className="bi bi-file-earmark-spreadsheet text-primary"></i>
+                {/* Import Units Section */}
+                <div className="admin-import-container mb-5">
+                  <div className="card admin-import-card border-0 shadow-sm rounded-4">
+                    <div className="card-body p-4">
+                      <div className="row g-4">
+                        {/* Left: Upload + Action */}
+                        <div className="col-lg-6 border-end pe-lg-4">
+                          <div className="d-flex align-items-center gap-3 mb-4">
+                            <div className="import-icon-box bg-soft-primary text-primary">
+                              <i className="bi bi-file-earmark-spreadsheet fs-4"></i>
+                            </div>
+                            <div>
+                              <h5 className="mb-0 fw-bold">Import Units from Excel</h5>
+                              <p className="text-muted small">Select your file to bulk import schools</p>
+                            </div>
+                          </div>
+
+                          <form onSubmit={handleImportSubmit} className="import-form">
+                            <div className="upload-box mb-4 p-4 border-2 border-dashed rounded-3 text-center bg-light">
+                              <i className="bi bi-cloud-arrow-up fs-1 text-primary mb-2 d-block"></i>
+                              <input
+                                type="file"
+                                id="excelImport"
+                                className="form-control d-none"
+                                accept=".xlsx,.xls"
+                                onChange={handleImportFileChange}
+                              />
+                              <label htmlFor="excelImport" className="btn btn-outline-primary btn-sm mb-2">
+                                {importFile ? importFile.name : "Choose Excel File"}
+                              </label>
+                              <p className="text-muted x-small mb-0">Support: .xlsx, .xls (Max 10MB)</p>
+                            </div>
+
+                            {importMessage && (
+                              <div className={`alert ${importIsSuccess ? "alert-success" : "alert-danger"} py-2 small mb-3 border-0 shadow-sm`}>
+                                <i className={`bi ${importIsSuccess ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill"} me-2`}></i>
+                                {importMessage}
+                              </div>
+                            )}
+
+                            <div className="d-flex gap-3">
+                              <button
+                                type="submit"
+                                className="btn btn-primary btn-lg flex-grow-1 py-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow"
+                                disabled={importLoading || !importFile}
+                              >
+                                {importLoading ? (
+                                  <span className="spinner-border spinner-border-sm" />
+                                ) : (
+                                  <>
+                                    <i className="bi bi-cloud-arrow-up-fill fs-5"></i>
+                                    <span>Import Units</span>
+                                  </>
+                                )}
+                              </button>
+                              <button type="button" className="btn btn-light border btn-lg px-3" title="Download Sample">
+                                <i className="bi bi-download"></i>
+                              </button>
+                            </div>
+                          </form>
                         </div>
+
+                        {/* Right: Instructions & Format */}
+                        <div className="col-lg-6 ps-lg-4">
+                          <div className="instruction-header mb-3">
+                            <h6 className="fw-bold text-dark d-flex align-items-center gap-2">
+                              <i className="bi bi-info-circle-fill text-primary"></i>
+                              Quick Instructions
+                            </h6>
+                          </div>
+                          
+                          <div className="instructions-body">
+                            <ul className="instruction-list-modern mb-4">
+                              <li className="mb-2">
+                                <span className="step-num">1</span>
+                                <span>Ensure each school has a unique <strong>unit_id</strong> and <strong>semis_no</strong>.</span>
+                              </li>
+                              <li className="mb-2">
+                                <span className="step-num">2</span>
+                                <span>Follow the exact column naming as per the system requirements.</span>
+                              </li>
+                              <li className="mb-2">
+                                <span className="step-num">3</span>
+                                <span>Download and verify with the <strong>sample template</strong> before uploading.</span>
+                              </li>
+                            </ul>
+
+                            <div className="required-columns-box p-3 rounded-3 bg-light border mb-3">
+                              <p className="fw-bold x-small text-uppercase text-muted mb-2 letter-spacing-1">Important Required Columns</p>
+                              <div className="d-flex flex-wrap gap-2">
+                                {['unit_id', 'semis_no', 'kendrashala_name'].map(c => (
+                                  <span key={c} className="badge bg-white text-dark border shadow-sm py-2 px-3">{c}</span>
+                                ))}
+                                <span className="badge bg-soft-primary text-primary py-2 px-3">+ 18 more</span>
+                              </div>
+                            </div>
+
+                            <div className="format-toggle">
+                              <button
+                                className="btn btn-link btn-sm p-0 text-decoration-none fw-bold d-flex align-items-center gap-1"
+                                onClick={() => setShowFullFormat(!showFullFormat)}
+                              >
+                                <i className={`bi ${showFullFormat ? "bi-dash-circle" : "bi-plus-circle"}`}></i>
+                                {showFullFormat ? "Hide full format" : "View full Excel format"}
+                              </button>
+
+                              {showFullFormat && (
+                                <div className="full-format-scroll mt-3 p-3 bg-white rounded border small text-muted shadow-inner">
+                                  <strong>Allowed Headers:</strong>
+                                  <p className="mb-0 mt-1">unit_id, semis_no, dcf_no, nmms_no, scholarship_code, first_grant_in_aid_year, type_of_management, school_jurisdiction, competent_authority_name, authority_number, authority_zone, kendrashala_name, info_authority_name, appellate_authority_name, midday_meal_org_name, midday_meal_org_contact, standard_range, headmistress_name, headmistress_phone, headmistress_email, school_shift</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row school-grid g-4">
+                  {safeUnits.map((unit, idx) => (
+                    <div key={unit.unit_id} className="col-md-4 col-lg-3 col-sm-6 mb-4">
+                      <div
+                        className="school-card-modern"
+                        onClick={() => handleUnitCardClick(unit.unit_id)}
+                      >
+                        <div className="card-top-accent"></div>
+                        
+                        <div className="card-header-modern">
+                          <div className="symbol-container">
+                            <i className="bi bi-building"></i>
+                          </div>
+                          <div className="index-badge">#{idx + 1}</div>
+                        </div>
+                        
+                        <div className="card-body-modern">
+                          <h5 className="school-title">{unit.kendrashala_name}</h5>
+                          <div className="unit-id-label">UNIT ID: {unit.unit_id}</div>
+                          
+                          <div className="stats-pills-row">
+                            <div className="stat-pill staff">
+                              <div className="pill-icon">
+                                <i className="bi bi-people-fill"></i>
+                              </div>
+                              <div className="pill-data">
+                                <span className="count">{unit.staff_count || 0}</span>
+                                <span className="label">Staff</span>
+                              </div>
+                            </div>
+                            <div className="stat-pill students">
+                              <div className="pill-icon">
+                                <i className="bi bi-mortarboard-fill"></i>
+                              </div>
+                              <div className="pill-data">
+                                <span className="count">{unit.student_count || 0}</span>
+                                <span className="label">Students</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="card-footer-modern">
+                          <span className="footer-link">View Institutional Details</span>
+                          <i className="bi bi-arrow-right"></i>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
                         <div>
                           <h5 className="mb-0 fw-bold">Import Units from Excel</h5>
                           <p className="text-muted small mb-0">Bulk add schools to the system</p>
