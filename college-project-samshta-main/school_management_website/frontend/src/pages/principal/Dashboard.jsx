@@ -188,52 +188,119 @@ export default function PrincipalDashboard() {
     const spent = overviewMetrics.salarySpentFy || 0;
     const pending = Math.floor(collected * 0.12);
     const budget = collected + pending;
+    const balance = collected - spent;
 
     return (
       <div className="sub-tab-content">
-        <AdminCard 
-          header={
-            <div className="d-flex justify-content-between align-items-center w-100">
-              <span>Finance Overview</span>
-              <div className="d-flex align-items-center gap-2">
-                <span className="small fw-bold text-muted">FY:</span>
-                <select
-                  value={selectedOverviewFy}
-                  onChange={(e) => setSelectedOverviewFy(e.target.value)}
-                  className="form-select form-select-sm"
-                  style={{ width: '110px' }}
-                >
-                  <option value="2023-24">2023-24</option>
-                  <option value="2024-25">2024-25</option>
-                  <option value="2025-26">2025-26</option>
-                </select>
+        <div className="finance-stacked-sections">
+          {/* 1. Finance Overview */}
+          <AdminCard 
+            header={
+              <div className="d-flex justify-content-between align-items-center w-100">
+                <span>Finance Overview</span>
+                <div className="d-flex align-items-center gap-2">
+                  <span className="small fw-bold text-muted">Financial Year:</span>
+                  <select
+                    value={selectedOverviewFy}
+                    onChange={(e) => setSelectedOverviewFy(e.target.value)}
+                    className="form-select form-select-sm"
+                    style={{ width: '110px' }}
+                  >
+                    <option value="2023-24">2023-24</option>
+                    <option value="2024-25">2024-25</option>
+                    <option value="2025-26">2025-26</option>
+                  </select>
+                </div>
+              </div>
+            }
+          >
+            <div className="finance-cards-row">
+              <div className="finance-card-pro budget">
+                <div className="fin-label">Total Budget</div>
+                <div className="fin-sub">Expected sum from fee_master table</div>
+                <div className="fin-value">₹ {budget.toLocaleString()}</div>
+              </div>
+              <div className="finance-card-pro spent">
+                <div className="fin-label">Total Spent</div>
+                <div className="fin-sub">Teacher salaries paid this year</div>
+                <div className="fin-value">₹ {spent.toLocaleString()}</div>
               </div>
             </div>
-          }
-        >
-          <div className="finance-overview-grid">
-            <div className="finance-card-pro budget">
-              <div className="fin-label">Total Budget</div>
-              <div className="fin-value">₹ {budget.toLocaleString()}</div>
-              <div className="fin-sub">Annual Allocation</div>
+          </AdminCard>
+
+          {/* 2. Budget Summary */}
+          <AdminCard 
+            header={
+              <div className="d-flex justify-content-between align-items-center w-100">
+                <span>Budget Summary</span>
+                <div className="d-flex align-items-center gap-2">
+                  <select
+                    value={selectedOverviewFy}
+                    onChange={(e) => setSelectedOverviewFy(e.target.value)}
+                    className="form-select form-select-sm"
+                    style={{ width: '110px' }}
+                  >
+                    <option value="2023-24">2023-24</option>
+                    <option value="2024-25">2024-25</option>
+                    <option value="2025-26">2025-26</option>
+                  </select>
+                </div>
+              </div>
+            }
+          >
+            <div className="finance-cards-row">
+              <div className="finance-card-pro collected">
+                <div className="fin-label">Fees Collected</div>
+                <div className="fin-sub">Actual fees received from students</div>
+                <div className="fin-value">₹ {collected.toLocaleString()}</div>
+              </div>
+              <div className="finance-card-pro pending">
+                <div className="fin-label">Pending Fees</div>
+                <div className="fin-sub">Fees yet to be collected</div>
+                <div className="fin-value">₹ {pending.toLocaleString()}</div>
+              </div>
             </div>
-            <div className="finance-card-pro collected">
-              <div className="fin-label">Fees Collected</div>
-              <div className="fin-value">₹ {collected.toLocaleString()}</div>
-              <div className="fin-sub">Realized Revenue</div>
+            <div className="balance-strip mt-4">
+              <div className="balance-calc">
+                <span className="label">Balance (Fees Collected minus Salary Spent)</span>
+                <span className="formula">₹ {collected.toLocaleString()} - ₹ {spent.toLocaleString()} = </span>
+              </div>
+              <div className="balance-result">₹ {balance.toLocaleString()}</div>
             </div>
-            <div className="finance-card-pro pending">
-              <div className="fin-label">Balance / Pending</div>
-              <div className="fin-value">₹ {pending.toLocaleString()}</div>
-              <div className="fin-sub">Expected Recovery</div>
+          </AdminCard>
+
+          {/* 3. Financial Year Metrics */}
+          <AdminCard 
+            header={
+              <div className="d-flex justify-content-between align-items-center w-100">
+                <span>Financial Year {selectedOverviewFy}</span>
+                <div className="d-flex align-items-center gap-2">
+                  <select
+                    value={selectedOverviewFy}
+                    onChange={(e) => setSelectedOverviewFy(e.target.value)}
+                    className="form-select form-select-sm"
+                    style={{ width: '110px' }}
+                  >
+                    <option value="2023-24">2023-24</option>
+                    <option value="2024-25">2024-25</option>
+                    <option value="2025-26">2025-26</option>
+                  </select>
+                </div>
+              </div>
+            }
+          >
+            <div className="finance-cards-row">
+              <div className="finance-card-pro collected">
+                <div className="fin-label">Fees Collected in FY</div>
+                <div className="fin-value">₹ {collected.toLocaleString()}</div>
+              </div>
+              <div className="finance-card-pro spent">
+                <div className="fin-label">Salary Spent in FY</div>
+                <div className="fin-value">₹ {spent.toLocaleString()}</div>
+              </div>
             </div>
-            <div className="finance-card-pro spent">
-              <div className="fin-label">Total Spent</div>
-              <div className="fin-value">₹ {spent.toLocaleString()}</div>
-              <div className="fin-sub">Total Expenses</div>
-            </div>
-          </div>
-        </AdminCard>
+          </AdminCard>
+        </div>
       </div>
     );
   };
@@ -265,11 +332,11 @@ export default function PrincipalDashboard() {
             <span className="metric-value">{studentCount || 0}</span>
             <i className="bi bi-mortarboard metric-icon"></i>
           </div>
-          <div className="metric-card ratio">
-            <span className="metric-label">Teacher-Student Ratio</span>
-            <span className="metric-value">{ratio}</span>
-            <i className="bi bi-graph-up-arrow metric-icon"></i>
-          </div>
+            <div className="metric-card ratio">
+              <span className="metric-label">Student-Teacher Ratio</span>
+              <span className="metric-value">{ratio}</span>
+              <i className="bi bi-graph-up-arrow metric-icon"></i>
+            </div>
           <div className="metric-card status">
             <span className="metric-label">Budget Status</span>
             <span className="metric-value">Healthy</span>
