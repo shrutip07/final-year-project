@@ -93,6 +93,11 @@ export default function AdminDashboard() {
   const [reportSchools, setReportSchools] = useState([]);
   const [reportLoading, setReportLoading] = useState(false);
 
+  // Import state
+  const [importFile, setImportFile] = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importMessage, setImportMessage] = useState("");
+
   const navigate = useNavigate();
 
   // Load all units
@@ -434,6 +439,60 @@ export default function AdminDashboard() {
         "Failed to download report: " +
           (error.response?.data?.error || error.message)
       );
+    }
+  };
+
+  const handleImportFileChange = (e) => {
+    const f = e.target.files?.[0];
+    setImportFile(f || null);
+    setImportMessage("");
+  };
+
+  const handleImportSubmit = async (e) => {
+    e.preventDefault();
+    setImportMessage("");
+
+    if (!importFile) {
+      setImportMessage("Please select an Excel file (.xlsx or .xls).");
+      return;
+    }
+
+    try {
+      setImportLoading(true);
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("file", importFile);
+
+      const res = await axios.post("http://localhost:5000/api/units/import", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const data = res.data;
+      setImportMessage(
+        data.importedCount != null
+          ? `Imported ${data.importedCount} unit(s) successfully.`
+          : "Units imported successfully."
+      );
+      setImportFile(null);
+      
+      // Refresh units list
+      const response = await axios.get("http://localhost:5000/api/admin/units", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUnits(Array.isArray(response.data) ? response.data : []);
+      
+    } catch (err) {
+      const errorData = err.response?.data || {};
+      let msg = errorData.message || "Failed to import units.";
+      if (Array.isArray(errorData.missingHeaders) && errorData.missingHeaders.length) {
+        msg += " Missing headers: " + errorData.missingHeaders.join(", ");
+      }
+      setImportMessage(msg);
+    } finally {
+      setImportLoading(false);
     }
   };
 
@@ -1091,7 +1150,61 @@ export default function AdminDashboard() {
         <h3>School Overview</h3>
         <p>Monitor and manage all MKSSS educational units</p>
       </div>
-      
+
+      <div className="import-units-section mb-4">
+        <AdminCard header="Import Units from Excel">
+          {importMessage && (
+            <div
+              className={`alert ${
+                importMessage.includes("successfully")
+                  ? "alert-success"
+                  : "alert-danger"
+              } py-2 mb-3 small`}
+            >
+              {importMessage}
+            </div>
+          )}
+          <form
+            onSubmit={handleImportSubmit}
+            className="d-flex align-items-end gap-3 flex-wrap"
+          >
+            <div className="flex-grow-1" style={{ minWidth: "250px" }}>
+              <label className="form-label small fw-bold text-muted mb-1">
+                Select Excel File (.xlsx / .xls)
+              </label>
+              <input
+                type="file"
+                className="form-control form-control-sm"
+                accept=".xlsx,.xls"
+                onChange={handleImportFileChange}
+              />
+            </div>
+            <button
+              type="submit"
+              className="btn btn-primary btn-sm px-4"
+              disabled={importLoading}
+              style={{ height: "38px" }}
+            >
+              {importLoading ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  Importing...
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-file-earmark-excel me-2"></i>
+                  Import Units
+                </>
+              )}
+            </button>
+          </form>
+        </AdminCard>
+      </div>
+
       <div className="row school-grid">
         {safeUnits.length === 0 ? (
           <div className="col-12 text-center py-5">
