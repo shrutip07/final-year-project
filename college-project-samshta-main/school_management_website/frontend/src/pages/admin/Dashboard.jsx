@@ -1383,10 +1383,11 @@ export default function AdminDashboard() {
                 subtitle={t("manage_monitor_all_schools")}
               />
 
-                {/* Import Units Section */}
-                <div className="admin-import-container mb-5">
-                  <div className="card admin-import-card border-0 shadow-sm rounded-4">
-                    <div className="card-body p-4">
+                  {/* Import Units Section */}
+                  <div className="admin-import-container mb-5">
+                    <div className="card admin-import-card border-0 shadow-sm rounded-4 overflow-hidden">
+                      <div className="card-top-accent" style={{height: '6px'}}></div>
+                      <div className="card-body p-4">
                       <div className="row g-4">
                         {/* Left: Upload + Action */}
                         <div className="col-lg-6 border-end pe-lg-4">
