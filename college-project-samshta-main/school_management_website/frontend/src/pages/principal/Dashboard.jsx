@@ -111,15 +111,15 @@ export default function PrincipalDashboard() {
             <span className="principal-metric-label">{t("total_teachers")}</span>
             <span className="principal-metric-value">{teacherCount || 0}</span>
           </div>
-          <div className="principal-metric-box principal-metric-students">
-            <span className="principal-metric-label">{t("total_students")}</span>
-            <span className="principal-metric-value">{studentCount || 0}</span>
-          </div>
-          <div className="principal-metric-box principal-metric-ratio">
-            <span className="principal-metric-label">{t("teacher_student_ratio")}</span>
-            <span className="principal-metric-value">{ratio}</span>
-          </div>
-          <div className="principal-metric-box principal-metric-finance">
+            <div className="principal-metric-box principal-metric-students">
+              <span className="principal-metric-label">{t("total_students")}</span>
+              <span className="principal-metric-value">{studentCount || 0}</span>
+            </div>
+              <div className="principal-metric-box principal-metric-ratio">
+                <span className="principal-metric-label">{t("teacher_student_ratio")}</span>
+                <span className="principal-metric-value">{ratio}</span>
+              </div>
+            <div className="principal-metric-box principal-metric-finance">
             <span className="principal-metric-label">{t("budget_status")}</span>
             <span className="principal-metric-value">Healthy</span>
           </div>
