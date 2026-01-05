@@ -321,28 +321,28 @@ export default function PrincipalDashboard() {
         </div>
 
         {/* HERO METRICS - Colorful and Admin-style */}
-        <div className="metrics-grid-modern">
-          <div className="metric-card teachers">
-            <span className="metric-label">Total Teachers</span>
-            <span className="metric-value">{teacherCount || 0}</span>
-            <i className="bi bi-people metric-icon"></i>
-          </div>
-          <div className="metric-card students">
-            <span className="metric-label">Total Students</span>
-            <span className="metric-value">{studentCount || 0}</span>
-            <i className="bi bi-mortarboard metric-icon"></i>
-          </div>
+          <div className="metrics-grid-modern">
+            <div className="metric-card teachers">
+              <span className="metric-label">Total Teachers</span>
+              <span className="metric-value">{teacherCount || 0}</span>
+              <i className="bi bi-people metric-icon"></i>
+            </div>
+            <div className="metric-card students">
+              <span className="metric-label">Total Students</span>
+              <span className="metric-value">{studentCount || 0}</span>
+              <i className="bi bi-mortarboard metric-icon"></i>
+            </div>
             <div className="metric-card ratio">
               <span className="metric-label">Student-Teacher Ratio</span>
               <span className="metric-value">{ratio}</span>
               <i className="bi bi-graph-up-arrow metric-icon"></i>
             </div>
-          <div className="metric-card status">
-            <span className="metric-label">Budget Status</span>
-            <span className="metric-value">Healthy</span>
-            <i className="bi bi-check-circle metric-icon"></i>
+            <div className="metric-card status">
+              <span className="metric-label">Budget Status</span>
+              <span className="metric-value">Healthy</span>
+              <i className="bi bi-check-circle metric-icon"></i>
+            </div>
           </div>
-        </div>
 
         {/* DASHBOARD SUB-TABS */}
         <div className="sub-tabs-nav">
