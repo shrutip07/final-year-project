@@ -11,7 +11,6 @@ import PrincipalNotificationsPage from "./PrincipalNotificationsPage";
 import ChatWidget from "../../components/ChatWidget";
 
 import PrincipalLayout from "../../components/principal/PrincipalLayout";
-import AdminCard from "../../components/admin/AdminCard";
 import "./Dashboard.scss";
 
 export default function PrincipalDashboard() {
@@ -19,6 +18,7 @@ export default function PrincipalDashboard() {
   const navigate = useNavigate();
 
   const [sidebarTab, setSidebarTab] = useState("dashboard");
+  const [dashboardSubTab, setDashboardSubTab] = useState("principal_profile");
   const [dashboardData, setDashboardData] = useState(null);
   const [profile, setProfile] = useState(null);
   const [students, setStudents] = useState([]);
@@ -90,6 +90,12 @@ export default function PrincipalDashboard() {
     const school = Array.isArray(unit) && unit.length > 0 ? unit[0] : {};
     const ratio = studentCount && teacherCount ? (studentCount / teacherCount).toFixed(1) : 0;
 
+    const dashboardSubTabs = [
+      { id: "principal_profile", label: "Principal Profile", icon: "bi-person-badge" },
+      { id: "headmistress_info", label: "Headmistress Info", icon: "bi-person-workspace" },
+      { id: "finance_overview", label: "Finance Overview", icon: "bi-cash-stack" },
+    ];
+
     return (
       <div className="principal-tab-content">
         <div className="principal-welcome-banner">
@@ -101,112 +107,211 @@ export default function PrincipalDashboard() {
 
         <div className="principal-metrics-grid">
           <div className="principal-metric-card teachers">
-            <span className="metric-label">{t("teachers")}</span>
-            <span className="metric-value">{teacherCount || 0}</span>
+            <div className="metric-icon"><i className="bi bi-people-fill"></i></div>
+            <div className="metric-info">
+              <span className="metric-label">{t("teachers")}</span>
+              <span className="metric-value">{teacherCount || 0}</span>
+            </div>
           </div>
           <div className="principal-metric-card students">
-            <span className="metric-label">{t("students")}</span>
-            <span className="metric-value">{studentCount || 0}</span>
+            <div className="metric-icon"><i className="bi bi-mortarboard-fill"></i></div>
+            <div className="metric-info">
+              <span className="metric-label">{t("students")}</span>
+              <span className="metric-value">{studentCount || 0}</span>
+            </div>
           </div>
           <div className="principal-metric-card ratio">
-            <span className="metric-label">{t("teacher_ratio")}</span>
-            <span className="metric-value">{ratio}</span>
+            <div className="metric-icon"><i className="bi bi-pie-chart-fill"></i></div>
+            <div className="metric-info">
+              <span className="metric-label">{t("teacher_ratio")}</span>
+              <span className="metric-value">{ratio}</span>
+            </div>
           </div>
           <div className="principal-metric-card budget">
-            <span className="metric-label">Budget Status</span>
-            <span className="metric-value">Active</span>
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="col-md-6">
-            <div className="principal-admin-card">
-              <div className="card-header">
-                <h4>{t("principal_profile")}</h4>
-                <i className="bi bi-person-badge text-primary"></i>
-              </div>
-              <div className="card-body">
-                <div className="principal-details-grid single-column">
-                  <div className="detail-item">
-                    <span className="detail-key">{t("name")}</span>
-                    <span className="detail-value">{principal?.full_name}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-key">{t("email")}</span>
-                    <span className="detail-value">{principal?.email}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-key">{t("phone")}</span>
-                    <span className="detail-value">{principal?.phone}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-key">{t("qualification")}</span>
-                    <span className="detail-value">{principal?.qualification}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-6">
-            <div className="principal-admin-card">
-              <div className="card-header">
-                <h4>{t("headmistress_info")}</h4>
-                <i className="bi bi-person-workspace text-accent"></i>
-              </div>
-              <div className="card-body">
-                <div className="principal-details-grid single-column">
-                  <div className="detail-item">
-                    <span className="detail-key">{t("headmistress_name")}</span>
-                    <span className="detail-value">{school.headmistress_name || "-"}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-key">{t("headmistress_email")}</span>
-                    <span className="detail-value">{school.headmistress_email || "-"}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-key">{t("headmistress_phone")}</span>
-                    <span className="detail-value">{school.headmistress_phone || "-"}</span>
-                  </div>
-                </div>
-              </div>
+            <div className="metric-icon"><i className="bi bi-wallet2"></i></div>
+            <div className="metric-info">
+              <span className="metric-label">Budget Status</span>
+              <span className="metric-value">Active</span>
             </div>
           </div>
         </div>
 
-        <div className="principal-admin-card">
-          <div className="card-header">
-            <h4>{t("unit_details")}</h4>
-            <i className="bi bi-building text-primary"></i>
-          </div>
-          <div className="card-body">
-            <div className="principal-details-grid">
-              <div className="detail-item">
-                <span className="detail-key">{t("unit_name")}</span>
-                <span className="detail-value">{school.unit_name || "-"}</span>
+        <div className="principal-sub-tabs">
+          {dashboardSubTabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`principal-sub-tab ${dashboardSubTab === tab.id ? "active" : ""}`}
+              onClick={() => setDashboardSubTab(tab.id)}
+            >
+              <i className={`bi ${tab.icon}`}></i>
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="principal-sub-content">
+          {dashboardSubTab === "principal_profile" && (
+            <div className="principal-info-section">
+              <div className="info-header">
+                <div className="info-avatar">
+                  {principal?.full_name ? principal.full_name.charAt(0).toUpperCase() : "P"}
+                </div>
+                <div className="info-title">
+                  <h3>{principal?.full_name || "Principal"}</h3>
+                  <span className="role-badge">Principal</span>
+                </div>
               </div>
-              <div className="detail-item">
-                <span className="detail-key">SEMIS No</span>
-                <span className="detail-value">{school.semis_no || "-"}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-key">{t("school_shift")}</span>
-                <span className="detail-value">{school.school_shift || "-"}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-key">{t("standard_range")}</span>
-                <span className="detail-value">{school.standard_range || "-"}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-key">Management</span>
-                <span className="detail-value">{school.type_of_management || "-"}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-key">Jurisdiction</span>
-                <span className="detail-value">{school.school_jurisdiction || "-"}</span>
+              <div className="info-cards-grid">
+                <div className="info-card teal">
+                  <div className="info-card-icon"><i className="bi bi-envelope-fill"></i></div>
+                  <div className="info-card-content">
+                    <span className="info-label">Email Address</span>
+                    <span className="info-value">{principal?.email || "-"}</span>
+                  </div>
+                </div>
+                <div className="info-card purple">
+                  <div className="info-card-icon"><i className="bi bi-telephone-fill"></i></div>
+                  <div className="info-card-content">
+                    <span className="info-label">Phone Number</span>
+                    <span className="info-value">{principal?.phone || "-"}</span>
+                  </div>
+                </div>
+                <div className="info-card orange">
+                  <div className="info-card-icon"><i className="bi bi-award-fill"></i></div>
+                  <div className="info-card-content">
+                    <span className="info-label">Qualification</span>
+                    <span className="info-value">{principal?.qualification || "-"}</span>
+                  </div>
+                </div>
+                <div className="info-card blue">
+                  <div className="info-card-icon"><i className="bi bi-building"></i></div>
+                  <div className="info-card-content">
+                    <span className="info-label">Unit Name</span>
+                    <span className="info-value">{school.unit_name || "-"}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {dashboardSubTab === "headmistress_info" && (
+            <div className="principal-info-section">
+              <div className="info-header">
+                <div className="info-avatar hm">
+                  {school.headmistress_name ? school.headmistress_name.charAt(0).toUpperCase() : "H"}
+                </div>
+                <div className="info-title">
+                  <h3>{school.headmistress_name || "Headmistress"}</h3>
+                  <span className="role-badge hm">Headmistress</span>
+                </div>
+              </div>
+              <div className="info-cards-grid">
+                <div className="info-card rose">
+                  <div className="info-card-icon"><i className="bi bi-envelope-fill"></i></div>
+                  <div className="info-card-content">
+                    <span className="info-label">Email Address</span>
+                    <span className="info-value">{school.headmistress_email || "-"}</span>
+                  </div>
+                </div>
+                <div className="info-card emerald">
+                  <div className="info-card-icon"><i className="bi bi-telephone-fill"></i></div>
+                  <div className="info-card-content">
+                    <span className="info-label">Phone Number</span>
+                    <span className="info-value">{school.headmistress_phone || "-"}</span>
+                  </div>
+                </div>
+                <div className="info-card indigo">
+                  <div className="info-card-icon"><i className="bi bi-hash"></i></div>
+                  <div className="info-card-content">
+                    <span className="info-label">SEMIS No</span>
+                    <span className="info-value">{school.semis_no || "-"}</span>
+                  </div>
+                </div>
+                <div className="info-card amber">
+                  <div className="info-card-icon"><i className="bi bi-clock-fill"></i></div>
+                  <div className="info-card-content">
+                    <span className="info-label">School Shift</span>
+                    <span className="info-value">{school.school_shift || "-"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="school-details-strip">
+                <div className="strip-item">
+                  <span className="strip-label">Standard Range</span>
+                  <span className="strip-value">{school.standard_range || "-"}</span>
+                </div>
+                <div className="strip-item">
+                  <span className="strip-label">Management Type</span>
+                  <span className="strip-value">{school.type_of_management || "-"}</span>
+                </div>
+                <div className="strip-item">
+                  <span className="strip-label">Jurisdiction</span>
+                  <span className="strip-value">{school.school_jurisdiction || "-"}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {dashboardSubTab === "finance_overview" && (
+            <div className="principal-finance-section">
+              <div className="finance-header">
+                <h4>Financial Year Insights</h4>
+                <select
+                  value={selectedOverviewFy}
+                  onChange={(e) => setSelectedOverviewFy(e.target.value)}
+                  className="form-select form-select-sm"
+                >
+                  <option value="2023-24">2023-24</option>
+                  <option value="2024-25">2024-25</option>
+                  <option value="2025-26">2025-26</option>
+                </select>
+              </div>
+              <div className="finance-cards-grid">
+                <div className="finance-card budget">
+                  <div className="finance-icon"><i className="bi bi-piggy-bank-fill"></i></div>
+                  <div className="finance-info">
+                    <span className="finance-label">Budget Summary</span>
+                    <span className="finance-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                    <span className="finance-sub">Expected Fees</span>
+                  </div>
+                </div>
+                <div className="finance-card collected">
+                  <div className="finance-icon"><i className="bi bi-check-circle-fill"></i></div>
+                  <div className="finance-info">
+                    <span className="finance-label">Fees Collected</span>
+                    <span className="finance-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                    <span className="finance-sub">Actual Amount</span>
+                  </div>
+                </div>
+                <div className="finance-card pending">
+                  <div className="finance-icon"><i className="bi bi-hourglass-split"></i></div>
+                  <div className="finance-info">
+                    <span className="finance-label">Pending Fees</span>
+                    <span className="finance-value">₹ {((overviewMetrics?.feesCollectedFy || 0) * 0.1).toLocaleString()}</span>
+                    <span className="finance-sub">To be Collected</span>
+                  </div>
+                </div>
+                <div className="finance-card spent">
+                  <div className="finance-icon"><i className="bi bi-credit-card-fill"></i></div>
+                  <div className="finance-info">
+                    <span className="finance-label">Salary Spent</span>
+                    <span className="finance-value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                    <span className="finance-sub">Total Payroll</span>
+                  </div>
+                </div>
+              </div>
+              <div className="finance-balance-bar">
+                <span className="balance-label">Net Balance</span>
+                <span className={`balance-value ${
+                  (overviewMetrics?.feesCollectedFy || 0) - (overviewMetrics?.salarySpentFy || 0) >= 0
+                    ? "positive" : "negative"
+                }`}>
+                  ₹ {((overviewMetrics?.feesCollectedFy || 0) - (overviewMetrics?.salarySpentFy || 0)).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -228,26 +333,38 @@ export default function PrincipalDashboard() {
           </select>
         </div>
         <div className="card-body">
-          <div className="principal-finance-grid">
+          <div className="finance-cards-grid">
             <div className="finance-card budget">
-              <span className="label">Budget Summary</span>
-              <span className="value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
-              <span className="sub">Expected Fees</span>
+              <div className="finance-icon"><i className="bi bi-piggy-bank-fill"></i></div>
+              <div className="finance-info">
+                <span className="finance-label">Budget Summary</span>
+                <span className="finance-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                <span className="finance-sub">Expected Fees</span>
+              </div>
             </div>
             <div className="finance-card collected">
-              <span className="label">Fees Collected</span>
-              <span className="value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
-              <span className="sub">Actual Amount</span>
+              <div className="finance-icon"><i className="bi bi-check-circle-fill"></i></div>
+              <div className="finance-info">
+                <span className="finance-label">Fees Collected</span>
+                <span className="finance-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                <span className="finance-sub">Actual Amount</span>
+              </div>
             </div>
             <div className="finance-card pending">
-              <span className="label">Pending Fees</span>
-              <span className="value">₹ {( (overviewMetrics?.feesCollectedFy || 0) * 0.1).toLocaleString()}</span>
-              <span className="sub">To be Collected</span>
+              <div className="finance-icon"><i className="bi bi-hourglass-split"></i></div>
+              <div className="finance-info">
+                <span className="finance-label">Pending Fees</span>
+                <span className="finance-value">₹ {((overviewMetrics?.feesCollectedFy || 0) * 0.1).toLocaleString()}</span>
+                <span className="finance-sub">To be Collected</span>
+              </div>
             </div>
             <div className="finance-card spent">
-              <span className="label">Salary Spent</span>
-              <span className="value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
-              <span className="sub">Total Payroll</span>
+              <div className="finance-icon"><i className="bi bi-credit-card-fill"></i></div>
+              <div className="finance-info">
+                <span className="finance-label">Salary Spent</span>
+                <span className="finance-value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                <span className="finance-sub">Total Payroll</span>
+              </div>
             </div>
           </div>
         </div>
