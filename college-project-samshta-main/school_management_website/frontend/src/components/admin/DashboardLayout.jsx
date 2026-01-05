@@ -15,7 +15,8 @@ export default function DashboardLayout({
   onSidebarTabChange,
   sidebarItems,
   portalName,
-  portalIcon = "bi-buildings-fill"
+  portalIcon = "bi-buildings-fill",
+  customGreeting
 }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -86,7 +87,7 @@ export default function DashboardLayout({
                 <div className="profile-dropdown-menu">
                   <div className="dropdown-user-info">
                     <p className="user-name">{displayName}</p>
-                    <p className="user-role">Administrator</p>
+                    <p className="user-role">{portalName || "User"}</p>
                   </div>
                   <div className="dropdown-divider"></div>
                   <button className="dropdown-link" onClick={() => { setShowDropdown(false); navigate("/admin/profile"); }}>
@@ -103,7 +104,7 @@ export default function DashboardLayout({
       </header>
 
       <div className="layout-container">
-        <TopGreetingBar schoolName={schoolName} semisId={semisId} />
+        <TopGreetingBar schoolName={schoolName} semisId={semisId} customGreeting={customGreeting} />
         
         {/* Horizontal Navigation Bar (Shown on main dashboard only) */}
         {!schoolName && sidebarItems && (

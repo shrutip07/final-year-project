@@ -3,10 +3,12 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 
-import "./Dashboard.scss"; // ✅ use teacher SCSS (colors will match admin)
+import "./Dashboard.scss"; 
 import ChatWidget from "../../components/ChatWidget";
 import TeacherNotificationsPage from "./TeacherNotificationsPage";
 import Charts from "./Charts";
+import TeacherLayout from "../../components/teacher/TeacherLayout";
+import AdminCard from "../../components/admin/AdminCard";
 
 export default function TeacherDashboard() {
   const { t } = useTranslation();
@@ -19,16 +21,8 @@ export default function TeacherDashboard() {
   const [academicYear, setAcademicYear] = useState("");
   const [classes, setClasses] = useState([]);
 
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const sidebarItems = [
-    { key: "dashboard", label: t("dashboard", "Dashboard"), icon: "bi-speedometer2" },
-    { key: "profile", label: t("profile", "Profile"), icon: "bi-person" },
-    { key: "students", label: t("students", "Students"), icon: "bi-people" },
-    { key: "charts", label: t("charts", "Charts"), icon: "bi-bar-chart" },
-    { key: "notifications", label: t("notifications", "Notifications"), icon: "bi-bell" }
-  ];
 
   // Load teacher profile
   useEffect(() => {
@@ -38,12 +32,17 @@ export default function TeacherDashboard() {
       return;
     }
 
+    setLoading(true);
     axios
       .get("http://localhost:5000/api/teacher/me", {
         headers: { Authorization: `Bearer ${token}` }
       })
-      .then((res) => setProfile(res.data))
+      .then((res) => {
+        setProfile(res.data);
+        setLoading(false);
+      })
       .catch((err) => {
+        setLoading(false);
         if (err.response?.status === 404) {
           navigate("/teacher/onboarding");
         } else {
@@ -110,102 +109,118 @@ export default function TeacherDashboard() {
 
   const renderDashboardContent = () => (
     <div className="teacher-main-inner">
-      <div className="page-header">
-        <h2>{t("teacher_dashboard", "Teacher Dashboard")}</h2>
+      <div className="section-header-pro">
+        <h3>Institutional Overview</h3>
+        <p>Manage your academic profile and assigned classes</p>
       </div>
 
-      {/* Profile card */}
-      {profile && (
-        <div className="teacher-profile-card">
-          <div className="card-header">
-            <h3>{t("teacher_profile", "Teacher Profile")}</h3>
-          </div>
-          <div className="card-body">
-            <div className="row">
-              <div className="col-md-6">
-                <h4>
-                  {t("welcome", "Welcome")}, {profile.full_name}
-                </h4>
-                <p>
-                  <strong>{t("email", "Email")}:</strong> {profile.email}
-                </p>
-                <p>
-                  <strong>{t("phone", "Phone")}:</strong> {profile.phone}
-                </p>
-                <p>
-                  <strong>{t("subject", "Subject")}:</strong> {profile.subject}
-                </p>
-                <p>
-                  <strong>{t("designation", "Designation")}:</strong>{" "}
-                  {profile.designation}
-                </p>
-                <p>
-                  <strong>{t("qualification", "Qualification")}:</strong>{" "}
-                  {profile.qualification}
-                </p>
+      <div className="row g-4">
+        {/* Profile card */}
+        <div className="col-lg-6">
+          {profile ? (
+            <AdminCard header="Teacher Profile">
+              <div className="profile-details-grid">
+                <div className="detail-item">
+                  <span className="label">Full Name</span>
+                  <span className="value">{profile.full_name}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Email Address</span>
+                  <span className="value">{profile.email}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Phone Number</span>
+                  <span className="value">{profile.phone}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Primary Subject</span>
+                  <span className="value">{profile.subject}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Designation</span>
+                  <span className="value">{profile.designation}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="label">Qualification</span>
+                  <span className="value">{profile.qualification}</span>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* My classes card */}
-      <div className="teacher-students-card">
-        <div className="card-header">
-          <h3>{t("my_classes", "My Classes")}</h3>
-          <div className="header-controls">
-            <select
-              value={academicYear}
-              onChange={(e) => setAcademicYear(e.target.value)}
-              className="form-control"
-            >
-              {allYears.length === 0 && (
-                <option value="">{t("loading", "Loading...")}</option>
-              )}
-              {allYears.map((year) => (
-                <option value={year} key={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-            <button
-              className="btn btn-primary-custom"
-              type="button"
-              onClick={handleMarkYearDone}
-            >
-              {t("mark_year_done", "Done with this year")}
-            </button>
-          </div>
-        </div>
-        <div className="card-body">
-          {classes.length === 0 ? (
-            <div className="text-muted">
-              {t("no_classes_assigned", "No classes assigned for this year.")}
-            </div>
+            </AdminCard>
           ) : (
-            <div className="table-responsive">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>{t("academic_year", "Academic Year")}</th>
-                    <th>{t("standard", "Standard")}</th>
-                    <th>{t("division", "Division")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {classes.map((cls) => (
-                    <tr
-                      key={`${cls.academic_year}-${cls.standard}-${cls.division}`}
-                    >
-                      <td>{cls.academic_year}</td>
-                      <td>{cls.standard}</td>
-                      <td>{cls.division}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <AdminCard header="Teacher Profile">
+              <div className="text-center py-4">
+                <div className="spinner-border text-primary spinner-border-sm" role="status"></div>
+                <p className="mt-2 text-muted small">Loading profile...</p>
+              </div>
+            </AdminCard>
           )}
+        </div>
+
+        {/* My classes card */}
+        <div className="col-lg-6">
+          <AdminCard 
+            header={
+              <div className="d-flex justify-content-between align-items-center w-100">
+                <h4 className="mb-0">My Classes</h4>
+                <div className="d-flex gap-2">
+                  <select
+                    value={academicYear}
+                    onChange={(e) => setAcademicYear(e.target.value)}
+                    className="form-select form-select-sm"
+                    style={{ width: '130px' }}
+                  >
+                    {allYears.length === 0 && (
+                      <option value="">{t("loading", "Loading...")}</option>
+                    )}
+                    {allYears.map((year) => (
+                      <option value={year} key={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            }
+          >
+            {classes.length === 0 ? (
+              <div className="empty-state-container text-center py-5">
+                <i className="bi bi-journal-x text-muted fs-1"></i>
+                <p className="text-muted mt-2">No classes assigned for this year.</p>
+              </div>
+            ) : (
+              <div className="table-responsive professional-table">
+                <table className="table align-middle">
+                  <thead>
+                    <tr>
+                      <th>Academic Year</th>
+                      <th>Standard</th>
+                      <th>Division</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {classes.map((cls, idx) => (
+                      <tr key={idx}>
+                        <td><span className="erp-badge badge-year">{cls.academic_year}</span></td>
+                        <td><span className="fw-bold">{cls.standard}</span></td>
+                        <td><span className="fw-bold text-primary">{cls.division}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            
+            <div className="mt-4 pt-3 border-top d-flex justify-content-end">
+              <button
+                className="btn btn-primary btn-sm px-4"
+                type="button"
+                onClick={handleMarkYearDone}
+              >
+                <i className="bi bi-check-circle me-2"></i>
+                Mark Year as Completed
+              </button>
+            </div>
+          </AdminCard>
         </div>
       </div>
     </div>
@@ -227,17 +242,26 @@ export default function TeacherDashboard() {
       case "charts":
         return (
           <div className="teacher-main-inner">
-            <div className="page-header">
-              <h2>{t("charts", "Charts")}</h2>
+             <div className="section-header-pro">
+              <h3>Academic Charts</h3>
+              <p>Visual representation of institutional performance</p>
             </div>
-            <Charts />
+            <AdminCard>
+              <Charts />
+            </AdminCard>
           </div>
         );
 
       case "notifications":
         return (
           <div className="teacher-main-inner">
-            <TeacherNotificationsPage />
+             <div className="section-header-pro">
+              <h3>Communication Center</h3>
+              <p>Recent announcements and official notifications</p>
+            </div>
+            <AdminCard>
+              <TeacherNotificationsPage />
+            </AdminCard>
           </div>
         );
 
@@ -246,54 +270,33 @@ export default function TeacherDashboard() {
     }
   };
 
-  if (loading) return <div className="loading-state">{t("loading", "Loading...")}</div>;
-  if (error) return <div className="error-state">{error}</div>;
-
   return (
-    <div className="teacher-dashboard-container">
-      {/* Sidebar (teacher structure, admin colors) */}
-      <aside className="teacher-sidebar">
-        <div className="teacher-sidebar-header">
-          <div className="teacher-sidebar-icon">
-            <i className="bi bi-person-workspace" />
+    <TeacherLayout
+      activeSidebarTab={sidebarTab}
+      onSidebarTabChange={setSidebarTab}
+      customGreeting="Welcome, Teacher 👋"
+    >
+      <div className="dashboard-wrapper">
+        {loading ? (
+          <div className="d-flex flex-column align-items-center justify-content-center py-5">
+            <div className="spinner-grow text-primary" role="status"></div>
+            <span className="mt-3 text-muted fw-bold">Syncing Teacher Dashboard...</span>
           </div>
-          <h3>{t("teacher_portal", "Teacher Portal")}</h3>
-        </div>
-
-        <div className="teacher-sidebar-nav">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.key}
-              className={`teacher-nav-link ${
-                sidebarTab === item.key ? "active" : ""
-              }`}
-              onClick={() => setSidebarTab(item.key)}
-            >
-              <i className={`bi ${item.icon}`} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="teacher-sidebar-footer">
-          <button
-            className="teacher-nav-link logout-btn"
-            onClick={() => {
-              localStorage.removeItem("token");
-              navigate("/login");
-            }}
-          >
-            <i className="bi bi-box-arrow-left" />
-            <span>{t("logout", "Logout")}</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Main content */}
-      <main className="teacher-main-content">
-        {renderMainContent()}
-        <ChatWidget />
-      </main>
-    </div>
+        ) : error ? (
+          <div className="alert alert-custom-danger d-flex align-items-center" role="alert">
+            <i className="bi bi-exclamation-triangle-fill me-3 fs-3"></i>
+            <div>
+              <div className="fw-bold">Configuration Error</div>
+              {error}
+            </div>
+          </div>
+        ) : (
+          <div className="dashboard-main-view">
+            {renderMainContent()}
+          </div>
+        )}
+      </div>
+      <ChatWidget />
+    </TeacherLayout>
   );
 }

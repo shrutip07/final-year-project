@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { jwtDecode } from "jwt-decode";
 import './TopGreetingBar.scss';
 
-export default function TopGreetingBar({ schoolName, semisId }) {
+export default function TopGreetingBar({ schoolName, semisId, customGreeting }) {
   const [displayName, setDisplayName] = useState("Admin");
   
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function TopGreetingBar({ schoolName, semisId }) {
       <div className="banner-content">
         <div className="greeting-text">
           <h1>
-            Welcome, {displayName} 👋 
+            {customGreeting || `Welcome, ${displayName} 👋`} 
             <span className="divider">|</span> 
             <span className="subtitle">MKSSS Dashboard</span>
           </h1>
