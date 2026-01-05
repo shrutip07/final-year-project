@@ -9,9 +9,100 @@ $shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 $shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
+// Professional accent colors for teacher dashboard
+$teal-accent: #0d9488;
+$indigo-accent: #4f46e5;
+$amber-accent: #d97706;
+$green-accent: #16a34a;
+
 .teacher-main-inner {
   max-width: 1400px;
   margin: 0 auto;
+}
+
+.teacher-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  align-items: stretch;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
+
+  .teacher-metric-card {
+    background: $bg-white;
+    min-height: 100px;
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid $border-color;
+    box-shadow: $shadow-sm;
+    transition: all 0.2s ease;
+
+    .metric-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .metric-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+
+      .metric-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: $text-light;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .metric-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: $text-dark;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    &.classes {
+      border-left: 4px solid $teal-accent;
+      .metric-icon { background: rgba($teal-accent, 0.08); color: $teal-accent; }
+    }
+    &.students {
+      border-left: 4px solid $indigo-accent;
+      .metric-icon { background: rgba($indigo-accent, 0.08); color: $indigo-accent; }
+    }
+    &.year {
+      border-left: 4px solid $amber-accent;
+      .metric-icon { background: rgba($amber-accent, 0.08); color: $amber-accent; }
+    }
+    &.subject {
+      border-left: 4px solid $green-accent;
+      .metric-icon { background: rgba($green-accent, 0.08); color: $green-accent; }
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-md;
+    }
+  }
 }
 
 .teacher-dashboard-container {
@@ -194,6 +285,27 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
         overflow: hidden;
         text-overflow: ellipsis;
       }
+    }
+
+    &.teacher-accent-teal {
+      background: rgba($teal-accent, 0.04);
+      border-color: rgba($teal-accent, 0.1);
+      .info-icon { background: $teal-accent; color: white; }
+    }
+    &.teacher-accent-indigo {
+      background: rgba($indigo-accent, 0.04);
+      border-color: rgba($indigo-accent, 0.1);
+      .info-icon { background: $indigo-accent; color: white; }
+    }
+    &.teacher-accent-amber {
+      background: rgba($amber-accent, 0.04);
+      border-color: rgba($amber-accent, 0.1);
+      .info-icon { background: $amber-accent; color: white; }
+    }
+    &.teacher-accent-green {
+      background: rgba($green-accent, 0.04);
+      border-color: rgba($green-accent, 0.1);
+      .info-icon { background: $green-accent; color: white; }
     }
 
     &.profile-primary {

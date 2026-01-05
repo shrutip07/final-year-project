@@ -125,22 +125,55 @@ export default function TeacherDashboard() {
           <p>Manage your academic profile and assigned classes</p>
         </div>
 
+        {/* Teacher Metric Cards */}
+        <div className="teacher-metrics-grid mb-4">
+          <div className="teacher-metric-card classes">
+            <div className="metric-icon"><i className="bi bi-journal-text"></i></div>
+            <div className="metric-info">
+              <span className="metric-label">Total Classes</span>
+              <span className="metric-value">{totalClasses}</span>
+            </div>
+          </div>
+          <div className="teacher-metric-card students">
+            <div className="metric-icon"><i className="bi bi-people-fill"></i></div>
+            <div className="metric-info">
+              <span className="metric-label">Total Students</span>
+              <span className="metric-value">{totalStudents}</span>
+            </div>
+          </div>
+          <div className="teacher-metric-card year">
+            <div className="metric-icon"><i className="bi bi-calendar-check-fill"></i></div>
+            <div className="metric-info">
+              <span className="metric-label">Academic Year</span>
+              <span className="metric-value">{academicYear || "N/A"}</span>
+            </div>
+          </div>
+          <div className="teacher-metric-card subject">
+            <div className="metric-icon"><i className="bi bi-book-half"></i></div>
+            <div className="metric-info">
+              <span className="metric-label">Primary Subject</span>
+              <span className="metric-value">{profile?.subject || "N/A"}</span>
+            </div>
+          </div>
+        </div>
+
         <div className="row g-4">
           <div className="col-12">
             {profile ? (
               <AdminCard header="Teacher Profile">
-                <div className="profile-info-grid">
-                  <div className="info-row">
-                    <ProfileInfoBlock icon="bi-person" label="Full Name" value={profile.full_name} colorClass="profile-primary" />
-                    <ProfileInfoBlock icon="bi-book" label="Primary Subject" value={profile.subject} colorClass="profile-info" />
-                    <ProfileInfoBlock icon="bi-briefcase" label="Designation" value={profile.designation} colorClass="profile-warning" />
+                  <div className="profile-info-grid">
+                    <div className="info-row">
+                      <ProfileInfoBlock icon="bi-person" label="Full Name" value={profile.full_name} colorClass="teacher-accent-teal" />
+                      <ProfileInfoBlock icon="bi-book" label="Primary Subject" value={profile.subject} colorClass="teacher-accent-indigo" />
+                      <ProfileInfoBlock icon="bi-briefcase" label="Designation" value={profile.designation} colorClass="teacher-accent-amber" />
+                    </div>
+                    <div className="info-row">
+                      <ProfileInfoBlock icon="bi-envelope" label="Email Address" value={profile.email} colorClass="teacher-accent-green" />
+                      <ProfileInfoBlock icon="bi-telephone" label="Phone Number" value={profile.phone} colorClass="teacher-accent-teal" />
+                      <ProfileInfoBlock icon="bi-mortarboard" label="Qualification" value={profile.qualification} colorClass="teacher-accent-indigo" />
+                    </div>
                   </div>
-                  <div className="info-row">
-                    <ProfileInfoBlock icon="bi-envelope" label="Email Address" value={profile.email} colorClass="profile-danger" />
-                    <ProfileInfoBlock icon="bi-telephone" label="Phone Number" value={profile.phone} colorClass="profile-success" />
-                    <ProfileInfoBlock icon="bi-mortarboard" label="Qualification" value={profile.qualification} colorClass="profile-secondary" />
-                  </div>
-                </div>
+
               </AdminCard>
             ) : (
               <AdminCard header="Teacher Profile">
