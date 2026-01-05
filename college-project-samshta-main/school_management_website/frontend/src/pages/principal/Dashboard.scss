@@ -1,19 +1,21 @@
-$primary: #002E6D;
-$accent: #0057D9;
-$highlight: #FFC145;
-$support: #00A9A5;
-$purple: #7C3AED;
-$rose: #E11D48;
-$orange: #EA580C;
-$emerald: #059669;
-$indigo: #4F46E5;
-$amber: #D97706;
-$teal: #0D9488;
+$primary: #002E6D; // MKSSS Navy Blue
+$secondary: #475569; // Soft Blue / Muted Teal
+$neutral: #94a3b8; // Light Grey
+$background: #F8FAFC;
 $white: #ffffff;
-$text-dark: #1e293b;
-$text-muted: #64748b;
 $border-color: #e2e8f0;
-$background: #F9FAFB;
+$text-dark: #0f172a;
+$text-muted: #64748b;
+
+// Success/Warning colors for specific contexts but muted
+$success-tint: rgba(16, 185, 129, 0.08);
+$success-text: #059669;
+$info-tint: rgba(14, 165, 233, 0.08);
+$info-text: #0284c7;
+$warning-tint: rgba(245, 158, 11, 0.08);
+$warning-text: #d97706;
+$danger-tint: rgba(239, 68, 68, 0.08);
+$danger-text: #dc2626;
 
 .principal-dashboard-container {
   min-height: calc(100vh - 180px);
@@ -33,57 +35,33 @@ $background: #F9FAFB;
       width: 6px;
     }
     &::-webkit-scrollbar-thumb {
-      background: rgba($primary, 0.15);
+      background: rgba($primary, 0.1);
       border-radius: 3px;
     }
   }
 
   .principal-welcome-banner {
-    background: linear-gradient(135deg, $primary 0%, $accent 100%);
-    border-radius: 16px;
-    padding: 28px 36px;
+    background: $primary; // Solid Navy
+    border-radius: 12px;
+    padding: 32px 40px;
     margin-bottom: 24px;
     color: $white;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba($primary, 0.2);
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: -30px;
-      right: -30px;
-      width: 150px;
-      height: 150px;
-      background: rgba($white, 0.08);
-      border-radius: 50%;
-    }
-
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -50px;
-      right: 100px;
-      width: 100px;
-      height: 100px;
-      background: rgba($white, 0.05);
-      border-radius: 50%;
-    }
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 
     .welcome-text {
       position: relative;
       z-index: 1;
       h2 {
-        font-size: 26px;
-        font-weight: 800;
+        font-size: 24px;
+        font-weight: 700;
         margin: 0;
-        letter-spacing: -0.5px;
       }
       p {
-        margin: 6px 0 0;
-        font-size: 15px;
-        opacity: 0.9;
-        font-weight: 500;
+        margin: 4px 0 0;
+        font-size: 14px;
+        opacity: 0.8;
       }
     }
   }
@@ -96,182 +74,168 @@ $background: #F9FAFB;
 
     .principal-metric-card {
       background: $white;
-      padding: 20px 24px;
-      border-radius: 14px;
+      height: 100px; // Fixed height
+      padding: 0 24px; // Horizontal padding
+      border-radius: 12px;
       display: flex;
-      align-items: center;
+      align-items: center; // Center content vertically
       gap: 16px;
       border: 1px solid $border-color;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s ease;
-
-      &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-      }
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease;
 
       .metric-icon {
-        width: 52px;
-        height: 52px;
-        border-radius: 12px;
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 22px;
+        font-size: 20px;
+        opacity: 0.7; // Subtle icons
       }
 
       .metric-info {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        justify-content: center;
 
         .metric-label {
           font-size: 11px;
-          font-weight: 700;
+          font-weight: 600;
+          color: $text-muted;
           text-transform: uppercase;
-          letter-spacing: 0.8px;
+          letter-spacing: 0.5px;
         }
 
         .metric-value {
-          font-size: 28px;
-          font-weight: 800;
+          font-size: 24px;
+          font-weight: 700;
+          color: $text-dark;
+          line-height: 1.2;
         }
       }
 
+      // Contextual Tints (Muted)
       &.teachers {
-        background: linear-gradient(135deg, rgba($support, 0.08) 0%, $white 100%);
-        .metric-icon { background: rgba($support, 0.15); color: $support; }
-        .metric-label { color: darken($support, 10%); }
-        .metric-value { color: $support; }
+        .metric-icon { background: $info-tint; color: $info-text; }
       }
-
       &.students {
-        background: linear-gradient(135deg, rgba($purple, 0.08) 0%, $white 100%);
-        .metric-icon { background: rgba($purple, 0.15); color: $purple; }
-        .metric-label { color: darken($purple, 10%); }
-        .metric-value { color: $purple; }
+        .metric-icon { background: rgba($primary, 0.05); color: $primary; }
       }
-
       &.ratio {
-        background: linear-gradient(135deg, rgba($orange, 0.08) 0%, $white 100%);
-        .metric-icon { background: rgba($orange, 0.15); color: $orange; }
-        .metric-label { color: darken($orange, 10%); }
-        .metric-value { color: $orange; }
+        .metric-icon { background: $warning-tint; color: $warning-text; }
       }
-
       &.budget {
-        background: linear-gradient(135deg, rgba($emerald, 0.08) 0%, $white 100%);
-        .metric-icon { background: rgba($emerald, 0.15); color: $emerald; }
-        .metric-label { color: darken($emerald, 10%); }
-        .metric-value { color: $emerald; }
+        .metric-icon { background: $success-tint; color: $success-text; }
       }
     }
   }
 
   .principal-sub-tabs {
     display: flex;
-    gap: 12px;
+    width: 100%; // Full width
+    gap: 0; // No gap between tabs
     margin-bottom: 24px;
-    padding: 6px;
     background: $white;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid $border-color;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 
     .principal-sub-tab {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      padding: 14px 20px;
+      gap: 12px;
+      padding: 16px 24px;
       border: none;
-      background: transparent;
-      border-radius: 10px;
+      background: $white;
       font-size: 14px;
       font-weight: 600;
-      color: $text-muted;
+      color: $primary;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
+      border-right: 1px solid $border-color;
 
-      i {
-        font-size: 18px;
+      &:last-child {
+        border-right: none;
       }
 
-      &:hover {
-        background: rgba($primary, 0.05);
-        color: $primary;
+      i {
+        font-size: 16px;
+        opacity: 0.7;
       }
 
       &.active {
-        background: linear-gradient(135deg, $primary 0%, $accent 100%);
+        background: $primary; // Solid Navy
         color: $white;
-        box-shadow: 0 4px 12px rgba($primary, 0.25);
+        i { opacity: 1; }
+      }
+
+      &:hover:not(.active) {
+        background: rgba($primary, 0.02);
       }
     }
   }
 
   .principal-sub-content {
     background: $white;
-    border-radius: 16px;
+    border-radius: 12px;
     border: 1px solid $border-color;
-    padding: 28px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
 
   .principal-info-section {
     .info-header {
       display: flex;
       align-items: center;
-      gap: 20px;
-      margin-bottom: 28px;
-      padding-bottom: 20px;
-      border-bottom: 2px solid $border-color;
+      gap: 24px;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid $border-color;
 
       .info-avatar {
-        width: 72px;
-        height: 72px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, $primary 0%, $accent 100%);
+        width: 64px;
+        height: 64px;
+        border-radius: 12px;
+        background: $primary; // Solid
         color: $white;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 28px;
-        font-weight: 800;
-        box-shadow: 0 8px 20px rgba($primary, 0.25);
+        font-size: 24px;
+        font-weight: 700;
 
         &.hm {
-          background: linear-gradient(135deg, $rose 0%, #F43F5E 100%);
-          box-shadow: 0 8px 20px rgba($rose, 0.25);
+          background: #475569; // Different solid for HM
         }
       }
 
       .info-title {
         h3 {
           margin: 0;
-          font-size: 22px;
-          font-weight: 800;
-          color: $primary;
+          font-size: 20px;
+          font-weight: 700;
+          color: $text-dark;
         }
 
         .role-badge {
           display: inline-block;
-          margin-top: 6px;
-          padding: 4px 14px;
-          background: linear-gradient(135deg, rgba($primary, 0.1) 0%, rgba($accent, 0.1) 100%);
+          margin-top: 4px;
+          padding: 2px 10px;
+          background: rgba($primary, 0.05);
           color: $primary;
           font-size: 11px;
-          font-weight: 700;
+          font-weight: 600;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
-          border-radius: 20px;
+          border-radius: 4px;
 
           &.hm {
-            background: linear-gradient(135deg, rgba($rose, 0.1) 0%, rgba(#F43F5E, 0.1) 100%);
-            color: $rose;
+            background: rgba(#475569, 0.05);
+            color: #475569;
           }
         }
       }
@@ -280,125 +244,74 @@ $background: #F9FAFB;
     .info-cards-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
+      gap: 24px;
 
       .info-card {
         display: flex;
-        align-items: flex-start;
-        gap: 16px;
-        padding: 20px;
-        border-radius: 14px;
-        transition: all 0.3s ease;
-
-        &:hover {
-          transform: translateY(-4px);
-        }
+        flex-direction: column;
+        gap: 8px;
+        padding: 0; // Remove individual card padding
+        background: transparent; // Clean white look
 
         .info-card-icon {
-          width: 48px;
-          height: 48px;
-          border-radius: 12px;
+          width: 32px;
+          height: 32px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 20px;
-          flex-shrink: 0;
+          font-size: 16px;
+          color: $primary;
+          opacity: 0.6;
+          margin-bottom: 4px;
         }
 
         .info-card-content {
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 2px;
 
           .info-label {
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 600;
+            color: $text-muted;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
           }
 
           .info-value {
-            font-size: 15px;
-            font-weight: 700;
-            word-break: break-word;
+            font-size: 14px;
+            font-weight: 600;
+            color: $text-dark;
           }
         }
-
-        &.teal {
-          background: linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%);
-          .info-card-icon { background: rgba($teal, 0.2); color: $teal; }
-          .info-label { color: darken($teal, 10%); }
-          .info-value { color: $teal; }
-        }
-
-        &.purple {
-          background: linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%);
-          .info-card-icon { background: rgba($purple, 0.2); color: $purple; }
-          .info-label { color: darken($purple, 10%); }
-          .info-value { color: $purple; }
-        }
-
-        &.orange {
-          background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
-          .info-card-icon { background: rgba($orange, 0.2); color: $orange; }
-          .info-label { color: darken($orange, 10%); }
-          .info-value { color: $orange; }
-        }
-
-        &.blue {
-          background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
-          .info-card-icon { background: rgba($accent, 0.2); color: $accent; }
-          .info-label { color: darken($accent, 10%); }
-          .info-value { color: $accent; }
-        }
-
-        &.rose {
-          background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%);
-          .info-card-icon { background: rgba($rose, 0.2); color: $rose; }
-          .info-label { color: darken($rose, 10%); }
-          .info-value { color: $rose; }
-        }
-
-        &.emerald {
-          background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
-          .info-card-icon { background: rgba($emerald, 0.2); color: $emerald; }
-          .info-label { color: darken($emerald, 10%); }
-          .info-value { color: $emerald; }
-        }
-
-        &.indigo {
-          background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
-          .info-card-icon { background: rgba($indigo, 0.2); color: $indigo; }
-          .info-label { color: darken($indigo, 10%); }
-          .info-value { color: $indigo; }
-        }
-
-        &.amber {
-          background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
-          .info-card-icon { background: rgba($amber, 0.2); color: $amber; }
-          .info-label { color: darken($amber, 10%); }
-          .info-value { color: $amber; }
+        
+        // Remove individual colors, keep it clean
+        &.teal, &.purple, &.orange, &.blue, &.rose, &.emerald, &.indigo, &.amber {
+          background: transparent;
+          .info-card-icon { background: transparent; }
+          .info-label { color: $text-muted; }
+          .info-value { color: $text-dark; }
         }
       }
     }
 
     .school-details-strip {
       display: flex;
-      gap: 24px;
-      margin-top: 24px;
-      padding: 20px 24px;
-      background: linear-gradient(135deg, $background 0%, rgba($border-color, 0.3) 100%);
-      border-radius: 12px;
-      border: 1px solid $border-color;
+      gap: 0;
+      margin-top: 32px;
+      padding: 0;
+      background: $white;
+      border-top: 1px solid $border-color;
+      padding-top: 24px;
 
       .strip-item {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 6px;
-        padding-right: 24px;
+        gap: 4px;
+        padding: 0 24px;
         border-right: 1px solid $border-color;
 
+        &:first-child { padding-left: 0; }
         &:last-child {
           border-right: none;
           padding-right: 0;
@@ -406,16 +319,15 @@ $background: #F9FAFB;
 
         .strip-label {
           font-size: 11px;
-          font-weight: 700;
+          font-weight: 600;
           color: $text-muted;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
         }
 
         .strip-value {
-          font-size: 15px;
-          font-weight: 700;
-          color: $primary;
+          font-size: 14px;
+          font-weight: 600;
+          color: $text-dark;
         }
       }
     }
@@ -430,21 +342,23 @@ $background: #F9FAFB;
 
       h4 {
         margin: 0;
-        font-size: 18px;
-        font-weight: 800;
-        color: $primary;
+        font-size: 16px;
+        font-weight: 700;
+        color: $text-dark;
       }
 
       .form-select {
-        width: 140px;
-        border-radius: 10px;
+        width: 130px;
+        padding: 6px 12px;
+        border-radius: 6px;
         border-color: $border-color;
-        font-weight: 600;
-        font-size: 13px;
+        font-weight: 500;
+        font-size: 12px;
+        background-color: $white;
 
         &:focus {
-          border-color: $accent;
-          box-shadow: 0 0 0 0.2rem rgba($accent, 0.15);
+          border-color: $primary;
+          box-shadow: none;
         }
       }
     }
@@ -456,78 +370,52 @@ $background: #F9FAFB;
 
       .finance-card {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         gap: 16px;
-        padding: 24px;
-        border-radius: 14px;
-        transition: all 0.3s ease;
-
-        &:hover {
-          transform: translateY(-4px);
-        }
+        padding: 20px;
+        background: $white;
+        border: 1px solid $border-color;
+        border-radius: 12px;
 
         .finance-icon {
-          width: 52px;
-          height: 52px;
-          border-radius: 12px;
+          width: 40px;
+          height: 40px;
+          border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 22px;
-          flex-shrink: 0;
+          font-size: 18px;
+          opacity: 0.7;
         }
 
         .finance-info {
           display: flex;
           flex-direction: column;
-          gap: 4px;
 
           .finance-label {
             font-size: 10px;
-            font-weight: 700;
+            font-weight: 600;
+            color: $text-muted;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
           }
 
           .finance-value {
-            font-size: 20px;
-            font-weight: 800;
+            font-size: 18px;
+            font-weight: 700;
+            color: $text-dark;
           }
 
           .finance-sub {
-            font-size: 11px;
-            opacity: 0.8;
-            font-weight: 500;
+            font-size: 10px;
+            color: $text-muted;
           }
         }
-
-        &.budget {
-          background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
-          .finance-icon { background: rgba($indigo, 0.2); color: $indigo; }
-          .finance-label, .finance-value { color: $indigo; }
-          .finance-sub { color: lighten($indigo, 15%); }
-        }
-
-        &.collected {
-          background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
-          .finance-icon { background: rgba($emerald, 0.2); color: $emerald; }
-          .finance-label, .finance-value { color: $emerald; }
-          .finance-sub { color: lighten($emerald, 15%); }
-        }
-
-        &.pending {
-          background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
-          .finance-icon { background: rgba($amber, 0.2); color: $amber; }
-          .finance-label, .finance-value { color: $amber; }
-          .finance-sub { color: lighten($amber, 10%); }
-        }
-
-        &.spent {
-          background: linear-gradient(135deg, #FEF2F2 0%, #FECACA 100%);
-          .finance-icon { background: rgba($rose, 0.2); color: $rose; }
-          .finance-label, .finance-value { color: $rose; }
-          .finance-sub { color: lighten($rose, 15%); }
-        }
+        
+        // Muted contextual colors for finance
+        &.budget { .finance-icon { background: rgba($primary, 0.05); color: $primary; } }
+        &.collected { .finance-icon { background: $success-tint; color: $success-text; } }
+        &.pending { .finance-icon { background: $warning-tint; color: $warning-text; } }
+        &.spent { .finance-icon { background: $danger-tint; color: $danger-text; } }
       }
     }
 
@@ -536,56 +424,50 @@ $background: #F9FAFB;
       justify-content: space-between;
       align-items: center;
       margin-top: 24px;
-      padding: 20px 28px;
-      background: linear-gradient(135deg, $primary 0%, $accent 100%);
-      border-radius: 12px;
-      box-shadow: 0 6px 20px rgba($primary, 0.2);
+      padding: 16px 24px;
+      background: rgba($primary, 0.03);
+      border: 1px solid $border-color;
+      border-radius: 8px;
 
       .balance-label {
-        font-size: 14px;
+        font-size: 12px;
         font-weight: 700;
-        color: rgba($white, 0.9);
+        color: $text-muted;
         text-transform: uppercase;
-        letter-spacing: 1px;
       }
 
       .balance-value {
-        font-size: 24px;
-        font-weight: 800;
-        color: $white;
+        font-size: 20px;
+        font-weight: 700;
+        color: $primary;
 
-        &.positive {
-          color: #86EFAC;
-        }
-
-        &.negative {
-          color: #FCA5A5;
-        }
+        &.positive { color: $success-text; }
+        &.negative { color: $danger-text; }
       }
     }
   }
 
   .principal-admin-card {
     background: $white;
-    border-radius: 14px;
+    border-radius: 12px;
     border: 1px solid $border-color;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     margin-bottom: 24px;
     overflow: hidden;
 
     .card-header {
-      padding: 18px 24px;
+      padding: 16px 24px;
       border-bottom: 1px solid $border-color;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba($background, 0.5);
+      background: $background;
 
       h4 {
         margin: 0;
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 700;
-        color: $primary;
+        color: $text-dark;
       }
     }
 
@@ -595,16 +477,16 @@ $background: #F9FAFB;
   }
 
   .btn-primary {
-    background: linear-gradient(135deg, $primary 0%, $accent 100%);
+    background: $primary;
     border: none;
-    font-weight: 700;
-    padding: 10px 24px;
-    border-radius: 10px;
-    transition: all 0.3s;
-
+    font-weight: 600;
+    padding: 8px 20px;
+    border-radius: 6px;
+    
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba($accent, 0.3);
+      background: lighten($primary, 5%);
+      transform: none;
+      box-shadow: none;
     }
   }
 }
@@ -629,21 +511,17 @@ $background: #F9FAFB;
 
     .principal-sub-tabs {
       flex-direction: column;
+      .principal-sub-tab { border-right: none; border-bottom: 1px solid $border-color; }
     }
 
     .school-details-strip {
       flex-direction: column;
-      
       .strip-item {
         border-right: none;
         border-bottom: 1px solid $border-color;
-        padding-right: 0;
-        padding-bottom: 16px;
-
-        &:last-child {
-          border-bottom: none;
-          padding-bottom: 0;
-        }
+        padding: 16px 0;
+        &:first-child { padding-top: 0; }
+        &:last-child { border-bottom: none; }
       }
     }
   }
