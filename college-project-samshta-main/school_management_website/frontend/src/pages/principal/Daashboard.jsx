@@ -1,4 +1,3 @@
 import React from 'react';
-export default function Daashboard() {
-  return null;
-}
+export function Daashboard() { return null; }
+export default Daashboard;

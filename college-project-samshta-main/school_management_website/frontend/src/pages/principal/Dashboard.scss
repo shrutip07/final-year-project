@@ -427,19 +427,19 @@ $lavender-accent: #818cf8;
 
         .finance-stat-card {
           background: #F8FAFC;
-          padding: 20px 15px; // Reduced padding for better fit in one row
+          padding: 20px 15px;
           border-radius: 14px;
           border: 1px solid $border-color;
           height: 100%;
           display: flex;
-          align-items: center; // Vertical center
-          gap: 12px; // Reduced gap
+          align-items: center;
+          gap: 12px;
           transition: transform 0.2s ease;
 
           &:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); }
 
           .stat-icon {
-            width: 40px; // Slightly smaller
+            width: 40px;
             height: 40px;
             background: $white;
             border-radius: 10px;
@@ -455,8 +455,26 @@ $lavender-accent: #818cf8;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            .stat-label { font-size: 13px; font-weight: 700; color: $text-dark; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            .stat-subtitle { font-size: 11px; color: $text-muted; margin-bottom: 4px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            flex-grow: 1;
+
+            .stat-label { 
+              font-size: 13px; 
+              font-weight: 700; 
+              color: $text-dark; 
+              margin-bottom: 2px; 
+              white-space: nowrap; 
+              overflow: hidden; 
+              text-overflow: ellipsis; 
+            }
+            .stat-subtitle { 
+              font-size: 11px; 
+              color: $text-muted; 
+              margin-bottom: 4px; 
+              line-height: 1.2; 
+              white-space: nowrap; 
+              overflow: hidden; 
+              text-overflow: ellipsis; 
+            }
             .stat-value { font-size: 18px; font-weight: 800; color: $primary; }
           }
 
@@ -464,6 +482,8 @@ $lavender-accent: #818cf8;
           &.spent-card .stat-icon { color: #ef4444; }
           &.income-card .stat-icon { color: $teal-accent; }
           &.expenditure-card .stat-icon { color: $amber-accent; }
+          &.collected-card .stat-icon { color: $green-accent; }
+          &.pending-card .stat-icon { color: #f59e0b; }
         }
       }
     }
@@ -473,7 +493,7 @@ $lavender-accent: #818cf8;
         padding: 24px;
         .stat-icon { width: 50px; height: 50px; font-size: 24px; }
         .stat-info {
-          .stat-label { font-size: 15px; }
+          .stat-label { font-size: 15px; white-space: normal; }
           .stat-subtitle { font-size: 12px; white-space: normal; }
           .stat-value { font-size: 24px; }
         }
