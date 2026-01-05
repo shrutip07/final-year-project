@@ -2,14 +2,15 @@ import React from 'react';
 import DashboardLayout from '../admin/DashboardLayout';
 
 export default function PrincipalLayout(props) {
-  const sidebarItems = [
-    { key: "dashboard", label: "Dashboard", icon: "bi-grid-1x2" },
-    { key: "profile", label: "Profile", icon: "bi-person" },
-    { key: "teachers", label: "Teachers", icon: "bi-people" },
-    { key: "students", label: "Students", icon: "bi-mortarboard" },
-    { key: "charts", label: "Charts", icon: "bi-bar-chart-fill" },
-    { key: "notifications", label: "Notifications", icon: "bi-bell-fill" },
-  ];
+    const sidebarItems = [
+      { key: "dashboard", label: "Dashboard", icon: "bi-speedometer2" },
+      { key: "profile", label: "Profile", icon: "bi-person" },
+      { key: "teachers", label: "Teachers", icon: "bi-people" },
+      { key: "students", label: "Students", icon: "bi-mortarboard" },
+      { key: "charts", label: "Charts", icon: "bi-bar-chart-fill" },
+      { key: "notifications", label: "Notifications", icon: "bi-bell-fill" },
+      { key: "finance", label: "Finance", icon: "bi-cash-stack" },
+    ];
 
   return (
     <DashboardLayout 
@@ -17,7 +18,6 @@ export default function PrincipalLayout(props) {
       sidebarItems={sidebarItems} 
       portalName="Principal Portal"
       portalIcon="bi-mortarboard-fill"
-      customGreeting="Welcome, Principal 👋"
     />
   );
 }

@@ -103,55 +103,51 @@ export default function Teachers() {
           }
         />
       ) : (
-        <div className="professional-table-container">
-          <div className="table-responsive">
-            <table className="table align-middle">
-              <thead>
-                <tr>
-                  <th>{t("full_name")}</th>
-                  <th>{t("email")}</th>
-                  <th>{t("phone")}</th>
-                  <th>{t("qualification")}</th>
-                  <th>{t("designation")}</th>
-                  <th>{t("subject")}</th>
-                  <th>{t("joining_date")}</th>
-                  <th>{t("status")}</th>
+        <div className="table-responsive">
+          <table className="table table-striped table-bordered">
+            <thead>
+              <tr>
+                <th>{t("full_name")}</th>
+                <th>{t("email")}</th>
+                <th>{t("phone")}</th>
+                <th>{t("qualification")}</th>
+                <th>{t("designation")}</th>
+                <th>{t("subject")}</th>
+                <th>{t("joining_date")}</th>
+                <th>{t("status")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((teacher) => (
+                <tr key={teacher.staff_id}>
+                  <td>{teacher.full_name}</td>
+                  <td>{teacher.email}</td>
+                  <td>{teacher.phone || "-"}</td>
+                  <td>{teacher.qualification || "-"}</td>
+                  <td>{teacher.designation || "-"}</td>
+                  <td>{teacher.subject || "-"}</td>
+                  <td>
+                    {teacher.joining_date
+                      ? new Date(
+                          teacher.joining_date
+                        ).toLocaleDateString()
+                      : "-"}
+                  </td>
+                  <td>
+                    <span
+                      className={`badge ${
+                        teacher.status === "active"
+                          ? "bg-success"
+                          : "bg-secondary"
+                      }`}
+                    >
+                      {t(teacher.status)}
+                    </span>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filtered.map((teacher) => (
-                  <tr key={teacher.staff_id}>
-                    <td>
-                      <div className="fw-bold text-primary">{teacher.full_name}</div>
-                    </td>
-                    <td>{teacher.email}</td>
-                    <td>{teacher.phone || "-"}</td>
-                    <td>{teacher.qualification || "-"}</td>
-                    <td>{teacher.designation || "-"}</td>
-                    <td>{teacher.subject || "-"}</td>
-                    <td>
-                      {teacher.joining_date
-                        ? new Date(
-                            teacher.joining_date
-                          ).toLocaleDateString()
-                        : "-"}
-                    </td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          teacher.status === "active"
-                            ? "bg-success"
-                            : "bg-secondary"
-                        }`}
-                      >
-                        {t(teacher.status)}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </AdminCard>

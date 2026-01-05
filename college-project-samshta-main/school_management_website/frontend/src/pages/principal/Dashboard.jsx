@@ -30,7 +30,6 @@ export default function PrincipalDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // ========= DATA LOAD =========
   useEffect(() => {
     async function fetchAllData() {
       try {
@@ -84,246 +83,259 @@ export default function PrincipalDashboard() {
     fetchAllData();
   }, [navigate, t, selectedFy, selectedOverviewFy]);
 
-  // ========= DASHBOARD (HOME) =========
   const renderDashboard = () => {
     if (!dashboardData) return null;
 
-    const { principal, unit, teacherCount, studentCount } =
-      dashboardData || {};
-
+    const { principal, unit, teacherCount, studentCount } = dashboardData;
     const school = Array.isArray(unit) && unit.length > 0 ? unit[0] : {};
-
-    const ratio =
-      studentCount && teacherCount
-        ? (studentCount / teacherCount).toFixed(1)
-        : 0;
+    const ratio = studentCount && teacherCount ? (studentCount / teacherCount).toFixed(1) : 0;
 
     return (
-      <div className="principal-page-inner">
-        <div className="principal-section-header">
-          <h3>{t("principal_dashboard")}</h3>
-          <p>{t("school_overview")}</p>
+      <div className="principal-tab-content">
+        <div className="principal-welcome-banner">
+          <div className="welcome-text">
+            <h2>Welcome, Principal 👋</h2>
+            <p>MKSSS Dashboard</p>
+          </div>
         </div>
 
-        {/* HERO METRICS */}
         <div className="principal-metrics-grid">
-          <div className="principal-metric-box principal-metric-teachers">
-            <span className="principal-metric-label">{t("total_teachers")}</span>
-            <span className="principal-metric-value">{teacherCount || 0}</span>
+          <div className="principal-metric-card teachers">
+            <span className="metric-label">{t("teachers")}</span>
+            <span className="metric-value">{teacherCount || 0}</span>
           </div>
-            <div className="principal-metric-box principal-metric-students">
-              <span className="principal-metric-label">{t("total_students")}</span>
-              <span className="principal-metric-value">{studentCount || 0}</span>
-            </div>
-              <div className="principal-metric-box principal-metric-ratio">
-                <span className="principal-metric-label">{t("teacher_student_ratio")}</span>
-                <span className="principal-metric-value">{ratio}</span>
-              </div>
-            <div className="principal-metric-box principal-metric-finance">
-            <span className="principal-metric-label">{t("budget_status")}</span>
-            <span className="principal-metric-value">Healthy</span>
+          <div className="principal-metric-card students">
+            <span className="metric-label">{t("students")}</span>
+            <span className="metric-value">{studentCount || 0}</span>
+          </div>
+          <div className="principal-metric-card ratio">
+            <span className="metric-label">{t("teacher_ratio")}</span>
+            <span className="metric-value">{ratio}</span>
+          </div>
+          <div className="principal-metric-card budget">
+            <span className="metric-label">Budget Status</span>
+            <span className="metric-value">Active</span>
           </div>
         </div>
 
-        <div className="principal-layout-grid">
-            <div className="principal-card">
-              <div className="principal-card-header">
-                <h4>{t("institutional_details")}</h4>
-                <i className="bi bi-building text-primary"></i>
+        <div className="row">
+          <div className="col-md-6">
+            <div className="principal-admin-card">
+              <div className="card-header">
+                <h4>{t("principal_profile")}</h4>
+                <i className="bi bi-person-badge text-primary"></i>
               </div>
-              <div className="principal-card-body">
-                <div className="principal-details-grid">
-                  <div className="principal-details-row">
-                    <span className="principal-details-key">{t("unit_name")}</span>
-                    <span className="principal-details-value">{school.unit_name || "-"}</span>
+              <div className="card-body">
+                <div className="principal-details-grid single-column">
+                  <div className="detail-item">
+                    <span className="detail-key">{t("name")}</span>
+                    <span className="detail-value">{principal?.full_name}</span>
                   </div>
-                  <div className="principal-details-row">
-                    <span className="principal-details-key">SEMIS No</span>
-                    <span className="principal-details-value">{school.semis_no || "-"}</span>
+                  <div className="detail-item">
+                    <span className="detail-key">{t("email")}</span>
+                    <span className="detail-value">{principal?.email}</span>
                   </div>
-                  <div className="principal-details-row">
-                    <span className="principal-details-key">{t("school_shift")}</span>
-                    <span className="principal-details-value">{school.school_shift || "-"}</span>
+                  <div className="detail-item">
+                    <span className="detail-key">{t("phone")}</span>
+                    <span className="detail-value">{principal?.phone}</span>
                   </div>
-                  <div className="principal-details-row">
-                    <span className="principal-details-key">{t("standard_range")}</span>
-                    <span className="principal-details-value">{school.standard_range || "-"}</span>
+                  <div className="detail-item">
+                    <span className="detail-key">{t("qualification")}</span>
+                    <span className="detail-value">{principal?.qualification}</span>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="principal-card">
-              <div className="principal-card-header">
-                <h4>{t("leadership_overview")}</h4>
+          <div className="col-md-6">
+            <div className="principal-admin-card">
+              <div className="card-header">
+                <h4>{t("headmistress_info")}</h4>
                 <i className="bi bi-person-workspace text-accent"></i>
               </div>
-              <div className="principal-card-body">
-                <div className="principal-details-grid">
-                  <div className="principal-details-row">
-                    <span className="principal-details-key">{t("principal")}</span>
-                    <span className="principal-details-value">{principal?.full_name}</span>
+              <div className="card-body">
+                <div className="principal-details-grid single-column">
+                  <div className="detail-item">
+                    <span className="detail-key">{t("headmistress_name")}</span>
+                    <span className="detail-value">{school.headmistress_name || "-"}</span>
                   </div>
-                  <div className="principal-details-row">
-                    <span className="principal-details-key">{t("headmistress")}</span>
-                    <span className="principal-details-value">{school.headmistress_name || "-"}</span>
+                  <div className="detail-item">
+                    <span className="detail-key">{t("headmistress_email")}</span>
+                    <span className="detail-value">{school.headmistress_email || "-"}</span>
                   </div>
-                  <div className="principal-details-row">
-                    <span className="principal-details-key">{t("qualification")}</span>
-                    <span className="principal-details-value">{principal?.qualification || "-"}</span>
-                  </div>
-                  <div className="principal-details-row">
-                    <span className="principal-details-key">{t("status")}</span>
-                    <span className="principal-details-value">
-                        <span className="erp-badge badge-success">Active</span>
-                    </span>
+                  <div className="detail-item">
+                    <span className="detail-key">{t("headmistress_phone")}</span>
+                    <span className="detail-value">{school.headmistress_phone || "-"}</span>
                   </div>
                 </div>
               </div>
             </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderFinance = () => {
-    if (!overviewMetrics) return null;
-    const collected = overviewMetrics.feesCollectedFy || 0;
-    const spent = overviewMetrics.salarySpentFy || 0;
-    const pending = Math.floor(collected * 0.12); // Placeholder logic
-    const budget = collected + pending;
-
-    return (
-      <div className="principal-page-inner">
-        <div className="principal-section-header">
-          <div className="d-flex justify-content-between align-items-center">
-            <div>
-              <h3>{t("financial_dashboard")}</h3>
-              <p>{t("monitor_unit_finances")}</p>
-            </div>
-            <div className="d-flex align-items-center gap-2">
-              <span className="small fw-bold text-muted">{t("academic_year")}</span>
-              <select
-                value={selectedOverviewFy}
-                onChange={(e) => setSelectedOverviewFy(e.target.value)}
-                className="form-select form-select-sm"
-                style={{ width: '130px' }}
-              >
-                <option value="2023-24">2023-24</option>
-                <option value="2024-25">2024-25</option>
-                <option value="2025-26">2025-26</option>
-              </select>
-            </div>
           </div>
         </div>
 
-        <div className="principal-finance-grid">
-          <div className="principal-finance-item budget">
-            <span className="label">Budget Summary</span>
-            <span className="value">₹ {budget.toLocaleString()}</span>
-            <span className="sub">Annual Allocation</span>
+        <div className="principal-admin-card">
+          <div className="card-header">
+            <h4>{t("unit_details")}</h4>
+            <i className="bi bi-building text-primary"></i>
           </div>
-          <div className="principal-finance-item collected">
-            <span className="label">Fees Collected</span>
-            <span className="value">₹ {collected.toLocaleString()}</span>
-            <span className="sub">Realized Revenue</span>
-          </div>
-          <div className="principal-finance-item pending">
-            <span className="label">Pending Fees</span>
-            <span className="value">₹ {pending.toLocaleString()}</span>
-            <span className="sub">Expected Recovery</span>
-          </div>
-          <div className="principal-finance-item spent">
-            <span className="label">Salary Spent</span>
-            <span className="value">₹ {spent.toLocaleString()}</span>
-            <span className="sub">Total Payroll</span>
-          </div>
-        </div>
-
-        <div className="principal-card">
-          <div className="principal-card-header">
-            <h4>Fiscal Health Status</h4>
-            <i className="bi bi-shield-check text-success"></i>
-          </div>
-          <div className="principal-card-body">
-            <div className="principal-balance-strip">
-              <span className="principal-balance-label">Current Net Balance</span>
-              <span className={`principal-balance-value ${
-                collected - spent >= 0 ? "principal-balance-positive" : "principal-balance-negative"
-              }`}>
-                ₹ {(collected - spent).toLocaleString()}
-              </span>
-            </div>
-            
-            <div className="mt-4">
-                <p className="text-muted small">
-                    <i className="bi bi-info-circle me-1"></i>
-                    This financial snapshot is based on the selected academic year: <strong>{selectedOverviewFy}</strong>. 
-                    All values are subject to audit and verification by the central MKSSS finance office.
-                </p>
+          <div className="card-body">
+            <div className="principal-details-grid">
+              <div className="detail-item">
+                <span className="detail-key">{t("unit_name")}</span>
+                <span className="detail-value">{school.unit_name || "-"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-key">SEMIS No</span>
+                <span className="detail-value">{school.semis_no || "-"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-key">{t("school_shift")}</span>
+                <span className="detail-value">{school.school_shift || "-"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-key">{t("standard_range")}</span>
+                <span className="detail-value">{school.standard_range || "-"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-key">Management</span>
+                <span className="detail-value">{school.type_of_management || "-"}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-key">Jurisdiction</span>
+                <span className="detail-value">{school.school_jurisdiction || "-"}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
     );
   };
+
+  const renderFinance = () => (
+    <div className="principal-tab-content">
+      <div className="principal-admin-card">
+        <div className="card-header">
+          <h4>Finance Insights</h4>
+          <select
+            value={selectedOverviewFy}
+            onChange={(e) => setSelectedOverviewFy(e.target.value)}
+            className="form-select form-select-sm w-auto"
+          >
+            <option value="2023-24">2023-24</option>
+            <option value="2024-25">2024-25</option>
+            <option value="2025-26">2025-26</option>
+          </select>
+        </div>
+        <div className="card-body">
+          <div className="principal-finance-grid">
+            <div className="finance-card budget">
+              <span className="label">Budget Summary</span>
+              <span className="value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+              <span className="sub">Expected Fees</span>
+            </div>
+            <div className="finance-card collected">
+              <span className="label">Fees Collected</span>
+              <span className="value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+              <span className="sub">Actual Amount</span>
+            </div>
+            <div className="finance-card pending">
+              <span className="label">Pending Fees</span>
+              <span className="value">₹ {( (overviewMetrics?.feesCollectedFy || 0) * 0.1).toLocaleString()}</span>
+              <span className="sub">To be Collected</span>
+            </div>
+            <div className="finance-card spent">
+              <span className="label">Salary Spent</span>
+              <span className="value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+              <span className="sub">Total Payroll</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderProfile = () => (
+    <div className="principal-tab-content">
+      <div className="principal-admin-card">
+        <div className="card-header">
+          <h4>{t("profile")}</h4>
+        </div>
+        <div className="card-body">
+          <Profile />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderTeachers = () => (
+    <div className="principal-tab-content">
+      <div className="principal-admin-card">
+        <div className="card-header">
+          <h4>{t("teachers")}</h4>
+        </div>
+        <div className="card-body">
+          <Teachers />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStudents = () => (
+    <div className="principal-tab-content">
+      <div className="principal-admin-card">
+        <div className="card-header">
+          <h4>{t("students")}</h4>
+        </div>
+        <div className="card-body">
+          <Students students={students} />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderCharts = () => (
+    <div className="principal-tab-content">
+      <div className="principal-admin-card">
+        <div className="card-header">
+          <h4>{t("charts")}</h4>
+        </div>
+        <div className="card-body">
+          <Charts unitId={dashboardData?.principal?.unit_id} />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderNotifications = () => (
+    <div className="principal-tab-content">
+      <div className="principal-admin-card">
+        <div className="card-header">
+          <h4>{t("notifications")}</h4>
+        </div>
+        <div className="card-body">
+          <PrincipalNotificationsPage />
+        </div>
+      </div>
+    </div>
+  );
 
   const renderContent = () => {
     switch (sidebarTab) {
       case "dashboard":
         return renderDashboard();
       case "profile":
-        return (
-          <div className="principal-page-inner">
-            <div className="principal-section-header">
-              <h3>{t("principal_profile")}</h3>
-              <p>{t("manage_personal_information")}</p>
-            </div>
-            <Profile />
-          </div>
-        );
+        return renderProfile();
       case "teachers":
-        return (
-          <div className="principal-page-inner">
-            <div className="principal-section-header">
-              <h3>{t("teachers")}</h3>
-              <p>{t("staff_directory_management")}</p>
-            </div>
-            <Teachers />
-          </div>
-        );
+        return renderTeachers();
       case "students":
-        return (
-          <div className="principal-page-inner">
-            <div className="principal-section-header">
-              <h3>{t("students")}</h3>
-              <p>{t("student_enrollment_records")}</p>
-            </div>
-            <Students students={students} />
-          </div>
-        );
+        return renderStudents();
+      case "charts":
+        return renderCharts();
+      case "notifications":
+        return renderNotifications();
       case "finance":
         return renderFinance();
-      case "charts":
-        return (
-          <div className="principal-page-inner">
-            <div className="principal-section-header">
-              <h3>{t("analytics_dashboard")}</h3>
-              <p>{t("visualize_school_performance")}</p>
-            </div>
-            <Charts unitId={dashboardData?.principal?.unit_id} />
-          </div>
-        );
-      case "notifications":
-        return (
-          <div className="principal-page-inner">
-            <div className="principal-section-header">
-              <h3>{t("official_notifications")}</h3>
-              <p>{t("communication_hub")}</p>
-            </div>
-            <PrincipalNotificationsPage />
-          </div>
-        );
       default:
         return renderDashboard();
     }
@@ -334,24 +346,22 @@ export default function PrincipalDashboard() {
       activeSidebarTab={sidebarTab}
       onSidebarTabChange={setSidebarTab}
     >
-      <div className="principal-portal-redesign">
-        <div className="principal-dashboard-wrapper">
-          {loading ? (
-            <div className="d-flex flex-column align-items-center justify-content-center py-5">
-              <div className="spinner-grow text-primary" role="status"></div>
-              <span className="mt-3 text-muted fw-bold">Syncing Principal Portal...</span>
-            </div>
-          ) : error ? (
-            <div className="alert alert-danger m-4" role="alert">
-              <i className="bi bi-exclamation-triangle-fill me-2"></i>
-              {error}
-            </div>
-          ) : (
-            renderContent()
-          )}
-        </div>
-        <ChatWidget />
+      <div className="principal-dashboard-container">
+        {loading ? (
+          <div className="d-flex flex-column align-items-center justify-content-center py-5">
+            <div className="spinner-grow text-primary" role="status"></div>
+            <span className="mt-3 text-muted fw-bold">Loading Principal Portal...</span>
+          </div>
+        ) : error ? (
+          <div className="alert alert-danger m-4" role="alert">
+            <i className="bi bi-exclamation-triangle-fill me-2"></i>
+            {error}
+          </div>
+        ) : (
+          renderContent()
+        )}
       </div>
+      <ChatWidget />
     </PrincipalLayout>
   );
 }
