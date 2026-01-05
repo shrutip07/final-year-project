@@ -30,6 +30,14 @@ export default function Charts({ unitId }) {
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState(null);
   const [selectedYear, setSelectedYear] = useState("");
+  const [activeTab, setActiveTab] = useState("year_overview");
+
+  const tabs = [
+    { id: "year_overview", label: "Year Overview", icon: "bi-calendar-event" },
+    { id: "financial_trends", label: "Financial Trends", icon: "bi-graph-up" },
+    { id: "student_insights", label: "Student Insights", icon: "bi-people" },
+    { id: "historical_analysis", label: "Historical Analysis", icon: "bi-clock-history" },
+  ];
 
   // ========= Fetch analytics =========
   useEffect(() => {
@@ -235,7 +243,7 @@ export default function Charts({ unitId }) {
       {/* Header row */}
       <div className="charts-header">
         <div>
-            <p className="page-subtitle">
+          <p className="page-subtitle">
             {"Visualize key school metrics"}
           </p>
         </div>
@@ -258,250 +266,171 @@ export default function Charts({ unitId }) {
         </div>
       </div>
 
-      {/* ========== SECTION 1: YEAR SPECIFIC ========== */}
-      <h5 style={{ marginTop: 8, marginBottom: 12 }}>
-        {t("year_specific") || "Year Specific"} {selectedYear}
-      </h5>
-      <div className="charts-grid">
-        {/* Gender distribution */}
-        <div className="chart-card">
-          <div className="chart-title">
-            {t("students_by_gender") || "Students by Gender"}
-          </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <PieChart>
-              <Pie
-                data={genderData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                label={({ name, value }) => `${name}: ${value}`}
-                labelLine={false}
-              >
-                {genderData.map((entry, idx) => (
-                  <Cell
-                    key={entry.name}
-                    fill={GENDER_COLORS[idx % GENDER_COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Legend />
-              <Tooltip contentStyle={tooltipStyle} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+      {/* Tabs Navigation */}
+      <div className="principal-sub-tabs" style={{ marginBottom: 24 }}>
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            className={`principal-sub-tab ${activeTab === tab.id ? "active" : ""}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            <i className={`bi ${tab.icon}`}></i>
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
 
-        {/* Pass / Fail */}
-        <div className="chart-card">
-          <div className="chart-title">
-            {t("pass_fail_distribution") || "Pass / Fail Distribution"}
-          </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <PieChart>
-              <Pie
-                data={passData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                label={({ name, value }) => `${name}: ${value}`}
-                labelLine={false}
-              >
-                {passData.map((entry, idx) => (
-                  <Cell
-                    key={entry.name}
-                    fill={PASS_COLORS[idx % PASS_COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Legend />
-              <Tooltip contentStyle={tooltipStyle} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Students by standard (selected year) */}
-        <div className="chart-card">
-          <div className="chart-title">
-            {t("students_by_class_year_specific") ||
-              "Students by Class (Year Specific)"}
-          </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={studentsByStandardYear}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="standard" stroke="#4B5563" />
-              <YAxis stroke="#4B5563" />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Legend />
-              <Bar dataKey="count" fill="#0B63E5" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Payments by category (selected FY) */}
-        <div className="chart-card">
-          <div className="chart-title">
-            {t("payments_by_category") || "Payments by Category"}
-          </div>
-          {expenseCategories.length === 0 ? (
-            <div className="text-muted small mt-3">
-              {t("no_payment_data") || "No payment data for this year."}
+      {/* Tab Content */}
+      <div className="charts-tab-content">
+        {activeTab === "year_overview" && (
+          <div className="charts-grid">
+            <div className="chart-card">
+              <div className="chart-title">{t("students_by_gender") || "Students by Gender"}</div>
+              <ResponsiveContainer width="100%" height={260}>
+                <PieChart>
+                  <Pie data={genderData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
+                    {genderData.map((entry, idx) => (
+                      <Cell key={entry.name} fill={GENDER_COLORS[idx % GENDER_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Legend />
+                  <Tooltip contentStyle={tooltipStyle} />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <PieChart>
-                <Pie
-                  data={expenseCategories}
-                  dataKey="total"
-                  nameKey="category"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  label={({ category, total }) =>
-                    `${category}: ₹${formatNumber(total)}`
-                  }
-                  labelLine={false}
-                >
-                  {expenseCategories.map((entry, idx) => (
-                    <Cell
-                      key={entry.category}
-                      fill={COLORS[idx % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Legend />
-                <Tooltip
-                  formatter={(value) => `₹${formatNumber(value)}`}
-                  contentStyle={tooltipStyle}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-      </div>
 
-      {/* ========== SECTION 2: FINANCIAL TRENDS ========== */}
-      <h5 style={{ marginTop: 32, marginBottom: 12 }}>
-        {t("financial_trends") || "Financial Trends Over Years"}
-      </h5>
-      <div className="charts-grid">
-        {/* Salary trend */}
-        <div className="chart-card">
-          <div className="chart-title">
-            {t("salary_trend") || "Salary Trend"}
+            <div className="chart-card">
+              <div className="chart-title">{t("pass_fail_distribution") || "Pass / Fail Distribution"}</div>
+              <ResponsiveContainer width="100%" height={260}>
+                <PieChart>
+                  <Pie data={passData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
+                    {passData.map((entry, idx) => (
+                      <Cell key={entry.name} fill={PASS_COLORS[idx % PASS_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Legend />
+                  <Tooltip contentStyle={tooltipStyle} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="chart-card">
+              <div className="chart-title">{t("students_by_class_year_specific") || "Students by Class (Year Specific)"}</div>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={studentsByStandardYear}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <XAxis dataKey="standard" stroke="#4B5563" />
+                  <YAxis stroke="#4B5563" />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Legend />
+                  <Bar dataKey="count" fill="#0B63E5" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="chart-card">
+              <div className="chart-title">{t("payments_by_category") || "Payments by Category"}</div>
+              {expenseCategories.length === 0 ? (
+                <div className="text-muted small mt-3">{t("no_payment_data") || "No payment data for this year."}</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={260}>
+                  <PieChart>
+                    <Pie data={expenseCategories} dataKey="total" nameKey="category" cx="50%" cy="50%" outerRadius={80} label={({ category, total }) => `${category}: ₹${formatNumber(total)}`} labelLine={false}>
+                      {expenseCategories.map((entry, idx) => (
+                        <Cell key={entry.category} fill={COLORS[idx % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Legend />
+                    <Tooltip formatter={(value) => `₹${formatNumber(value)}`} contentStyle={tooltipStyle} />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </div>
           </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={salaryTrendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="year" stroke="#4B5563" />
-              <YAxis stroke="#4B5563" />
-              <Tooltip
-                formatter={(value) => `₹${formatNumber(value)}`}
-                contentStyle={tooltipStyle}
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="salary"
-                stroke="#F97316"
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
-                name={t("salary_paid") || "Salary Paid"}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        )}
 
-        {/* Fees trend */}
-        <div className="chart-card">
-          <div className="chart-title">{t("fees_trend") || "Fees Trend"}</div>
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={feesTrendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="year" stroke="#4B5563" />
-              <YAxis stroke="#4B5563" />
-              <Tooltip
-                formatter={(value) => `₹${formatNumber(value)}`}
-                contentStyle={tooltipStyle}
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="fees"
-                stroke="#22C55E"
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
-                name={t("fees_collected") || "Fees Collected"}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+        {activeTab === "financial_trends" && (
+          <div className="charts-grid">
+            <div className="chart-card">
+              <div className="chart-title">{t("salary_trend") || "Salary Trend"}</div>
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={salaryTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <XAxis dataKey="year" stroke="#4B5563" />
+                  <YAxis stroke="#4B5563" />
+                  <Tooltip formatter={(value) => `₹${formatNumber(value)}`} contentStyle={tooltipStyle} />
+                  <Legend />
+                  <Line type="monotone" dataKey="salary" stroke="#F97316" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} name={t("salary_paid") || "Salary Paid"} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
 
-      {/* ========== SECTION 3: HISTORICAL ANALYSIS ========== */}
-      <h5 style={{ marginTop: 32, marginBottom: 12 }}>
-        {t("historical_analysis") || "Historical Analysis"}
-      </h5>
-      <div className="charts-grid">
-        {/* Students by class (all years) */}
-        <div className="chart-card">
-          <div className="chart-title">
-            {t("students_by_class") || "Students by Class"}
+            <div className="chart-card">
+              <div className="chart-title">{t("fees_trend") || "Fees Trend"}</div>
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={feesTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <XAxis dataKey="year" stroke="#4B5563" />
+                  <YAxis stroke="#4B5563" />
+                  <Tooltip formatter={(value) => `₹${formatNumber(value)}`} contentStyle={tooltipStyle} />
+                  <Legend />
+                  <Line type="monotone" dataKey="fees" stroke="#22C55E" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} name={t("fees_collected") || "Fees Collected"} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={studentsByClass}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="standard" stroke="#4B5563" />
-              <YAxis stroke="#4B5563" />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Legend />
-              <Bar dataKey="count" fill="#0B63E5" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        )}
 
-        {/* Admissions per year */}
-        <div className="chart-card">
-          <div className="chart-title">
-            {t("admissions_per_year") || "Admissions per Year"}
-          </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={admissionsData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="year" stroke="#4B5563" />
-              <YAxis stroke="#4B5563" />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Legend />
-              <Bar dataKey="count" fill="#22C55E" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        {activeTab === "student_insights" && (
+          <div className="charts-grid">
+            <div className="chart-card">
+              <div className="chart-title">{t("students_by_class") || "Students by Class"}</div>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={studentsByClass}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <XAxis dataKey="standard" stroke="#4B5563" />
+                  <YAxis stroke="#4B5563" />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Legend />
+                  <Bar dataKey="count" fill="#0B63E5" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
 
-        {/* Budget vs Expenses */}
-        <div className="chart-card">
-          <div className="chart-title">
-            {t("budget_vs_expenses") || "Budget vs Expenses"}
+            <div className="chart-card">
+              <div className="chart-title">{t("admissions_per_year") || "Admissions per Year"}</div>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={admissionsData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <XAxis dataKey="year" stroke="#4B5563" />
+                  <YAxis stroke="#4B5563" />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Legend />
+                  <Bar dataKey="count" fill="#22C55E" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={budgetVsExpense}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="year" stroke="#4B5563" />
-              <YAxis stroke="#4B5563" />
-              <Tooltip
-                formatter={(value) => `₹${formatNumber(value)}`}
-                contentStyle={tooltipStyle}
-              />
-              <Legend />
-              <Bar dataKey="Budget" fill="#0B63E5" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="Expenses" fill="#F97316" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        )}
+
+        {activeTab === "historical_analysis" && (
+          <div className="charts-grid">
+            <div className="chart-card">
+              <div className="chart-title">{t("budget_vs_expenses") || "Budget vs Expenses"}</div>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={budgetVsExpense}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <XAxis dataKey="year" stroke="#4B5563" />
+                  <YAxis stroke="#4B5563" />
+                  <Tooltip formatter={(value) => `₹${formatNumber(value)}`} contentStyle={tooltipStyle} />
+                  <Legend />
+                  <Bar dataKey="Budget" fill="#0B63E5" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="Expenses" fill="#F97316" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
