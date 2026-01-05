@@ -285,10 +285,10 @@ $background: #F9FAFB;
         max-height: 150px;
         overflow-y: auto;
         word-break: break-all;
-      line-height: 1.6;
+        line-height: 1.6;
+      }
     }
   }
-}
 }
 
 // Colorful Metrics Grid for Overview
@@ -735,28 +735,11 @@ $background: #F9FAFB;
   to { opacity: 1; transform: translateY(0); }
 }
 
-// Responsive Adjustments
-@media (max-width: 768px) {
-  .dashboard-main-view {
-    .school-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-  
-  .metrics-grid,
-  .finance-summary-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .overview-info-strip {
-    grid-template-columns: 1fr;
-  }
-}
-
+// School Detail View (Modern & Non-Scrollable)
 .school-detail-view-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 140px); // Adjust based on header height
+  height: calc(100vh - 140px);
   overflow: hidden;
   padding: 0 24px 24px;
   gap: 20px;
@@ -911,6 +894,7 @@ $background: #F9FAFB;
       font-weight: 600;
       font-size: 14px;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
 
       i { font-size: 18px; }
 
@@ -935,7 +919,7 @@ $background: #F9FAFB;
     border-radius: 12px;
     padding: 24px;
     border: 1px solid rgba($primary, 0.08);
-    overflow: hidden; // Critical: no vertical scrolling for the container
+    overflow: hidden;
     display: flex;
     flex-direction: column;
 
@@ -1043,7 +1027,7 @@ $background: #F9FAFB;
 
     .table-fixed-wrapper {
       flex: 1;
-      overflow-y: auto; // Allow scroll only inside table wrapper if needed
+      overflow-y: auto;
       
       &::-webkit-scrollbar {
         width: 6px;
@@ -1089,341 +1073,12 @@ $background: #F9FAFB;
   to { opacity: 1; transform: translateY(0); }
 }
 
-  // School Detail View (Modern & Non-Scrollable)
-  .school-detail-view-container {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 140px); // Adjust based on header height
-    overflow: hidden;
-    padding: 0 24px 24px;
-    gap: 20px;
-
-    .school-static-info-card {
-      background: $white;
-      border-radius: 12px;
-      padding: 20px 24px;
-      border: 1px solid rgba($primary, 0.08);
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-
-      .info-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-
-        .school-identity {
-          .school-name {
-            font-size: 24px;
-            font-weight: 800;
-            color: $text-dark;
-            margin-bottom: 8px;
-          }
-
-          .school-meta-pills {
-            display: flex;
-            gap: 12px;
-
-            .meta-pill {
-              font-size: 13px;
-              font-weight: 600;
-              color: $text-muted;
-              display: flex;
-              align-items: center;
-              gap: 6px;
-
-              i {
-                color: $accent;
-                font-size: 14px;
-              }
-            }
-          }
-        }
-
-        .info-card-actions {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-
-          .academic-year-badge {
-            background: #f8fafc;
-            border: 1px solid $border-color;
-            padding: 6px 14px;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 120px;
-
-            .label {
-              font-size: 9px;
-              font-weight: 800;
-              color: $text-muted;
-              letter-spacing: 0.5px;
-            }
-
-            .value {
-              font-size: 13px;
-              font-weight: 700;
-              color: $text-dark;
-            }
-          }
-
-          .btn {
-            height: 42px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            border-radius: 8px;
-            padding: 0 18px;
-
-            &.btn-back {
-              background: #0f172a;
-              border: none;
-              color: white;
-              &:hover { background: lighten(#0f172a, 5%); }
-            }
-
-            &.btn-generate {
-              border-color: rgba($primary, 0.2);
-              color: $primary;
-              &:hover { background: rgba($primary, 0.05); }
-            }
-          }
-        }
-      }
-
-      .info-card-stats-row {
-        display: flex;
-        gap: 20px;
-        padding-top: 16px;
-        border-top: 1px solid rgba($border-color, 0.6);
-
-        .mini-stat-box {
-          background: #f8fafc;
-          padding: 8px 16px;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-
-          .label {
-            font-size: 11px;
-            font-weight: 700;
-            color: $text-muted;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-          }
-
-          .value {
-            font-size: 18px;
-            font-weight: 800;
-            color: $primary;
-          }
-        }
-      }
+// Responsive Adjustments
+@media (max-width: 768px) {
+  .dashboard-main-view {
+    .school-grid {
+      grid-template-columns: 1fr;
     }
-
-    .school-detail-tabs {
-      background: $white;
-      border-radius: 12px;
-      padding: 6px;
-      display: flex;
-      gap: 4px;
-      border: 1px solid rgba($primary, 0.06);
-
-      .detail-tab-item {
-        flex: 1;
-        height: 48px;
-        border: none;
-        background: transparent;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        color: $text-muted;
-        font-weight: 600;
-        font-size: 14px;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-        i { font-size: 18px; }
-
-        &:hover {
-          background: #f8fafc;
-          color: $primary;
-        }
-
-        &.active {
-          background: #0f172a;
-          color: $white;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-          
-          i { color: $white; }
-        }
-      }
-    }
-
-    .school-tab-content-area {
-      flex: 1;
-      background: $white;
-      border-radius: 12px;
-      padding: 24px;
-      border: 1px solid rgba($primary, 0.08);
-      overflow: hidden; // Critical: no vertical scrolling for the container
-      display: flex;
-      flex-direction: column;
-
-      .tab-pane-fade-in {
-        animation: fadeInDetail 0.4s ease-out forwards;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-      }
-
-      .content-section-title {
-        font-size: 20px;
-        font-weight: 800;
-        color: $text-dark;
-        margin-bottom: 24px;
-      }
-
-      .overview-summary-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-
-        .overview-card {
-          padding: 24px;
-          border-radius: 12px;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          position: relative;
-          overflow: hidden;
-
-          &::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-          }
-
-          .label {
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-          }
-
-          .value {
-            font-size: 32px;
-            font-weight: 800;
-          }
-
-          .sub {
-            font-size: 12px;
-            opacity: 0.7;
-          }
-
-          &.staff {
-            background: rgba($support, 0.04);
-            border: 1px solid rgba($support, 0.1);
-            &::before { background: $support; }
-            .label { color: darken($support, 10%); }
-            .value { color: $support; }
-          }
-          &.students {
-            background: rgba($purple, 0.04);
-            border: 1px solid rgba($purple, 0.1);
-            &::before { background: $purple; }
-            .label { color: darken($purple, 10%); }
-            .value { color: $purple; }
-          }
-          &.ratio {
-            background: rgba($orange, 0.04);
-            border: 1px solid rgba($orange, 0.1);
-            &::before { background: $orange; }
-            .label { color: darken($orange, 10%); }
-            .value { color: $orange; }
-          }
-          &.finance {
-            background: rgba($emerald, 0.04);
-            border: 1px solid rgba($emerald, 0.1);
-            &::before { background: $emerald; }
-            .label { color: darken($emerald, 10%); }
-            .value { color: $emerald; }
-          }
-        }
-      }
-
-      .empty-tab-state {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: $text-muted;
-
-        i {
-          font-size: 48px;
-          margin-bottom: 16px;
-          opacity: 0.4;
-        }
-
-        p { font-weight: 500; }
-      }
-
-      .table-fixed-wrapper {
-        flex: 1;
-        overflow-y: auto; // Allow scroll only inside table wrapper if needed
-        
-        &::-webkit-scrollbar {
-          width: 6px;
-        }
-        &::-webkit-scrollbar-thumb {
-          background: #e2e8f0;
-          border-radius: 10px;
-        }
-
-        .modern-table {
-          width: 100%;
-          border-collapse: separate;
-          border-spacing: 0;
-
-          thead th {
-            background: #f8fafc;
-            color: $text-muted;
-            font-weight: 700;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 14px 16px;
-            border-bottom: 2px solid $border-color;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-          }
-
-          tbody td {
-            padding: 16px;
-            font-size: 14px;
-            color: $text-dark;
-            font-weight: 500;
-            border-bottom: 1px solid #f1f5f9;
-          }
-        }
-      }
-    }
-  }
-
-  @keyframes fadeInDetail {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
   }
   
   .metrics-grid,
@@ -1434,3 +1089,18 @@ $background: #F9FAFB;
   .overview-info-strip {
     grid-template-columns: 1fr;
   }
+
+  .school-detail-view-container {
+    .overview-summary-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .school-detail-tabs {
+      flex-wrap: wrap;
+      
+      .detail-tab-item {
+        flex: 0 0 calc(50% - 2px);
+      }
+    }
+  }
+}
