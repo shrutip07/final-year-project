@@ -15,6 +15,7 @@ import {
 import ChatWidget from "../../components/ChatWidget";
 import TeacherLayout from "../../components/teacher/TeacherLayout";
 import AdminCard from "../../components/admin/AdminCard";
+import TabNavigation from "../../components/admin/TabNavigation";
 import "../teacher/Dashboard.scss";
 
 const GENDER_COLORS = ["#278BCD", "#E9B949"];
@@ -30,6 +31,7 @@ export default function Charts() {
   const [passData, setPassData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedTab, setSelectedTab] = useState("overview");
 
   // Load academic years
   useEffect(() => {
@@ -111,14 +113,17 @@ export default function Charts() {
         </div>
 
         <div className="charts-controls-pro mb-4">
-           <AdminCard header={
-             <div className="d-flex align-items-center justify-content-between w-100">
-               <h4 className="mb-0">Filter Data</h4>
+           <AdminCard>
+             <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+               <div className="d-flex align-items-center gap-2">
+                 <i className="bi bi-funnel-fill text-primary"></i>
+                 <h5 className="mb-0 fw-bold">Filter Data</h5>
+               </div>
                <div className="d-flex align-items-center gap-3">
                  <span className="text-muted small fw-bold text-uppercase">Academic Year:</span>
                  <select
-                   className="form-select form-select-sm"
-                   style={{ width: '160px' }}
+                   className="form-select form-select-sm shadow-sm"
+                   style={{ width: '180px', borderRadius: '8px' }}
                    value={academicYear}
                    onChange={(e) => setAcademicYear(e.target.value)}
                  >
@@ -133,104 +138,217 @@ export default function Charts() {
                  </select>
                </div>
              </div>
-           }/>
+           </AdminCard>
         </div>
 
-        {error && (
-          <div className="alert alert-custom-danger mb-4" role="alert">
-            <i className="bi bi-exclamation-octagon me-2"></i>
-            {error}
-          </div>
-        )}
+        <TabNavigation
+          tabs={[
+            { id: "overview", label: "Overview", icon: "bi-grid-fill" },
+            { id: "gender", label: "Gender Distribution", icon: "bi-gender-ambiguous" },
+            { id: "performance", label: "Pass / Fail Analysis", icon: "bi-check-circle-fill" },
+          ]}
+          activeTab={selectedTab}
+          onTabChange={setSelectedTab}
+        />
 
-        <div className="row g-4">
-          <div className="col-md-6">
-            <AdminCard header="Students by Gender">
-              {loading ? (
-                <div className="text-center py-5">
-                  <div className="spinner-border text-primary" role="status"></div>
-                </div>
-              ) : noGenderData ? (
-                <div className="empty-state-centered py-5">
-                  <i className="bi bi-pie-chart text-muted mb-2 fs-1"></i>
-                  <p className="text-muted small">No gender data available for {academicYear}</p>
-                </div>
-              ) : (
-                <div style={{ height: '300px' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={genderData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                        label={({ value }) => value}
-                      >
-                        {genderData.map((entry, idx) => (
-                          <Cell
-                            key={entry.name}
-                            fill={GENDER_COLORS[idx % GENDER_COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                      />
-                      <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-            </AdminCard>
-          </div>
+        <div className="tab-pane-container mt-4">
+          {error && (
+            <div className="alert alert-custom-danger mb-4" role="alert">
+              <i className="bi bi-exclamation-octagon me-2"></i>
+              {error}
+            </div>
+          )}
 
-          <div className="col-md-6">
-            <AdminCard header="Pass / Fail Distribution">
-              {loading ? (
-                <div className="text-center py-5">
-                  <div className="spinner-border text-success" role="status"></div>
-                </div>
-              ) : noPassData ? (
-                <div className="empty-state-centered py-5">
-                  <i className="bi bi-bar-chart text-muted mb-2 fs-1"></i>
-                  <p className="text-muted small">No performance data available for {academicYear}</p>
-                </div>
-              ) : (
-                <div style={{ height: '300px' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={passData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                        label={({ value }) => value}
-                      >
-                        {passData.map((entry, idx) => (
-                          <Cell
-                            key={entry.name}
-                            fill={PASS_COLORS[idx % PASS_COLORS.length]}
+          {/* Overview Tab */}
+          {selectedTab === "overview" && (
+            <div className="row g-4">
+              <div className="col-md-6">
+                <AdminCard header="Students by Gender">
+                  {loading ? (
+                    <div className="text-center py-5">
+                      <div className="spinner-border text-primary" role="status"></div>
+                    </div>
+                  ) : noGenderData ? (
+                    <div className="empty-state-centered py-5">
+                      <i className="bi bi-pie-chart text-muted mb-2 fs-1"></i>
+                      <p className="text-muted small">No gender data available for {academicYear}</p>
+                    </div>
+                  ) : (
+                    <div style={{ height: '300px' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={genderData}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={100}
+                            paddingAngle={5}
+                            label={({ value }) => value}
+                          >
+                            {genderData.map((entry, idx) => (
+                              <Cell
+                                key={entry.name}
+                                fill={GENDER_COLORS[idx % GENDER_COLORS.length]}
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                           />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                      />
-                      <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-            </AdminCard>
-          </div>
+                          <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </AdminCard>
+              </div>
+
+              <div className="col-md-6">
+                <AdminCard header="Pass / Fail Distribution">
+                  {loading ? (
+                    <div className="text-center py-5">
+                      <div className="spinner-border text-success" role="status"></div>
+                    </div>
+                  ) : noPassData ? (
+                    <div className="empty-state-centered py-5">
+                      <i className="bi bi-bar-chart text-muted mb-2 fs-1"></i>
+                      <p className="text-muted small">No performance data available for {academicYear}</p>
+                    </div>
+                  ) : (
+                    <div style={{ height: '300px' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={passData}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={100}
+                            paddingAngle={5}
+                            label={({ value }) => value}
+                          >
+                            {passData.map((entry, idx) => (
+                              <Cell
+                                key={entry.name}
+                                fill={PASS_COLORS[idx % PASS_COLORS.length]}
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                          />
+                          <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </AdminCard>
+              </div>
+            </div>
+          )}
+
+          {/* Gender Distribution Tab */}
+          {selectedTab === "gender" && (
+            <div className="row g-4">
+              <div className="col-md-8 mx-auto">
+                <AdminCard header="Gender Representation Analysis">
+                  {loading ? (
+                    <div className="text-center py-5">
+                      <div className="spinner-border text-primary" role="status"></div>
+                    </div>
+                  ) : noGenderData ? (
+                    <div className="empty-state-centered py-5">
+                      <i className="bi bi-pie-chart text-muted mb-2 fs-1"></i>
+                      <p className="text-muted small">No gender data available for {academicYear}</p>
+                    </div>
+                  ) : (
+                    <div style={{ height: '350px' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={genderData}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={80}
+                            outerRadius={120}
+                            paddingAngle={5}
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          >
+                            {genderData.map((entry, idx) => (
+                              <Cell
+                                key={entry.name}
+                                fill={GENDER_COLORS[idx % GENDER_COLORS.length]}
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                          />
+                          <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </AdminCard>
+              </div>
+            </div>
+          )}
+
+          {/* Performance Tab */}
+          {selectedTab === "performance" && (
+            <div className="row g-4">
+              <div className="col-md-8 mx-auto">
+                <AdminCard header="Academic Success Distribution">
+                  {loading ? (
+                    <div className="text-center py-5">
+                      <div className="spinner-border text-success" role="status"></div>
+                    </div>
+                  ) : noPassData ? (
+                    <div className="empty-state-centered py-5">
+                      <i className="bi bi-bar-chart text-muted mb-2 fs-1"></i>
+                      <p className="text-muted small">No performance data available for {academicYear}</p>
+                    </div>
+                  ) : (
+                    <div style={{ height: '350px' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={passData}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={80}
+                            outerRadius={120}
+                            paddingAngle={5}
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          >
+                            {passData.map((entry, idx) => (
+                              <Cell
+                                key={entry.name}
+                                fill={PASS_COLORS[idx % PASS_COLORS.length]}
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                          />
+                          <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </AdminCard>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
