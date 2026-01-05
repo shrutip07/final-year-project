@@ -442,60 +442,60 @@ export default function PrincipalDashboard() {
     );
   };
 
-  const renderFinance = () => (
-    <div className="principal-tab-content">
-      <div className="principal-admin-card">
-        <div className="card-header">
-          <h4>Finance Insights</h4>
-          <select
-            value={selectedOverviewFy}
-            onChange={(e) => setSelectedOverviewFy(e.target.value)}
-            className="form-select form-select-sm w-auto"
-          >
-            <option value="2023-24">2023-24</option>
-            <option value="2024-25">2024-25</option>
-            <option value="2025-26">2025-26</option>
-          </select>
-        </div>
-        <div className="card-body">
-          <div className="finance-cards-grid">
-            <div className="finance-card budget">
-              <div className="finance-icon"><i className="bi bi-piggy-bank-fill"></i></div>
-              <div className="finance-info">
-                <span className="finance-label">Budget Summary</span>
-                <span className="finance-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
-                <span className="finance-sub">Expected Fees</span>
+    const renderFinance = () => (
+      <div className="principal-tab-content">
+        <div className="principal-admin-card">
+          <div className="card-header">
+            <h4>Finance Insights</h4>
+            <select
+              value={selectedOverviewFy}
+              onChange={(e) => setSelectedOverviewFy(e.target.value)}
+              className="form-select form-select-sm w-auto"
+            >
+              <option value="2023-24">2023-24</option>
+              <option value="2024-25">2024-25</option>
+              <option value="2025-26">2025-26</option>
+            </select>
+          </div>
+          <div className="card-body">
+            <div className="finance-cards-grid">
+              <div className="finance-card budget">
+                <div className="finance-icon"><i className="bi bi-piggy-bank-fill"></i></div>
+                <div className="finance-info">
+                  <span className="finance-label">Budget Summary</span>
+                  <span className="finance-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                  <span className="finance-sub">Expected Fees</span>
+                </div>
               </div>
-            </div>
-            <div className="finance-card collected">
-              <div className="finance-icon"><i className="bi bi-check-circle-fill"></i></div>
-              <div className="finance-info">
-                <span className="finance-label">Fees Collected</span>
-                <span className="finance-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
-                <span className="finance-sub">Actual Amount</span>
+              <div className="finance-card collected">
+                <div className="finance-icon"><i className="bi bi-check-circle-fill"></i></div>
+                <div className="finance-info">
+                  <span className="finance-label">Fees Collected</span>
+                  <span className="finance-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                  <span className="finance-sub">Actual Amount</span>
+                </div>
               </div>
-            </div>
-            <div className="finance-card pending">
-              <div className="finance-icon"><i className="bi bi-hourglass-split"></i></div>
-              <div className="finance-info">
-                <span className="finance-label">Pending Fees</span>
-                <span className="finance-value">₹ {((overviewMetrics?.feesCollectedFy || 0) * 0.1).toLocaleString()}</span>
-                <span className="finance-sub">To be Collected</span>
+              <div className="finance-card pending">
+                <div className="finance-icon"><i className="bi bi-hourglass-split"></i></div>
+                <div className="finance-info">
+                  <span className="finance-label">Pending Fees</span>
+                  <span className="finance-value">₹ {((overviewMetrics?.feesCollectedFy || 0) * 0.1).toLocaleString()}</span>
+                  <span className="finance-sub">To be Collected</span>
+                </div>
               </div>
-            </div>
-            <div className="finance-card spent">
-              <div className="finance-icon"><i className="bi bi-credit-card-fill"></i></div>
-              <div className="finance-info">
-                <span className="finance-label">Salary Spent</span>
-                <span className="finance-value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
-                <span className="finance-sub">Total Payroll</span>
+              <div className="finance-card spent">
+                <div className="finance-icon"><i className="bi bi-credit-card-fill"></i></div>
+                <div className="finance-info">
+                  <span className="finance-label">Salary Spent</span>
+                  <span className="finance-value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                  <span className="finance-sub">Total Payroll</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
 
   const renderProfile = () => (
     <div className="principal-tab-content">
