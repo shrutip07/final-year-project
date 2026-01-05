@@ -216,62 +216,83 @@ export default function Students() {
           }
         />
       ) : (
-        <div className="table-responsive">
-          <table className="table table-striped table-bordered">
-            <thead>
-              <tr>
-                {COLUMNS.filter((c) =>
-                  visibleColumns.includes(c.key)
-                ).map((col) => (
-                  <th key={col.key}>{col.label}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredStudents.map((student) => (
-                <tr
-                  key={
-                    student.student_id +
-                    "-" +
-                    (student.academic_year || "")
-                  }
-                >
+        <div className="professional-table-container">
+          <div className="table-responsive">
+            <table className="table align-middle">
+              <thead>
+                <tr>
                   {COLUMNS.filter((c) =>
                     visibleColumns.includes(c.key)
-                  ).map((col) => {
-                    const val = student[col.key];
-
-                    // boolean field (passed)
-                    if (typeof val === "boolean") {
-                      return (
-                        <td key={col.key}>
-                          {val ? t("yes") : t("no")}
-                        </td>
-                      );
-                    }
-
-                    // date fields
-                    if (
-                      col.key === "dob" ||
-                      col.key === "admission_date"
-                    ) {
-                      return (
-                        <td key={col.key}>
-                          {val
-                            ? new Date(val).toLocaleDateString()
-                            : "-"}
-                        </td>
-                      );
-                    }
-
-                    return (
-                      <td key={col.key}>{val ?? "-"}</td>
-                    );
-                  })}
+                  ).map((col) => (
+                    <th key={col.key}>{col.label}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredStudents.map((student) => (
+                  <tr
+                    key={
+                      student.student_id +
+                      "-" +
+                      (student.academic_year || "")
+                    }
+                  >
+                    {COLUMNS.filter((c) =>
+                      visibleColumns.includes(c.key)
+                    ).map((col) => {
+                      const val = student[col.key];
+  
+                      // boolean field (passed)
+                      if (typeof val === "boolean") {
+                        return (
+                          <td key={col.key}>
+                            {val ? (
+                              <span className="badge bg-success-subtle text-success border border-success-subtle px-3">
+                                {t("yes") || "Yes"}
+                              </span>
+                            ) : (
+                              <span className="badge bg-danger-subtle text-danger border border-danger-subtle px-3">
+                                {t("no") || "No"}
+                              </span>
+                            )}
+                          </td>
+                        );
+                      }
+  
+                      // Name field formatting
+                      if (col.key === "full_name") {
+                        return (
+                          <td key={col.key}>
+                            <div className="fw-bold text-primary">{val || "-"}</div>
+                          </td>
+                        );
+                      }
+
+                      // date fields
+                      if (
+                        col.key === "dob" ||
+                        col.key === "admission_date"
+                      ) {
+                        return (
+                          <td key={col.key}>
+                            <span className="text-muted small">
+                              {val
+                                ? new Date(val).toLocaleDateString()
+                                : "-"}
+                            </span>
+                          </td>
+                        );
+                      }
+  
+                      return (
+                        <td key={col.key}>{val ?? "-"}</td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </AdminCard>

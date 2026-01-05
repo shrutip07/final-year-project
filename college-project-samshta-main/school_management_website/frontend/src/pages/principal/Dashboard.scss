@@ -1,404 +1,329 @@
-// Principal Dashboard Redesign SCSS
-// Scoped with .principal-portal-redesign
-
+// Color Palette
 $primary: #002E6D; // Midnight Navy
 $accent: #0057D9; // Royal Blue
 $highlight: #FFC145; // Golden Yellow
 $support: #00A9A5; // Teal
-$purple: #7C3AED;
-$rose: #E11D48;
-$orange: #EA580C;
-$emerald: #059669;
+$background: #F9FAFB;
 $white: #ffffff;
 $text-dark: #1e293b;
 $text-muted: #64748b;
 $border-color: #e2e8f0;
-$background: #F9FAFB;
 
 .principal-portal-redesign {
-  min-height: calc(100vh - 180px);
   background-color: $background;
-  animation: fadeIn 0.5s ease;
-
-  // Non-scrollable layout adjustments
-  height: calc(100vh - 200px);
-  overflow: hidden;
+  min-height: calc(100vh - 180px); // Account for header and nav
   display: flex;
   flex-direction: column;
 
   .principal-dashboard-wrapper {
     flex: 1;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
+    overflow: hidden; // Prevent outer scrolling
   }
 
   .principal-page-inner {
     flex: 1;
-    overflow-y: auto;
-    padding: 10px 0;
-    
-    // Hide scrollbar but keep functionality if needed
-    &::-webkit-scrollbar {
-      width: 6px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: rgba($primary, 0.1);
-      border-radius: 10px;
-    }
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    height: 100%;
+    animation: fadeIn 0.4s ease;
   }
 
-  // Section Header
-  .principal-section-header {
-    margin-bottom: 20px;
+  .section-header-pro {
+    margin-bottom: 25px;
     h3 {
-      font-size: 24px;
       font-weight: 800;
       color: $primary;
-      margin: 0;
+      margin-bottom: 5px;
+      font-size: 1.6rem;
     }
     p {
       color: $text-muted;
-      margin: 5px 0 0;
-      font-size: 14px;
+      margin: 0;
+      font-size: 0.95rem;
     }
   }
 
-  // Admin-style Metric Cards (Colorful)
-  .principal-metrics-grid {
+  // Sub-tabs Navigation
+  .sub-tabs-nav {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    background: white;
+    padding: 8px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid $border-color;
+    width: fit-content;
+
+    .sub-tab-item {
+      padding: 10px 24px;
+      border-radius: 10px;
+      border: none;
+      background: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: $text-muted;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &:hover {
+        background: $background;
+        color: $primary;
+      }
+
+      &.active {
+        background: $primary;
+        color: white;
+        box-shadow: 0 4px 12px rgba($primary, 0.2);
+      }
+    }
+  }
+
+  // Hero Metrics for Dashboard
+  .metrics-grid-modern {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 20px;
+    margin-bottom: 30px;
 
-    .principal-metric-box {
+    .metric-card {
+      background: white;
       padding: 24px;
       border-radius: 16px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
       position: relative;
       overflow: hidden;
-      border: 1px solid rgba($primary, 0.05);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-      transition: transform 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border: 1px solid rgba($border-color, 0.5);
+      transition: transform 0.2s ease;
 
       &:hover {
-        transform: translateY(-5px);
+        transform: translateY(-3px);
       }
 
-      &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 5px;
-        height: 100%;
-      }
-
-      .principal-metric-label {
-        font-size: 11px;
+      .metric-label {
+        font-size: 0.75rem;
         font-weight: 700;
-        letter-spacing: 0.8px;
         text-transform: uppercase;
+        letter-spacing: 1px;
         color: $text-muted;
+        margin-bottom: 12px;
       }
 
-      .principal-metric-value {
-        font-size: 32px;
+      .metric-value {
+        font-size: 2.2rem;
         font-weight: 800;
-        color: $text-dark;
+        color: $primary;
+        line-height: 1;
       }
 
-      &.principal-metric-teachers {
-        background: linear-gradient(135deg, rgba($accent, 0.1) 0%, rgba($accent, 0.05) 100%);
-        &::before { background: $accent; }
-        .principal-metric-label { color: darken($accent, 15%); }
-        .principal-metric-value { color: $accent; }
+      .metric-icon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 1.8rem;
+        opacity: 0.15;
       }
 
-      &.principal-metric-students {
-        background: linear-gradient(135deg, rgba($purple, 0.1) 0%, rgba($purple, 0.05) 100%);
-        &::before { background: $purple; }
-        .principal-metric-label { color: darken($purple, 15%); }
-        .principal-metric-value { color: $purple; }
-      }
-
-      &.principal-metric-ratio {
-        background: linear-gradient(135deg, rgba($orange, 0.1) 0%, rgba($orange, 0.05) 100%);
-        &::before { background: $orange; }
-        .principal-metric-label { color: darken($orange, 15%); }
-        .principal-metric-value { color: $orange; }
-      }
-
-      &.principal-metric-finance {
-        background: linear-gradient(135deg, rgba($emerald, 0.1) 0%, rgba($emerald, 0.05) 100%);
-        &::before { background: $emerald; }
-        .principal-metric-label { color: darken($emerald, 15%); }
-        .principal-metric-value { color: $emerald; }
-      }
+      &.teachers { border-left: 5px solid $accent; .metric-icon { color: $accent; } }
+      &.students { border-left: 5px solid $support; .metric-icon { color: $support; } }
+      &.ratio { border-left: 5px solid $highlight; .metric-icon { color: $highlight; } }
+      &.status { border-left: 5px solid #10b981; .metric-icon { color: #10b981; } }
     }
   }
 
-  // Finance Cards (colorful)
-  .principal-finance-grid {
+  // Unit Details Grid (3x2)
+  .unit-details-modern-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
 
-    .principal-finance-item {
+    .info-tile {
       padding: 20px;
-      border-radius: 12px;
+      border-radius: 14px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      position: relative;
-      overflow: hidden;
-      border: 1px solid $border-color;
+      gap: 8px;
+      transition: all 0.2s ease;
 
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        opacity: 0.1;
-        transform: translate(20px, 20px);
-      }
-
-      .label {
-        font-size: 10px;
+      .info-label {
+        font-size: 0.7rem;
         font-weight: 700;
-        letter-spacing: 0.5px;
+        color: rgba($primary, 0.6);
         text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
 
-      .value {
-        font-size: 22px;
-        font-weight: 800;
-      }
-
-      .sub {
-        font-size: 11px;
-        opacity: 0.7;
-      }
-
-      &.budget {
-        background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
-        border: 1px solid #C7D2FE;
-        &::after { background: #4F46E5; }
-        .label { color: #4338CA; }
-        .value { color: #4F46E5; }
-        .sub { color: #6366F1; }
-      }
-
-      &.collected {
-        background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
-        border: 1px solid #A7F3D0;
-        &::after { background: $emerald; }
-        .label { color: #047857; }
-        .value { color: $emerald; }
-        .sub { color: #10B981; }
-      }
-
-      &.pending {
-        background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-        border: 1px solid #FCD34D;
-        &::after { background: #D97706; }
-        .label { color: #B45309; }
-        .value { color: #D97706; }
-        .sub { color: #F59E0B; }
-      }
-
-      &.spent {
-        background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
-        border: 1px solid #FCA5A5;
-        &::after { background: $rose; }
-        .label { color: #B91C1C; }
-        .value { color: $rose; }
-        .sub { color: #EF4444; }
-      }
-    }
-  }
-
-  // Admin-style Cards
-  .principal-card {
-    background: $white;
-    border-radius: 16px;
-    border: 1px solid $border-color;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    margin-bottom: 24px;
-    overflow: hidden;
-
-    .principal-card-header {
-      padding: 16px 24px;
-      border-bottom: 1px solid $border-color;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: $white;
-
-      h4 {
-        margin: 0;
-        font-size: 16px;
+      .info-value {
+        font-size: 1.1rem;
         font-weight: 700;
         color: $primary;
       }
 
-      i {
-        font-size: 18px;
-        opacity: 0.8;
-      }
-    }
-
-    .principal-card-body {
-      padding: 24px;
+      // Pastel backgrounds
+      &.blue { background-color: rgba(#3b82f6, 0.08); }
+      &.indigo { background-color: rgba(#6366f1, 0.08); }
+      &.teal { background-color: rgba(#14b8a6, 0.08); }
+      &.violet { background-color: rgba(#8b5cf6, 0.08); }
+      &.amber { background-color: rgba(#f59e0b, 0.08); }
+      &.green { background-color: rgba(#10b981, 0.08); }
     }
   }
 
-  // Details Grid
-  .principal-details-grid {
+  // Finance Section
+  .finance-overview-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
 
-    &.principal-details-single {
-      grid-template-columns: 1fr;
-    }
-
-    .principal-details-row {
+    .finance-card-pro {
+      padding: 24px;
+      border-radius: 16px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      padding: 12px 16px;
-      background: $background;
-      border-radius: 10px;
-      border-left: 3px solid $accent;
+      gap: 10px;
+      position: relative;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 
-      .principal-details-key {
-        font-size: 11px;
+      .fin-label {
+        font-size: 0.8rem;
         font-weight: 700;
-        color: $text-muted;
         text-transform: uppercase;
         letter-spacing: 0.5px;
       }
 
-      .principal-details-value {
-        font-size: 14px;
-        font-weight: 700;
-        color: $text-dark;
+      .fin-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+      }
+
+      .fin-sub {
+        font-size: 0.75rem;
+        font-weight: 500;
+        opacity: 0.8;
+      }
+
+      &.budget {
+        background: linear-gradient(135deg, #002E6D, #0057D9);
+        color: white;
+        .fin-label { color: rgba(white, 0.7); }
+      }
+      &.collected {
+        background-color: rgba(#10b981, 0.1);
+        color: #065f46;
+        border: 1px solid rgba(#10b981, 0.2);
+        .fin-label { color: #065f46; opacity: 0.6; }
+      }
+      &.pending {
+        background-color: rgba(#f59e0b, 0.1);
+        color: #92400e;
+        border: 1px solid rgba(#f59e0b, 0.2);
+        .fin-label { color: #92400e; opacity: 0.6; }
+      }
+      &.spent {
+        background-color: rgba(#ef4444, 0.1);
+        color: #991b1b;
+        border: 1px solid rgba(#ef4444, 0.2);
+        .fin-label { color: #991b1b; opacity: 0.6; }
       }
     }
   }
 
-  // Finance Balance Strip
-  .principal-balance-strip {
-    margin-top: 20px;
-    padding: 16px 20px;
-    background: $primary;
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: $white;
-
-    .principal-balance-label {
-      font-weight: 700;
-      font-size: 14px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .principal-balance-value {
-      font-size: 20px;
-      font-weight: 800;
-
-      &.principal-balance-positive {
-        color: $highlight;
-      }
-      &.principal-balance-negative {
-        color: #fca5a5;
-      }
-    }
-  }
-
-  // Layout Grid
-  .principal-layout-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-    margin-bottom: 24px;
-
-    @media (max-width: 992px) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  // Professional Table Overrides
-  .professional-table {
-    border-radius: 12px;
-    overflow: hidden;
+  // Table Styling
+  .professional-table-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
     border: 1px solid $border-color;
+    overflow: hidden;
 
-    table {
+    .table-responsive {
+      max-height: calc(100vh - 350px); // Non-scrollable page, scrollable table
+      overflow-y: auto;
+    }
+
+    .table {
       margin-bottom: 0;
-      
-      thead {
-        background: linear-gradient(135deg, $primary 0%, darken($primary, 5%) 100%);
-        th {
-          color: white;
-          font-size: 12px;
-          font-weight: 700;
-          text-transform: uppercase;
-          padding: 16px;
-          border: none;
-        }
+      thead th {
+        background-color: #f8fafc;
+        color: $primary;
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 18px 20px;
+        border-bottom: 2px solid $border-color;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
-
-      tbody tr {
-        transition: background 0.2s;
-        &:hover { background: rgba($accent, 0.05); }
-        td {
-          padding: 16px;
-          font-size: 14px;
-          border-bottom: 1px solid rgba($border-color, 0.5);
-          vertical-align: middle;
-        }
+      tbody td {
+        padding: 16px 20px;
+        color: $text-dark;
+        font-size: 0.9rem;
+        border-bottom: 1px solid $border-color;
+      }
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+      tbody tr:hover td {
+        background-color: rgba($primary, 0.02);
       }
     }
   }
 
-  // ERP Badges
-  .erp-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    
-    &.badge-designation { background: rgba($accent, 0.1); color: $accent; }
-    &.badge-qualification { background: rgba($purple, 0.1); color: $purple; }
-    &.badge-success { background: rgba($emerald, 0.1); color: $emerald; }
-    &.badge-danger { background: rgba($rose, 0.1); color: $rose; }
+  // Profile Grid
+  .profile-modern-card {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    border: 1px solid $border-color;
+    display: flex;
+    gap: 30px;
+
+    .profile-avatar-large {
+      width: 120px;
+      height: 120px;
+      background: $primary;
+      color: white;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-weight: 800;
+      box-shadow: 0 10px 20px rgba($primary, 0.2);
+    }
+
+    .profile-info-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+
+      .profile-item {
+        .label {
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: $text-muted;
+          text-transform: uppercase;
+          margin-bottom: 5px;
+        }
+        .value {
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: $primary;
+        }
+      }
+    }
   }
 }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 768px) {
-  .principal-portal-redesign {
-    .principal-metrics-grid,
-    .principal-finance-grid {
-      grid-template-columns: 1fr;
-    }
-    .principal-details-grid {
-      grid-template-columns: 1fr;
-    }
-  }
 }
