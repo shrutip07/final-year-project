@@ -9,7 +9,6 @@ export default function PrincipalLayout(props) {
       { key: "students", label: "Students", icon: "bi-mortarboard" },
       { key: "charts", label: "Charts", icon: "bi-bar-chart-fill" },
       { key: "notifications", label: "Notifications", icon: "bi-bell-fill" },
-      { key: "finance", label: "Finance", icon: "bi-cash-stack" },
     ];
 
   return (

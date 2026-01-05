@@ -533,134 +533,134 @@ $lavender-accent: #818cf8;
     }
   }
 
-    .directory-wrapper {
-      .directory-controls {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-        gap: 20px;
+  .directory-wrapper {
+    .directory-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 20px;
 
-        .search-box {
-          position: relative;
-          flex: 1;
-          max-width: 500px;
+      .search-box {
+        position: relative;
+        flex: 1;
+        max-width: 500px;
 
-          .search-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: $text-muted;
-            z-index: 10;
-          }
-
-          .form-control {
-            padding-left: 42px;
-            height: 48px;
-            border-radius: 10px;
-            border: 1px solid $border-color;
-            font-size: 15px;
-            background: $white;
-            
-            &:focus {
-              border-color: $primary;
-              box-shadow: 0 0 0 4px rgba($primary, 0.05);
-            }
-          }
+        .search-icon {
+          position: absolute;
+          left: 15px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: $text-muted;
+          z-index: 10;
         }
 
-        .toolbar-actions {
-          display: flex;
-          gap: 12px;
-          align-items: center;
-
-          .form-select, .form-control-sm {
-            height: 40px;
-            border-radius: 8px;
-            border: 1px solid $border-color;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 0 12px;
+        .form-control {
+          padding-left: 42px;
+          height: 48px;
+          border-radius: 10px;
+          border: 1px solid $border-color;
+          font-size: 15px;
+          background: $white;
+          
+          &:focus {
+            border-color: $primary;
+            box-shadow: 0 0 0 4px rgba($primary, 0.05);
           }
         }
       }
 
-      .table-container {
-        background: $white;
-        border-radius: 12px;
-        border: 1px solid $border-color;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-        overflow: hidden;
+      .toolbar-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
 
-        .custom-table-wrapper {
-          max-height: 600px;
-          overflow: auto;
+        .form-select, .form-control-sm {
+          height: 40px;
+          border-radius: 8px;
+          border: 1px solid $border-color;
+          font-size: 13px;
+          font-weight: 600;
+          padding: 0 12px;
+        }
+      }
+    }
 
-          .table {
-            margin-bottom: 0;
-            border-collapse: separate;
-            border-spacing: 0;
+    .table-container {
+      background: $white;
+      border-radius: 12px;
+      border: 1px solid $border-color;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      overflow: hidden;
 
-            thead {
-              position: sticky;
-              top: 0;
-              z-index: 20;
+      .custom-table-wrapper {
+        max-height: 600px;
+        overflow: auto;
 
-              tr {
-                th {
-                  background: $primary;
-                  color: $white;
-                  font-weight: 600;
-                  font-size: 13px;
-                  text-transform: uppercase;
-                  letter-spacing: 0.8px;
-                  padding: 16px 20px;
-                  border: none;
-                  white-space: nowrap;
-                }
+        .table {
+          margin-bottom: 0;
+          border-collapse: separate;
+          border-spacing: 0;
+
+          thead {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+
+            tr {
+              th {
+                background: $primary;
+                color: $white;
+                font-weight: 600;
+                font-size: 13px;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+                padding: 16px 20px;
+                border: none;
+                white-space: nowrap;
               }
             }
+          }
 
-            tbody {
-              tr {
-                transition: all 0.2s ease;
-                background: $white;
+          tbody {
+            tr {
+              transition: all 0.2s ease;
+              background: $white;
 
-                td {
-                  padding: 18px 20px;
-                  border-bottom: 1px solid rgba($border-color, 0.5);
-                  font-size: 15px;
+              td {
+                padding: 18px 20px;
+                border-bottom: 1px solid rgba($border-color, 0.5);
+                font-size: 15px;
+                color: #000000 !important;
+                vertical-align: middle;
+
+                &.text-primary, &.text-muted, &.text-danger, &.text-success, &.text-warning, &.small {
                   color: #000000 !important;
-                  vertical-align: middle;
+                }
 
-                  &.text-primary, &.text-muted, &.text-danger, &.text-success, &.text-warning, &.small {
-                    color: #000000 !important;
-                  }
-
-                  a {
-                    color: #000000 !important;
-                    &:hover {
-                      text-decoration: underline;
-                    }
-                  }
-
-                  .badge {
-                    color: #000000 !important;
+                a {
+                  color: #000000 !important;
+                  &:hover {
+                    text-decoration: underline;
                   }
                 }
 
-                &:hover {
-                  background-color: rgba($primary, 0.02);
+                .badge {
+                  color: #000000 !important;
                 }
+              }
 
-                &:last-child td {
-                  border-bottom: none;
-                }
+              &:hover {
+                background-color: rgba($primary, 0.02);
+              }
+
+              &:last-child td {
+                border-bottom: none;
               }
             }
           }
         }
+      }
     }
   }
 }
