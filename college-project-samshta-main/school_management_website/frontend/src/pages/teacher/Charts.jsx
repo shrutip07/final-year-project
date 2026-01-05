@@ -7,8 +7,8 @@ import {
   PieChart,
   Pie,
   Cell,
-  Tooltip,
-  Legend,
+  Tooltip as RechartsTooltip,
+  Legend as RechartsLegend,
   ResponsiveContainer
 } from "recharts";
 
@@ -22,6 +22,8 @@ import {
   Title,
   PointElement,
   ArcElement,
+  Tooltip as ChartTooltip,
+  Legend as ChartLegend,
 } from "chart.js";
 
 import ChatWidget from "../../components/ChatWidget";
@@ -38,8 +40,8 @@ ChartJS.register(
   LineElement,
   PointElement,
   Title,
-  Tooltip,
-  Legend,
+  ChartTooltip,
+  ChartLegend,
   ArcElement
 );
 
@@ -162,10 +164,10 @@ export default function Charts() {
                   />
                 ))}
               </Pie>
-              <Tooltip 
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-              />
-              <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                <RechartsTooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                />
+                <RechartsLegend verticalAlign="bottom" height={36} iconType="circle" />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -206,10 +208,10 @@ export default function Charts() {
                   />
                 ))}
               </Pie>
-              <Tooltip 
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-              />
-              <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                <RechartsTooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                />
+                <RechartsLegend verticalAlign="bottom" height={36} iconType="circle" />
             </PieChart>
           </ResponsiveContainer>
         </div>
