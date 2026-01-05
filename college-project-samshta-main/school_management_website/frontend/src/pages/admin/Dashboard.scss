@@ -753,7 +753,6 @@ $background: #F9FAFB;
   }
 }
 
-// School Detail View (Modern & Non-Scrollable)
 .school-detail-view-container {
   display: flex;
   flex-direction: column;
@@ -1089,8 +1088,6 @@ $background: #F9FAFB;
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-  }
 
   // School Detail View (Modern & Non-Scrollable)
   .school-detail-view-container {
@@ -1428,8 +1425,6 @@ $background: #F9FAFB;
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
-}
-
   
   .metrics-grid,
   .finance-summary-grid {
@@ -1439,4 +1434,3 @@ $background: #F9FAFB;
   .overview-info-strip {
     grid-template-columns: 1fr;
   }
-}
