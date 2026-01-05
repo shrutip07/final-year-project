@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 
-// reuse admin UI building blocks
-import AdminCard from "../../components/admin/AdminCard";
 import EmptyState from "../../components/admin/EmptyState";
 
 export default function Teachers() {
@@ -73,8 +71,8 @@ export default function Teachers() {
   }
 
   return (
-    <div className="teachers-directory-wrapper">
-      <div className="directory-controls mb-4">
+    <div className="directory-wrapper">
+      <div className="directory-controls">
         <div className="search-box">
           <i className="bi bi-search search-icon"></i>
           <input
@@ -87,14 +85,14 @@ export default function Teachers() {
         </div>
       </div>
 
-      <div className="teacher-table-container">
+      <div className="table-container">
         {filtered.length === 0 ? (
           <EmptyState
             title={t("no_teachers") || "No teachers"}
             description={t("no_teachers_found") || "No teachers match your search."}
           />
         ) : (
-          <div className="table-responsive custom-table-wrapper">
+          <div className="custom-table-wrapper">
             <table className="table table-hover align-middle">
               <thead>
                 <tr>

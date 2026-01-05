@@ -453,7 +453,7 @@ export default function PrincipalDashboard() {
     );
   };
 
-  const renderContent = () => {
+    const renderContent = () => {
     switch (sidebarTab) {
       case "dashboard":
         return renderDashboard();
@@ -480,7 +480,7 @@ export default function PrincipalDashboard() {
           <div className="principal-tab-content">
             <div className="principal-admin-card">
               <div className="card-header"><h4>{t("students")}</h4></div>
-              <div className="card-body"><Students students={students} /></div>
+              <div className="card-body"><Students /></div>
             </div>
           </div>
         );
