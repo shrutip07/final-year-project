@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 import "./Dashboard.scss";
+import axiosInstance from "../../api/axiosInstance";
 
 import AdminCharts from "./Charts";
 import ChatWidget from "../../components/ChatWidget";
@@ -71,15 +72,35 @@ export default function AdminDashboard() {
   const [notifRole, setNotifRole] = useState("principal");
   const [notifLoading, setNotifLoading] = useState(false);
 
+  // shared targeting state
+  const [notifUnitId, setNotifUnitId] = useState("");
+  const [teachers, setTeachers] = useState([]);
+  const [sendAllTeachers, setSendAllTeachers] = useState(true);
+  const [selectedTeachers, setSelectedTeachers] = useState([]);
+
   // Forms
   const [formTitle, setFormTitle] = useState("");
   const [formDesc, setFormDesc] = useState("");
   const [formDeadline, setFormDeadline] = useState("");
   const [formRole, setFormRole] = useState("principal");
   const [formQuestions, setFormQuestions] = useState([
-    { question_text: "", question_type: "text", options: "" },
+    { questiontext: "", questiontype: "text", options: "" },
   ]);
   const [formLoading, setFormLoading] = useState(false);
+
+  // per-form recipient status (Sent / Received / Pending)
+  const [selectedFormId, setSelectedFormId] = useState(null);
+  const [recipientStatus, setRecipientStatus] = useState([]);
+  const [recipientLoading, setRecipientLoading] = useState(false);
+  const [formResponses, setFormResponses] = useState([]);
+  const [responsesLoading, setResponsesLoading] = useState(false);
+
+  // dashboard / finance data for a unit
+  const [unitDashboard, setUnitDashboard] = useState(null);
+  const [selectedFy, setSelectedFy] = useState("2024-25");
+  const [fyMetrics, setFyMetrics] = useState(null);
+  const [selectedOverviewFy, setSelectedOverviewFy] = useState("2024-25");
+  const [overviewMetrics, setOverviewMetrics] = useState(null);
 
   // REPORTS
   const [reportYears, setReportYears] = useState([]);
@@ -94,14 +115,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchUnits() {
       try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(
-          "http://localhost:5000/api/admin/units",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const unitData = Array.isArray(response.data) ? response.data : [];
+        const res = await axiosInstance.get("/admin/units");
+        const unitData = Array.isArray(res.data) ? res.data : [];
         setUnits(unitData);
         setLoading(false);
       } catch (err) {
@@ -148,107 +163,261 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (sidebarTab === "notifications") {
+      fetchUnitsForNotifications();
       loadNotifications();
       loadForms();
     }
-  }, [sidebarTab, notifRole, formRole]);
+  }, [sidebarTab, formRole]);
+
+  const fetchUnitsForNotifications = async () => {
+    try {
+      const res = await axiosInstance.get("/admin/units");
+      setUnits(res.data || []);
+    } catch (err) {
+      console.error("Failed to load units", err);
+      setUnits([]);
+    }
+  };
+
+  // load teachers when notifRole / notifUnitId change
+  useEffect(() => {
+    if (notifRole !== "teacher" || !notifUnitId) {
+      setTeachers([]);
+      setSelectedTeachers([]);
+      return;
+    }
+
+    async function loadTeachers() {
+      try {
+        const res = await axiosInstance.get(
+          `/admin/units/${notifUnitId}/teachers`
+        );
+        setTeachers(res.data || []);
+      } catch (err) {
+        console.error("Failed to load teachers", err);
+        setTeachers([]);
+      }
+    }
+
+    loadTeachers();
+  }, [notifRole, notifUnitId]);
 
   const loadNotifications = async () => {
-    const token = localStorage.getItem("token");
     try {
-      const res = await axios.get("http://localhost:5000/api/notifications", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setNotifications(res.data);
+      const res = await axiosInstance.get("/notifications");
+      setNotifications(res.data || []);
     } catch {
       setNotifications([]);
     }
   };
 
   const loadForms = async () => {
-    const token = localStorage.getItem("token");
     try {
-      const res = await axios.get(
-        `http://localhost:5000/api/forms/active?role=${formRole}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setForms(res.data);
-    } catch {
+      const res = await axiosInstance.get("/forms/created-by-me");
+      setForms(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Failed to load forms:", err);
       setForms([]);
     }
   };
 
+  const loadRecipientStatus = async (formId) => {
+    setRecipientLoading(true);
+    try {
+      const res = await axiosInstance.get(`/forms/${formId}/recipient-status`);
+
+      // Accept either: array OR {data: array}
+      const raw = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.data)
+        ? res.data.data
+        : [];
+
+      // Normalize field name variations
+      const normalized = raw.map((r) => ({
+        ...r,
+        has_responded:
+          r.has_responded ??
+          r.hasResponded ??
+          r.responded ??
+          r.is_responded ??
+          false,
+      }));
+
+      setRecipientStatus(normalized);
+    } catch (e) {
+      console.error("Failed to load recipient status", e);
+      setRecipientStatus([]);
+    } finally {
+      setRecipientLoading(false);
+    }
+  };
+
+  const loadFormResponsesForDashboard = async (formId) => {
+    setResponsesLoading(true);
+    try {
+      // This endpoint returns flat rows with question_text + answer (what we need)
+      const res = await axiosInstance.get("/admin/filled-forms-detailed");
+
+      const rows = Array.isArray(res?.data?.data)
+        ? res.data.data
+        : Array.isArray(res.data)
+        ? res.data
+        : [];
+      const fid = parseInt(formId, 10);
+
+      // filter only this form
+      const formRows = rows.filter((r) => parseInt(r.form_id, 10) === fid);
+
+      // group by response_id
+      const map = new Map();
+      for (const r of formRows) {
+        const rid = r.response_id;
+        if (!rid) continue;
+
+        if (!map.has(rid)) {
+          map.set(rid, {
+            response_id: rid,
+            submitted_by_name:
+              r.submitted_by_name || r.full_name || r.email || "User",
+            submitted_by_role: r.submitted_by_role || r.role || "",
+            unit_name: r.unit_name || "",
+            submitted_at: r.submitted_at || r.created_at || null,
+            answers: [],
+          });
+        }
+
+        map.get(rid).answers.push({
+          question: r.question_text || r.question || "",
+          answer: r.answer ?? "",
+        });
+      }
+
+      // sort newest first (optional)
+      const grouped = Array.from(map.values()).sort((a, b) => {
+        const ta = a.submitted_at ? new Date(a.submitted_at).getTime() : 0;
+        const tb = b.submitted_at ? new Date(b.submitted_at).getTime() : 0;
+        return tb - ta;
+      });
+
+      setFormResponses(grouped);
+    } catch (err) {
+      console.error("Failed to load form responses", err);
+      setFormResponses([]);
+    } finally {
+      setResponsesLoading(false);
+    }
+  };
+
+  // helpers
+  const validateTarget = (role, unitId, allTeachers, selTeachers) => {
+    if (!unitId) {
+      alert("Please select a school");
+      return false;
+    }
+    if (role === "teacher" && !allTeachers && selTeachers.length === 0) {
+      alert("Please select at least one teacher");
+      return false;
+    }
+    return true;
+  };
+
+  const notifBasePayload = () => ({
+    receiver_role: notifRole,
+    unit_id: parseInt(notifUnitId, 10),
+    send_all_teachers: notifRole === "teacher" ? sendAllTeachers : false,
+    receiver_ids:
+      notifRole === "teacher" && !sendAllTeachers
+        ? selectedTeachers.map((id) => parseInt(id, 10))
+        : [],
+  });
+
+  const formBasePayload = () => ({
+    receiver_role: formRole,
+    unit_id: parseInt(notifUnitId, 10),
+    send_all_teachers: formRole === "teacher" ? sendAllTeachers : false,
+    receiver_ids:
+      formRole === "teacher" && !sendAllTeachers
+        ? selectedTeachers.map((id) => parseInt(id, 10))
+        : [],
+  });
+
   const addNotification = async (e) => {
     e.preventDefault();
+
+    if (
+      !validateTarget(notifRole, notifUnitId, sendAllTeachers, selectedTeachers)
+    )
+      return;
+
     setNotifLoading(true);
-    const token = localStorage.getItem("token");
     try {
-      await axios.post(
-        "http://localhost:5000/api/notifications",
-        {
-          title: notifTitle,
-          message: notifMsg,
-          receiver_role: notifRole,
-          sender_role: "admin",
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axiosInstance.post("/notifications", {
+        ...notifBasePayload(),
+        title: notifTitle,
+        message: notifMsg,
+      });
+
       setNotifTitle("");
       setNotifMsg("");
+      alert("Notification sent");
+    } catch (err) {
+      console.error("Failed to send notification", err);
+      alert(err.response?.data?.error || "Failed to send notification");
+    } finally {
       setNotifLoading(false);
-      loadNotifications();
-      alert("Notification Sent ✅");
-    } catch {
-      setNotifLoading(false);
-      alert("Failed to send notification");
     }
   };
 
   const addForm = async (e) => {
     e.preventDefault();
+
+    if (
+      !validateTarget(formRole, notifUnitId, sendAllTeachers, selectedTeachers)
+    )
+      return;
+
     setFormLoading(true);
-    const token = localStorage.getItem("token");
+
     const questionsPayload = formQuestions.map((q) => ({
-      question_text: q.question_text,
-      question_type: q.question_type,
-      options: q.options ? q.options : null,
+      question_text: q.questiontext,
+      question_type: q.questiontype,
+      options: q.options || null,
     }));
+
     try {
-      const formRes = await axios.post(
-        "http://localhost:5000/api/forms/create",
-        {
-          title: formTitle,
-          description: formDesc,
-          receiver_role: formRole,
-          deadline: formDeadline,
-          questions: questionsPayload,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const formRes = await axiosInstance.post("/forms/create", {
+        title: formTitle,
+        description: formDesc,
+        deadline: formDeadline,
+        questions: questionsPayload,
+        ...formBasePayload(),
+      });
+
       const formId = formRes.data.form.id;
-      const formLink = `http://localhost:3000/forms/${formId}`;
-      await axios.post(
-        "http://localhost:5000/api/notifications",
-        {
-          title: `New Form: ${formTitle}`,
-          message: `Please fill this form before deadline: ${formLink}`,
-          receiver_role: formRole,
-          sender_role: "admin",
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const formLink = `${window.location.origin}/forms/${formId}`;
+
+      await axiosInstance.post("/notifications", {
+        ...formBasePayload(),
+        title: `New Form: ${formTitle}`,
+        message: `Please fill this form before deadline: ${formLink}`,
+      });
+
       setFormTitle("");
       setFormDesc("");
       setFormDeadline("");
-      setFormQuestions([
-        { question_text: "", question_type: "text", options: "" },
-      ]);
+      setFormQuestions([{ questiontext: "", questiontype: "text", options: "" }]);
+
+      await loadForms();
+
+      alert(
+        `Form created and sent to ${formRes.data.recipients} recipient(s)`
+      );
+    } catch (err) {
+      console.error("Failed to create/send form", err);
+      alert(err.response?.data?.error || "Failed to create/send form");
+    } finally {
       setFormLoading(false);
-      loadForms();
-      alert("Form Created and Notification Sent ✅");
-    } catch {
-      setFormLoading(false);
-      alert("Failed to create/send form");
     }
   };
 
@@ -261,7 +430,7 @@ export default function AdminDashboard() {
   const addFormQuestion = () => {
     setFormQuestions((qs) => [
       ...qs,
-      { question_text: "", question_type: "text", options: "" },
+      { questiontext: "", questiontype: "text", options: "" },
     ]);
   };
 
@@ -271,10 +440,7 @@ export default function AdminDashboard() {
 
   const loadReportYears = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/report/years", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axiosInstance.get("/report/years");
       setReportYears(res.data || []);
       if (res.data && res.data.length > 0) {
         setSelectedReportYear(res.data[0]);
@@ -289,12 +455,8 @@ export default function AdminDashboard() {
     if (!selectedReportYear) return;
     setReportLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `http://localhost:5000/api/report/schools?year=${selectedReportYear}&type=${reportType}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const res = await axiosInstance.get(
+        `/report/schools?year=${selectedReportYear}&type=${reportType}`
       );
       setReportSchools(res.data || []);
     } catch (err) {
@@ -303,6 +465,7 @@ export default function AdminDashboard() {
     }
     setReportLoading(false);
   };
+
 
   const renderReportsPage = () => {
     return (
@@ -406,15 +569,13 @@ export default function AdminDashboard() {
 
   const downloadSelectedReport = async (unitId) => {
     try {
-      const token = localStorage.getItem("token");
       let endpoint;
       if (reportType === "annual") {
-        endpoint = `http://localhost:5000/api/report/units/${unitId}/report`;
+        endpoint = `/report/units/${unitId}/report`;
       } else {
-        endpoint = `http://localhost:5000/api/report/download?unit=${unitId}&year=${selectedReportYear}&type=${reportType}`;
+        endpoint = `/report/download?unit=${unitId}&year=${selectedReportYear}&type=${reportType}`;
       }
-      const res = await axios.get(endpoint, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await axiosInstance.get(endpoint, {
         responseType: "blob",
       });
       const url = window.URL.createObjectURL(new Blob([res.data]));
@@ -438,25 +599,24 @@ export default function AdminDashboard() {
     setTeacherSearch("");
     setStudentSearch("");
     setStudentsYear("");
+    setUnitDashboard(null);
     setFyMetrics(null);
     setOverviewMetrics(null);
+
     try {
-      const token = localStorage.getItem("token");
-      const [detailRes, fyRes, overviewRes] =
-        await Promise.all([
-          axios.get(`http://localhost:5000/api/admin/units/${unitId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(
-            `http://localhost:5000/api/admin/units/${unitId}/finance-by-year?financial_year=${selectedFy}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          ),
-          axios.get(
-            `http://localhost:5000/api/admin/units/${unitId}/finance-by-year?financial_year=${selectedOverviewFy}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          ),
-        ]);
+      const [detailRes, dashboardRes, fyRes, overviewRes] = await Promise.all([
+        axiosInstance.get(`/admin/units/${unitId}`),
+        axiosInstance.get(`/admin/units/${unitId}/dashboard-data`),
+        axiosInstance.get(
+          `/admin/units/${unitId}/finance-by-year?financial_year=${selectedFy}`
+        ),
+        axiosInstance.get(
+          `/admin/units/${unitId}/finance-by-year?financial_year=${selectedOverviewFy}`
+        ),
+      ]);
+
       setUnitDetails(detailRes.data);
+      setUnitDashboard(dashboardRes.data);
       setFyMetrics(fyRes.data);
       setOverviewMetrics(overviewRes.data);
     } catch (err) {
@@ -469,10 +629,8 @@ export default function AdminDashboard() {
     if (!selectedUnit) return;
     async function reloadFy() {
       try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(
-          `http://localhost:5000/api/admin/units/${selectedUnit}/finance-by-year?financial_year=${selectedFy}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+        const res = await axiosInstance.get(
+          `/admin/units/${selectedUnit}/finance-by-year?financial_year=${selectedFy}`
         );
         setFyMetrics(res.data);
       } catch (err) {
@@ -486,10 +644,8 @@ export default function AdminDashboard() {
     if (!selectedUnit) return;
     async function reloadOverviewFy() {
       try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(
-          `http://localhost:5000/api/admin/units/${selectedUnit}/finance-by-year?financial_year=${selectedOverviewFy}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+        const res = await axiosInstance.get(
+          `/admin/units/${selectedUnit}/finance-by-year?financial_year=${selectedOverviewFy}`
         );
         setOverviewMetrics(res.data);
       } catch (err) {
@@ -498,6 +654,7 @@ export default function AdminDashboard() {
     }
     reloadOverviewFy();
   }, [selectedUnit, selectedOverviewFy]);
+
 
   const teacherFields = [
     ["staff_id", "Staff ID"],
@@ -1147,116 +1304,272 @@ export default function AdminDashboard() {
     </div>
   );
 
-    const [selectedNotificationTab, setSelectedNotificationTab] = useState("send_notification");
+      const [selectedNotificationTab, setSelectedNotificationTab] = useState("send_notification");
 
-    const renderNotificationsModule = () => {
-      return (
-        <div className="notifications-page erp-container">
-          <TabNavigation
-            tabs={[
-              { id: "send_notification", label: "Send Notification", icon: "bi-send-fill" },
-              { id: "create_form", label: "Create Form", icon: "bi-file-earmark-plus-fill" },
-              { id: "activity", label: "Recent Activity", icon: "bi-clock-history" },
-            ]}
-            activeTab={selectedNotificationTab}
-            onTabChange={setSelectedNotificationTab}
-          />
+      const renderNotificationsModule = () => {
+        return (
+          <div className="notifications-page erp-container">
+            <TabNavigation
+              tabs={[
+                { id: "send_notification", label: "Send Notification", icon: "bi-send-fill" },
+                { id: "create_form", label: "Create Form", icon: "bi-file-earmark-plus-fill" },
+                { id: "active_forms", label: "Manage Forms", icon: "bi-journal-check" },
+                { id: "activity", label: "Recent Activity", icon: "bi-clock-history" },
+              ]}
+              activeTab={selectedNotificationTab}
+              onTabChange={setSelectedNotificationTab}
+            />
 
-          <div className="tab-pane-container mt-3" style={{ height: 'calc(100vh - 220px)', overflowY: 'auto' }}>
-            {selectedNotificationTab === "send_notification" && (
-              <div className="row g-4">
-                <div className="col-lg-8 mx-auto">
-                  <AdminCard header={
-                    <div className="d-flex align-items-center gap-2">
-                      <i className="bi bi-megaphone-fill text-primary"></i>
-                      <span>Official Announcement</span>
-                    </div>
-                  }>
-                    <form onSubmit={addNotification}>
-                      <div className="mb-3">
-                        <label className="form-label small fw-bold text-muted">RECEIVER ROLE</label>
-                        <select className="form-select border-primary-subtle" value={notifRole} onChange={(e) => setNotifRole(e.target.value)}>
-                          <option value="principal">Principal</option>
-                          <option value="teacher">Teacher</option>
-                        </select>
+            <div className="tab-pane-container mt-3" style={{ height: 'calc(100vh - 220px)', overflowY: 'auto' }}>
+              {selectedNotificationTab === "send_notification" && (
+                <div className="row g-4">
+                  <div className="col-lg-8 mx-auto">
+                    <AdminCard header={
+                      <div className="d-flex align-items-center gap-2">
+                        <i className="bi bi-megaphone-fill text-primary"></i>
+                        <span>Official Announcement</span>
                       </div>
-                      <div className="mb-3">
-                        <label className="form-label small fw-bold text-muted">TITLE</label>
-                        <input type="text" className="form-control" value={notifTitle} onChange={(e) => setNotifTitle(e.target.value)} required />
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label small fw-bold text-muted">MESSAGE</label>
-                        <textarea className="form-control" rows={4} value={notifMsg} onChange={(e) => setNotifMsg(e.target.value)} required />
-                      </div>
-                      <button className="btn btn-primary w-100 py-2 shadow-sm" disabled={notifLoading} type="submit">
-                        {notifLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-send me-2"></i>}
-                        Dispatch Notification
-                      </button>
-                    </form>
-                  </AdminCard>
-                </div>
-              </div>
-            )}
-
-            {selectedNotificationTab === "create_form" && (
-              <div className="row g-4">
-                <div className="col-lg-8 mx-auto">
-                  <AdminCard header={
-                    <div className="d-flex align-items-center gap-2">
-                      <i className="bi bi-file-earmark-plus-fill text-success"></i>
-                      <span>Data Collection Campaign</span>
-                    </div>
-                  }>
-                    <form onSubmit={addForm}>
-                      <div className="row g-3">
-                        <div className="col-md-6">
-                          <label className="form-label small fw-bold text-muted">TARGET ROLE</label>
-                          <select className="form-select border-success-subtle" value={formRole} onChange={(e) => setFormRole(e.target.value)}>
+                    }>
+                      <form onSubmit={addNotification}>
+                        <div className="mb-3">
+                          <label className="form-label small fw-bold text-muted">SELECT SCHOOL</label>
+                          <select className="form-select border-primary-subtle" value={notifUnitId} onChange={(e) => setNotifUnitId(e.target.value)} required>
+                            <option value="">Select School</option>
+                            {units.map((u) => (
+                              <option key={u.unit_id} value={u.unit_id}>
+                                {u.unit_name || u.kendrashala_name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label small fw-bold text-muted">RECEIVER ROLE</label>
+                          <select className="form-select border-primary-subtle" value={notifRole} onChange={(e) => {
+                            setNotifRole(e.target.value);
+                            setSendAllTeachers(true);
+                            setSelectedTeachers([]);
+                          }} disabled={!notifUnitId}>
                             <option value="principal">Principal</option>
                             <option value="teacher">Teacher</option>
                           </select>
                         </div>
-                        <div className="col-md-6">
-                          <label className="form-label small fw-bold text-muted">DEADLINE</label>
-                          <input type="datetime-local" className="form-control" value={formDeadline} onChange={(e) => setFormDeadline(e.target.value)} />
-                        </div>
-                        <div className="col-md-12">
-                          <label className="form-label small fw-bold text-muted">FORM TITLE</label>
-                          <input type="text" className="form-control" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required />
-                        </div>
-                        <div className="col-md-12">
-                          <div className="d-flex justify-content-between align-items-center mb-2">
-                            <label className="form-label small fw-bold text-muted mb-0">QUESTIONS</label>
-                            <button type="button" className="btn btn-link btn-sm p-0 text-decoration-none" onClick={addFormQuestion}>+ Add More</button>
+
+                        {notifRole === "teacher" && notifUnitId && (
+                          <div className="mb-3 p-3 bg-light border rounded">
+                            <div className="form-check mb-2">
+                              <input type="checkbox" className="form-check-input" id="notifSendAll" checked={sendAllTeachers} onChange={() => setSendAllTeachers(!sendAllTeachers)} />
+                              <label className="form-check-label small fw-bold" htmlFor="notifSendAll">Send to all teachers ({teachers.length})</label>
+                            </div>
+                            {!sendAllTeachers && (
+                              <select multiple className="form-select form-select-sm" value={selectedTeachers} onChange={(e) => setSelectedTeachers([...e.target.selectedOptions].map(o => o.value))} style={{ minHeight: '120px' }}>
+                                {teachers.map(t => (
+                                  <option key={t.user_id} value={t.user_id}>{t.full_name} ({t.subject || 'Staff'})</option>
+                                ))}
+                              </select>
+                            )}
                           </div>
-                          {formQuestions.map((q, idx) => (
-                            <div key={idx} className="p-3 border rounded bg-light mb-2 shadow-sm">
-                              <input placeholder="Enter question text..." className="form-control mb-2" value={q.question_text} required onChange={(e) => handleQuestionChange(idx, "question_text", e.target.value)} />
-                              <div className="d-flex gap-2">
-                                <select className="form-select w-auto" value={q.question_type} onChange={(e) => handleQuestionChange(idx, "question_type", e.target.value)}>
-                                  <option value="text">Input Text</option>
-                                  <option value="mcq">Multiple Choice</option>
-                                </select>
-                                {q.question_type === "mcq" && (
-                                  <input placeholder="Options (comma separated)" className="form-control" value={q.options} onChange={(e) => handleQuestionChange(idx, "options", e.target.value)} />
+                        )}
+
+                        <div className="mb-3">
+                          <label className="form-label small fw-bold text-muted">TITLE</label>
+                          <input type="text" className="form-control" value={notifTitle} onChange={(e) => setNotifTitle(e.target.value)} required />
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label small fw-bold text-muted">MESSAGE</label>
+                          <textarea className="form-control" rows={4} value={notifMsg} onChange={(e) => setNotifMsg(e.target.value)} required />
+                        </div>
+                        <button className="btn btn-primary w-100 py-2 shadow-sm" disabled={notifLoading || !notifUnitId} type="submit">
+                          {notifLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-send me-2"></i>}
+                          Dispatch Notification
+                        </button>
+                      </form>
+                    </AdminCard>
+                  </div>
+                </div>
+              )}
+
+              {selectedNotificationTab === "create_form" && (
+                <div className="row g-4">
+                  <div className="col-lg-8 mx-auto">
+                    <AdminCard header={
+                      <div className="d-flex align-items-center gap-2">
+                        <i className="bi bi-file-earmark-plus-fill text-success"></i>
+                        <span>Data Collection Campaign</span>
+                      </div>
+                    }>
+                      <form onSubmit={addForm}>
+                        <div className="row g-3">
+                          <div className="col-md-12">
+                            <label className="form-label small fw-bold text-muted">SELECT SCHOOL</label>
+                            <select className="form-select border-success-subtle" value={notifUnitId} onChange={(e) => setNotifUnitId(e.target.value)} required>
+                              <option value="">Select School</option>
+                              {units.map((u) => (
+                                <option key={u.unit_id} value={u.unit_id}>
+                                  {u.unit_name || u.kendrashala_name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="col-md-6">
+                            <label className="form-label small fw-bold text-muted">TARGET ROLE</label>
+                            <select className="form-select border-success-subtle" value={formRole} onChange={(e) => {
+                              setFormRole(e.target.value);
+                              setSendAllTeachers(true);
+                              setSelectedTeachers([]);
+                            }} disabled={!notifUnitId}>
+                              <option value="principal">Principal</option>
+                              <option value="teacher">Teacher</option>
+                            </select>
+                          </div>
+                          <div className="col-md-6">
+                            <label className="form-label small fw-bold text-muted">DEADLINE</label>
+                            <input type="datetime-local" className="form-control" value={formDeadline} onChange={(e) => setFormDeadline(e.target.value)} required />
+                          </div>
+
+                          {formRole === "teacher" && notifUnitId && (
+                            <div className="col-12">
+                              <div className="p-3 bg-light border rounded">
+                                <div className="form-check mb-2">
+                                  <input type="checkbox" className="form-check-input" id="formSendAll" checked={sendAllTeachers} onChange={() => setSendAllTeachers(!sendAllTeachers)} />
+                                  <label className="form-check-label small fw-bold" htmlFor="formSendAll">Send to all teachers ({teachers.length})</label>
+                                </div>
+                                {!sendAllTeachers && (
+                                  <select multiple className="form-select form-select-sm" value={selectedTeachers} onChange={(e) => setSelectedTeachers([...e.target.selectedOptions].map(o => o.value))} style={{ minHeight: '120px' }}>
+                                    {teachers.map(t => (
+                                      <option key={t.user_id} value={t.user_id}>{t.full_name} ({t.subject || 'Staff'})</option>
+                                    ))}
+                                  </select>
                                 )}
-                                <button type="button" className="btn btn-outline-danger" onClick={() => removeFormQuestion(idx)} disabled={formQuestions.length === 1}><i className="bi bi-trash"></i></button>
                               </div>
                             </div>
-                          ))}
+                          )}
+
+                          <div className="col-md-12">
+                            <label className="form-label small fw-bold text-muted">FORM TITLE</label>
+                            <input type="text" className="form-control" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required />
+                          </div>
+                          <div className="col-md-12">
+                            <label className="form-label small fw-bold text-muted">DESCRIPTION (OPTIONAL)</label>
+                            <textarea className="form-control" rows={2} value={formDesc} onChange={(e) => setFormDesc(e.target.value)} />
+                          </div>
+                          <div className="col-md-12">
+                            <div className="d-flex justify-content-between align-items-center mb-2">
+                              <label className="form-label small fw-bold text-muted mb-0">QUESTIONS</label>
+                              <button type="button" className="btn btn-link btn-sm p-0 text-decoration-none" onClick={addFormQuestion}>+ Add More</button>
+                            </div>
+                            {formQuestions.map((q, idx) => (
+                              <div key={idx} className="p-3 border rounded bg-light mb-2 shadow-sm">
+                                <input placeholder="Enter question text..." className="form-control mb-2" value={q.questiontext} required onChange={(e) => handleQuestionChange(idx, "questiontext", e.target.value)} />
+                                <div className="d-flex gap-2">
+                                  <select className="form-select w-auto" value={q.questiontype} onChange={(e) => handleQuestionChange(idx, "questiontype", e.target.value)}>
+                                    <option value="text">Input Text</option>
+                                    <option value="number">Number</option>
+                                    <option value="date">Date</option>
+                                    <option value="select">Select</option>
+                                  </select>
+                                  {q.questiontype === "select" && (
+                                    <input placeholder="Options: A, B, C" className="form-control" value={q.options} onChange={(e) => handleQuestionChange(idx, "options", e.target.value)} />
+                                  )}
+                                  <button type="button" className="btn btn-outline-danger" onClick={() => removeFormQuestion(idx)} disabled={formQuestions.length === 1}><i className="bi bi-trash"></i></button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="col-md-12 mt-3">
+                            <button className="btn btn-success w-100 py-2 shadow-sm" disabled={formLoading || !notifUnitId} type="submit">
+                              {formLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-rocket-takeoff me-2"></i>}
+                              Launch Campaign
+                            </button>
+                          </div>
                         </div>
-                        <div className="col-md-12 mt-3">
-                          <button className="btn btn-success w-100 py-2 shadow-sm" disabled={formLoading} type="submit">
-                            {formLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-rocket-takeoff me-2"></i>}
-                            Launch Campaign
-                          </button>
-                        </div>
-                      </div>
-                    </form>
-                  </AdminCard>
+                      </form>
+                    </AdminCard>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {selectedNotificationTab === "active_forms" && (
+                <div className="row g-4">
+                  <div className="col-lg-5">
+                    <AdminCard header={`Active Forms (${forms.length})`}>
+                      <div className="list-group list-group-flush professional-list" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                        {forms.length === 0 ? (
+                          <div className="text-center py-5 text-muted">No active forms</div>
+                        ) : (
+                          forms.map(f => (
+                            <button key={f.id} className={`list-group-item list-group-item-action py-3 ${selectedFormId === f.id ? 'active' : ''}`} onClick={() => {
+                              setSelectedFormId(f.id);
+                              loadRecipientStatus(f.id);
+                              loadFormResponsesForDashboard(f.id);
+                            }}>
+                              <div className="d-flex justify-content-between align-items-center">
+                                <span className="fw-bold">{f.title}</span>
+                                <span className="badge bg-primary rounded-pill">#{f.id}</span>
+                              </div>
+                              <small className="d-block mt-1">Deadline: {f.deadline ? new Date(f.deadline).toLocaleString() : '—'}</small>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </AdminCard>
+                  </div>
+                  <div className="col-lg-7">
+                    <AdminCard header="Form Insights & Responses">
+                      {!selectedFormId ? (
+                        <div className="text-center py-5 text-muted">Select a form on the left to view data</div>
+                      ) : responsesLoading ? (
+                        <div className="text-center py-5"><span className="spinner-border text-primary"></span></div>
+                      ) : (
+                        <div>
+                          {/* Stats Header */}
+                          <div className="row g-3 mb-4">
+                            <div className="col-6">
+                              <div className="p-3 bg-success-subtle border border-success-subtle rounded text-center">
+                                <div className="fs-3 fw-bold text-success">{recipientStatus.filter(r => r.has_responded).length}</div>
+                                <div className="small fw-bold">RECEIVED</div>
+                              </div>
+                            </div>
+                            <div className="col-6">
+                              <div className="p-3 bg-warning-subtle border border-warning-subtle rounded text-center">
+                                <div className="fs-3 fw-bold text-warning">{recipientStatus.filter(r => !r.has_responded).length}</div>
+                                <div className="small fw-bold">PENDING</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Responses List */}
+                          <div className="responses-list" style={{ maxHeight: '420px', overflowY: 'auto' }}>
+                            {formResponses.length === 0 ? (
+                              <div className="text-center py-4 text-muted">No submissions yet</div>
+                            ) : (
+                              formResponses.map(resp => (
+                                <div key={resp.response_id} className="p-3 border rounded mb-3 bg-white shadow-sm">
+                                  <div className="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                      <div className="fw-bold">{resp.submitted_by_name}</div>
+                                      <small className="text-muted text-uppercase">{resp.submitted_by_role} • {resp.unit_name}</small>
+                                    </div>
+                                    <small className="text-muted">{new Date(resp.submitted_at).toLocaleString()}</small>
+                                  </div>
+                                  <div className="mt-3 pt-2 border-top">
+                                    {resp.answers.map((a, idx) => (
+                                      <div key={idx} className="mb-2">
+                                        <div className="small fw-bold text-muted">{a.question}</div>
+                                        <div className="small">{a.answer}</div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </AdminCard>
+                  </div>
+                </div>
+              )}
+
 
             {selectedNotificationTab === "activity" && (
               <div className="row g-4">

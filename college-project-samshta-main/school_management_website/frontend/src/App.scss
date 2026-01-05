@@ -161,12 +161,17 @@ body {
   }
 }
 
-.form-group {
-  position: relative;
-  margin-bottom: 25px;
-  text-align: left;
+.form-group-wrapper {
   display: flex;
   flex-direction: column;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.form-group {
+  position: relative;
+  margin-bottom: 0;
+  text-align: left;
   width: 100%;
 
   .input-header {
@@ -177,15 +182,21 @@ body {
 
     .input-icon {
       color: var(--navy-blue);
-      font-size: 1rem;
-      position: static;
+      font-size: 1.1rem;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
     .input-label {
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       font-weight: 600;
       color: var(--navy-blue);
       margin: 0;
+      line-height: 1;
     }
   }
 
@@ -200,10 +211,11 @@ body {
     box-sizing: border-box;
     height: 48px;
     line-height: 24px;
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
     &::placeholder {
-      color: #ccc;
-      font-size: 0.9rem;
+      color: #999;
+      font-size: 1rem;
     }
 
     &:focus {
