@@ -122,11 +122,40 @@ $danger-text: #dc2626;
           }
         }
 
-        // Remove Contextual Tints - Use consistent soft navy tint
-        &.teachers, &.students, &.ratio, &.budget {
+        // Contextual Colors for Information Indication
+        &.teachers {
+          background: rgba(45, 212, 191, 0.08); // Soft Teal Tint
           .metric-icon { 
-            background: rgba($primary, 0.05); 
-            color: $primary; 
+            background: rgba(45, 212, 191, 0.15); 
+            color: #0d9488; 
+            opacity: 1;
+          }
+        }
+        &.students {
+          background: rgba(129, 140, 248, 0.08); // Soft Indigo Tint
+          .metric-icon { 
+            background: rgba(129, 140, 248, 0.15); 
+            color: #4f46e5; 
+            opacity: 1;
+          }
+        }
+        &.ratio {
+          background: rgba(251, 191, 36, 0.08); // Soft Amber Tint
+          .metric-icon { 
+            background: rgba(251, 191, 36, 0.15); 
+            color: #d97706; 
+            opacity: 1;
+          }
+        }
+        &.budget {
+          background: rgba(74, 222, 128, 0.08); // Soft Green Tint
+          .metric-icon { 
+            background: rgba(74, 222, 128, 0.15); 
+            color: #16a34a; 
+            opacity: 1;
+          }
+          .metric-value {
+            font-weight: 800; // Slightly bolder status
           }
         }
       }
@@ -289,10 +318,22 @@ $danger-text: #dc2626;
           }
         }
         
-        // Remove individual colors - already cleaned up in the generic .info-card
-        &.teal, &.purple, &.orange, &.blue, &.rose, &.emerald, &.indigo, &.amber {
+        // Principal Info Cards - Professional Navy Tints
+        &.teal, &.purple, &.orange, &.blue {
           background: rgba($primary, 0.03);
-          .info-card-icon { background: rgba($primary, 0.08); color: $primary; }
+          .info-card-icon { 
+            background: rgba($primary, 0.08); 
+            color: $primary; 
+          }
+        }
+
+        // Headmistress Info Cards - Soft Teal/Green Tints
+        &.rose, &.emerald, &.indigo, &.amber {
+          background: rgba(20, 184, 166, 0.03);
+          .info-card-icon { 
+            background: rgba(20, 184, 166, 0.08); 
+            color: #0d9488; 
+          }
         }
       }
     }
