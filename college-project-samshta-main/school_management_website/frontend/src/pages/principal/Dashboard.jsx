@@ -31,6 +31,11 @@ export default function PrincipalDashboard() {
     async function fetchAllData() {
       try {
         const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
         const [profileRes, studentsRes, dashboardRes, overviewRes] =
           await Promise.all([
             axios.get("http://localhost:5000/api/principal/me", {
@@ -329,7 +334,6 @@ export default function PrincipalDashboard() {
 
           {dashboardSubTab === "finance_overview" && (
             <div className="principal-finance-section">
-              {/* 1. Finance Overview Section */}
               <div className="finance-section-card">
                 <div className="finance-header">
                   <h4>Finance Overview</h4>
@@ -366,7 +370,6 @@ export default function PrincipalDashboard() {
                 </div>
               </div>
 
-              {/* 2. Budget Summary Section */}
               <div className="finance-section-card">
                 <div className="finance-header">
                   <h4>Budget Summary</h4>
@@ -411,7 +414,6 @@ export default function PrincipalDashboard() {
                 </div>
               </div>
 
-              {/* 3. Financial Year Metrics Section */}
               <div className="finance-section-card">
                 <div className="finance-header">
                   <h4>Financial Year {selectedOverviewFy}</h4>
