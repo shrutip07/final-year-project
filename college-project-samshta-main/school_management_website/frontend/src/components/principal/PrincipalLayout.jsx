@@ -7,6 +7,7 @@ export default function PrincipalLayout(props) {
     { key: "profile", label: "Profile", icon: "bi-person" },
     { key: "teachers", label: "Teachers", icon: "bi-people" },
     { key: "students", label: "Students", icon: "bi-mortarboard" },
+    { key: "finance", label: "Finance", icon: "bi-cash-stack" },
     { key: "charts", label: "Charts", icon: "bi-bar-chart-fill" },
     { key: "notifications", label: "Notifications", icon: "bi-bell-fill" },
   ];
@@ -17,6 +18,7 @@ export default function PrincipalLayout(props) {
       sidebarItems={sidebarItems} 
       portalName="Principal Portal"
       portalIcon="bi-mortarboard-fill"
+      customGreeting="Welcome, Principal 👋"
     />
   );
 }
