@@ -329,11 +329,48 @@ export default function PrincipalDashboard() {
 
           {dashboardSubTab === "finance_overview" && (
             <div className="principal-finance-section">
+              {/* 1. Finance Overview Section */}
               <div className="finance-section-card">
                 <div className="finance-header">
-                  <h4>Budget & Fees Summary</h4>
+                  <h4>Finance Overview</h4>
                   <div className="header-right">
-                    <span className="fy-label">FY</span>
+                    <span className="fy-label">Financial Year</span>
+                    <select
+                      value={selectedOverviewFy}
+                      onChange={(e) => setSelectedOverviewFy(e.target.value)}
+                      className="form-select"
+                    >
+                      <option value="2023-24">2023-24</option>
+                      <option value="2024-25">2024-25</option>
+                      <option value="2025-26">2025-26</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="finance-cards-row">
+                  <div className="finance-card">
+                    <div className="finance-icon"><i className="bi bi-wallet2"></i></div>
+                    <div className="finance-info">
+                      <span className="finance-label">Total Budget</span>
+                      <span className="finance-value">₹ {(dashboardData.finance?.totalBudget || 0).toLocaleString()}</span>
+                      <span className="finance-sub">Expected sum from fee_master table</span>
+                    </div>
+                  </div>
+                  <div className="finance-card">
+                    <div className="finance-icon"><i className="bi bi-cash-stack"></i></div>
+                    <div className="finance-info">
+                      <span className="finance-label">Total Spent</span>
+                      <span className="finance-value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                      <span className="finance-sub">Teacher salaries paid this year</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Budget Summary Section */}
+              <div className="finance-section-card">
+                <div className="finance-header">
+                  <h4>Budget Summary</h4>
+                  <div className="header-right">
                     <select
                       value={selectedOverviewFy}
                       onChange={(e) => setSelectedOverviewFy(e.target.value)}
@@ -351,26 +388,60 @@ export default function PrincipalDashboard() {
                     <div className="finance-info">
                       <span className="finance-label">Fees Collected</span>
                       <span className="finance-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
-                      <span className="finance-sub">Actual fees received</span>
+                      <span className="finance-sub">Actual fees received from students</span>
                     </div>
                   </div>
                   <div className="finance-card">
                     <div className="finance-icon"><i className="bi bi-hourglass-split"></i></div>
                     <div className="finance-info">
                       <span className="finance-label">Pending Fees</span>
-                      <span className="finance-value">₹ {(dashboardData.finance.totalFeesPending || 0).toLocaleString()}</span>
-                      <span className="finance-sub">Yet to be collected</span>
+                      <span className="finance-value">₹ {(dashboardData.finance?.totalFeesPending || 0).toLocaleString()}</span>
+                      <span className="finance-sub">Fees yet to be collected</span>
                     </div>
                   </div>
                 </div>
                 <div className="finance-balance-strip">
                   <div className="balance-calc">
-                    <span className="calc-label">Financial Balance (Net)</span>
-                    <span className="calc-details">Fees Collected - Teacher Salaries Spent</span>
+                    <span className="calc-label">Balance (Fees Collected minus Salary Spent)</span>
+                    <span className="calc-details">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()} - ₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()} = ₹ {((overviewMetrics?.feesCollectedFy || 0) - (overviewMetrics?.salarySpentFy || 0)).toLocaleString()}</span>
                   </div>
                   <span className="balance-result">
                     ₹ {((overviewMetrics?.feesCollectedFy || 0) - (overviewMetrics?.salarySpentFy || 0)).toLocaleString()}
                   </span>
+                </div>
+              </div>
+
+              {/* 3. Financial Year Metrics Section */}
+              <div className="finance-section-card">
+                <div className="finance-header">
+                  <h4>Financial Year {selectedOverviewFy}</h4>
+                  <div className="header-right">
+                    <select
+                      value={selectedOverviewFy}
+                      onChange={(e) => setSelectedOverviewFy(e.target.value)}
+                      className="form-select"
+                    >
+                      <option value="2023-24">2023-24</option>
+                      <option value="2024-25">2024-25</option>
+                      <option value="2025-26">2025-26</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="finance-cards-row">
+                  <div className="finance-card">
+                    <div className="finance-icon"><i className="bi bi-graph-up-arrow"></i></div>
+                    <div className="finance-info">
+                      <span className="finance-label">Fees Collected in FY</span>
+                      <span className="finance-value">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <div className="finance-card">
+                    <div className="finance-icon"><i className="bi bi-graph-down-arrow"></i></div>
+                    <div className="finance-info">
+                      <span className="finance-label">Salary Spent in FY</span>
+                      <span className="finance-value">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
