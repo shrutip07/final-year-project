@@ -151,47 +151,58 @@ export default function LoginPage() {
         {/* Login Card */}
         <div className="login-section">
           <h2>{isRegister ? t("register") : t("login")}</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <i className="fas fa-envelope input-icon"></i>
-              <input
-                type="email"
-                placeholder={t("email")}
-                value={email}
-                required
-                onChange={(e) => setEmail(e.target.value)}
-                pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
-                title={t("email_valid_title")}
-              />
-            </div>
+            <form onSubmit={handleSubmit}>
+              <div className="form-group-wrapper">
+                <div className="form-group">
+                  <div className="input-header">
+                    <i className="fas fa-envelope input-icon"></i>
+                    <label className="input-label">{t("email")}</label>
+                  </div>
+                  <input
+                    type="email"
+                    placeholder={t("enter_email")}
+                    value={email}
+                    required
+                    onChange={(e) => setEmail(e.target.value)}
+                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                    title={t("email_valid_title")}
+                  />
+                </div>
 
-            <div className="form-group">
-              <i className="fas fa-lock input-icon"></i>
-              <input
-                type="password"
-                placeholder={t("password")}
-                value={password}
-                required
-                onChange={(e) => setPassword(e.target.value)}
-                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
-                title={t("password_requirements")}
-              />
-            </div>
-
-            {isRegister && (
-              <div className="form-group">
-                <i className="fas fa-user-tag input-icon"></i>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                >
-                  <option value="teacher">{t("teacher")}</option>
-                  <option value="admin">{t("admin")}</option>
-                  <option value="principal">{t("principal")}</option>
-                  <option value="clerk">{t("clerk")}</option>
-                </select>
+                <div className="form-group">
+                  <div className="input-header">
+                    <i className="fas fa-lock input-icon"></i>
+                    <label className="input-label">{t("password")}</label>
+                  </div>
+                  <input
+                    type="password"
+                    placeholder={t("enter_password")}
+                    value={password}
+                    required
+                    onChange={(e) => setPassword(e.target.value)}
+                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+                    title={t("password_requirements")}
+                  />
+                </div>
               </div>
-            )}
+
+              {isRegister && (
+                <div className="form-group">
+                  <div className="input-header">
+                    <i className="fas fa-user-tag input-icon"></i>
+                    <label className="input-label">{t("role")}</label>
+                  </div>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                  >
+                    <option value="teacher">{t("teacher")}</option>
+                    <option value="admin">{t("admin")}</option>
+                    <option value="principal">{t("principal")}</option>
+                    <option value="clerk">{t("clerk")}</option>
+                  </select>
+                </div>
+              )}
 
             <button type="submit" className="login-button">
               {isRegister ? t("register") : t("login")}

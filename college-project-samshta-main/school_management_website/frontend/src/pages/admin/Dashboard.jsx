@@ -1092,6 +1092,8 @@ export default function AdminDashboard() {
         <h3>School Overview</h3>
         <p>Monitor and manage all MKSSS educational units</p>
       </div>
+
+      <AdminUnitImport />
       
       <div className="row school-grid">
         {safeUnits.length === 0 ? (
@@ -1100,9 +1102,6 @@ export default function AdminDashboard() {
               <div className="spinner-border text-primary" role="status"></div>
               <p className="mt-2 text-muted">Loading schools...</p>
             </div>
-
-            {/* Unit Import Component */}
-            <AdminUnitImport />
           </div>
         ) : (
             safeUnits.map((unit, idx) => (

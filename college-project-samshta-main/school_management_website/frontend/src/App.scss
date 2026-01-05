@@ -163,24 +163,35 @@ body {
 
 .form-group {
   position: relative;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   text-align: left;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   width: 100%;
 
-  .input-icon {
-    position: absolute;
-    left: 15px;
-    color: var(--navy-blue);
-    font-size: 1.1rem;
-    z-index: 2;
-    pointer-events: none;
+  .input-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 10px;
+
+    .input-icon {
+      color: var(--navy-blue);
+      font-size: 1rem;
+      position: static;
+    }
+
+    .input-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--navy-blue);
+      margin: 0;
+    }
   }
 
   input, select {
     width: 100%;
-    padding: 12px 15px 12px 45px;
+    padding: 12px 15px;
     border: 2px solid #e1e8ed;
     border-radius: 8px;
     font-size: 1rem;
@@ -191,7 +202,8 @@ body {
     line-height: 24px;
 
     &::placeholder {
-      color: #999;
+      color: #ccc;
+      font-size: 0.9rem;
     }
 
     &:focus {
