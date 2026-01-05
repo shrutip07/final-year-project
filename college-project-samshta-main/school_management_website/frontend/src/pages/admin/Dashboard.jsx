@@ -81,12 +81,6 @@ export default function AdminDashboard() {
   ]);
   const [formLoading, setFormLoading] = useState(false);
 
-  // NEW: dashboard / finance data for a unit
-  const [selectedFy, setSelectedFy] = useState("2024-25");
-  const [fyMetrics, setFyMetrics] = useState(null);
-  const [selectedOverviewFy, setSelectedOverviewFy] = useState("2024-25");
-  const [overviewMetrics, setOverviewMetrics] = useState(null);
-
   // REPORTS
   const [reportYears, setReportYears] = useState([]);
   const [selectedReportYear, setSelectedReportYear] = useState("");
