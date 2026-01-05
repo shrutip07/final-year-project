@@ -12,12 +12,13 @@ export default function PrincipalLayout(props) {
       { key: "finance", label: "Finance", icon: "bi-cash-stack" },
     ];
 
-  return (
-    <DashboardLayout 
-      {...props} 
-      sidebarItems={sidebarItems} 
-      portalName="Principal Portal"
-      portalIcon="bi-mortarboard-fill"
-    />
-  );
+    return (
+      <DashboardLayout 
+        {...props} 
+        sidebarItems={sidebarItems} 
+        portalName="Principal Portal"
+        portalIcon="bi-mortarboard-fill"
+        customGreeting="Welcome, Principal 👋"
+      />
+    );
 }

@@ -209,13 +209,66 @@ $danger-text: #dc2626;
     }
   }
 
-  .principal-sub-content {
-    background: $white;
-    border-radius: 12px;
-    border: 1px solid $border-color;
-    padding: 32px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  }
+    .principal-sub-content {
+      background: $white;
+      border-radius: 12px;
+      border: 1px solid $border-color;
+      padding: 32px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+
+      .unit-details-section {
+        .details-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 32px;
+
+          .details-group {
+            .group-title {
+              font-size: 14px;
+              font-weight: 700;
+              color: $primary;
+              margin-bottom: 20px;
+              display: flex;
+              align-items: center;
+              padding-bottom: 12px;
+              border-bottom: 2px solid rgba($primary, 0.05);
+              
+              i {
+                font-size: 18px;
+                opacity: 0.8;
+              }
+            }
+
+            .details-row {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 20px;
+              margin-bottom: 16px;
+
+              .detail-item {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+
+                .label {
+                  font-size: 11px;
+                  font-weight: 600;
+                  color: $text-muted;
+                  text-transform: uppercase;
+                  letter-spacing: 0.5px;
+                }
+
+                .value {
+                  font-size: 14px;
+                  font-weight: 700;
+                  color: $primary;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
 
   .principal-info-section {
     .info-header {

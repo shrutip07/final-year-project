@@ -94,17 +94,11 @@ export default function PrincipalDashboard() {
       { id: "principal_profile", label: "Principal Profile", icon: "bi-person-badge" },
       { id: "headmistress_info", label: "Headmistress Info", icon: "bi-person-workspace" },
       { id: "finance_overview", label: "Finance Overview", icon: "bi-cash-stack" },
+      { id: "unit_details", label: "Unit Details", icon: "bi-building-gear" },
     ];
 
     return (
       <div className="principal-tab-content">
-        <div className="principal-welcome-banner">
-          <div className="welcome-text">
-            <h2>Welcome, Principal 👋</h2>
-            <p>MKSSS Dashboard</p>
-          </div>
-        </div>
-
         <div className="principal-metrics-grid">
           <div className="principal-metric-card teachers">
             <div className="metric-icon"><i className="bi bi-people-fill"></i></div>
@@ -370,9 +364,123 @@ export default function PrincipalDashboard() {
                 </div>
               </div>
             )}
+
+            {dashboardSubTab === "unit_details" && (
+              <div className="unit-details-section">
+                <div className="details-grid">
+                  <div className="details-group">
+                    <h4 className="group-title"><i className="bi bi-info-circle me-2"></i>General Information</h4>
+                    <div className="details-row">
+                      <div className="detail-item">
+                        <span className="label">Unit Name</span>
+                        <span className="value">{school.unit_name || "-"}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Kendrashala Name</span>
+                        <span className="value">{school.kendrashala_name || "-"}</span>
+                      </div>
+                    </div>
+                    <div className="details-row">
+                      <div className="detail-item">
+                        <span className="label">SEMIS No</span>
+                        <span className="value">{school.semis_no || "-"}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">DCF No</span>
+                        <span className="value">{school.dcf_no || "-"}</span>
+                      </div>
+                    </div>
+                    <div className="details-row">
+                      <div className="detail-item">
+                        <span className="label">NMMS No</span>
+                        <span className="value">{school.nmms_no || "-"}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">School Shift</span>
+                        <span className="value">{school.school_shift || "-"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="details-group">
+                    <h4 className="group-title"><i className="bi bi-briefcase me-2"></i>Administration</h4>
+                    <div className="details-row">
+                      <div className="detail-item">
+                        <span className="label">Management Type</span>
+                        <span className="value">{school.type_of_management || "-"}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Standard Range</span>
+                        <span className="value">{school.standard_range || "-"}</span>
+                      </div>
+                    </div>
+                    <div className="details-row">
+                      <div className="detail-item">
+                        <span className="label">Jurisdiction</span>
+                        <span className="value">{school.school_jurisdiction || "-"}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Scholarship Code</span>
+                        <span className="value">{school.scholarship_code || "-"}</span>
+                      </div>
+                    </div>
+                    <div className="details-row">
+                      <div className="detail-item">
+                        <span className="label">First Grant Year</span>
+                        <span className="value">{school.first_grant_year || "-"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="details-group">
+                    <h4 className="group-title"><i className="bi bi-shield-check me-2"></i>Authorities</h4>
+                    <div className="details-row">
+                      <div className="detail-item">
+                        <span className="label">Competent Authority</span>
+                        <span className="value">{school.competent_authority_name || "-"}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Authority Number</span>
+                        <span className="value">{school.authority_number || "-"}</span>
+                      </div>
+                    </div>
+                    <div className="details-row">
+                      <div className="detail-item">
+                        <span className="label">Authority Zone</span>
+                        <span className="value">{school.authority_zone || "-"}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Info Authority</span>
+                        <span className="value">{school.info_authority || "-"}</span>
+                      </div>
+                    </div>
+                    <div className="details-row">
+                      <div className="detail-item">
+                        <span className="label">Appellate Authority</span>
+                        <span className="value">{school.appellate_authority || "-"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="details-group">
+                    <h4 className="group-title"><i className="bi bi-egg-fried me-2"></i>Midday Meal</h4>
+                    <div className="details-row">
+                      <div className="detail-item">
+                        <span className="label">Organization</span>
+                        <span className="value">{school.midday_meal_org || "-"}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Contact</span>
+                        <span className="value">{school.midday_meal_contact || "-"}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    );
+      );
   };
 
   const renderFinance = () => (
