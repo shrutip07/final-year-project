@@ -355,50 +355,50 @@ export default function PrincipalDashboard() {
                         </select>
                       </div>
                     </div>
-                    <div className="finance-card-body">
-                      <div className="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4">
-                        <div className="col">
-                          <div className="finance-stat-card budget-card">
-                            <div className="stat-icon"><i className="bi bi-wallet2"></i></div>
-                            <div className="stat-info">
-                              <span className="stat-label">Total School Budget</span>
-                              <span className="stat-subtitle">Estimated funds from annual fee structures</span>
-                              <span className="stat-value">₹ {(dashboardData.finance?.totalBudget || 0).toLocaleString()}</span>
+                      <div className="finance-card-body">
+                        <div className="row row-cols-4 g-3 flex-nowrap">
+                          <div className="col">
+                            <div className="finance-stat-card budget-card">
+                              <div className="stat-icon"><i className="bi bi-wallet2"></i></div>
+                              <div className="stat-info">
+                                <span className="stat-label">Total School Budget</span>
+                                <span className="stat-subtitle">Annual fee funds</span>
+                                <span className="stat-value">₹ {(dashboardData.finance?.totalBudget || 0).toLocaleString()}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="col">
-                          <div className="finance-stat-card spent-card">
-                            <div className="stat-icon"><i className="bi bi-cash-stack"></i></div>
-                            <div className="stat-info">
-                              <span className="stat-label">Total Salaries Paid</span>
-                              <span className="stat-subtitle">Total teacher salaries distributed this year</span>
-                              <span className="stat-value text-danger">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                          <div className="col">
+                            <div className="finance-stat-card spent-card">
+                              <div className="stat-icon"><i className="bi bi-cash-stack"></i></div>
+                              <div className="stat-info">
+                                <span className="stat-label">Total Salaries Paid</span>
+                                <span className="stat-subtitle">Teacher salaries</span>
+                                <span className="stat-value text-danger">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="col">
-                          <div className="finance-stat-card income-card">
-                            <div className="stat-icon"><i className="bi bi-piggy-bank"></i></div>
-                            <div className="stat-info">
-                              <span className="stat-label">Annual Income (Fees)</span>
-                              <span className="stat-subtitle">Total fees collected in this financial year</span>
-                              <span className="stat-value text-success">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                          <div className="col">
+                            <div className="finance-stat-card income-card">
+                              <div className="stat-icon"><i className="bi bi-piggy-bank"></i></div>
+                              <div className="stat-info">
+                                <span className="stat-label">Annual Income (Fees)</span>
+                                <span className="stat-subtitle">FY fee collection</span>
+                                <span className="stat-value text-success">₹ {(overviewMetrics?.feesCollectedFy || 0).toLocaleString()}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="col">
-                          <div className="finance-stat-card expenditure-card">
-                            <div className="stat-icon"><i className="bi bi-calculator"></i></div>
-                            <div className="stat-info">
-                              <span className="stat-label">Annual Expenditure (Salaries)</span>
-                              <span className="stat-subtitle">Salary expenses for this financial year</span>
-                              <span className="stat-value text-danger">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                          <div className="col">
+                            <div className="finance-stat-card expenditure-card">
+                              <div className="stat-icon"><i className="bi bi-calculator"></i></div>
+                              <div className="stat-info">
+                                <span className="stat-label">Annual Expenditure</span>
+                                <span className="stat-subtitle">FY salary expenses</span>
+                                <span className="stat-value text-danger">₹ {(overviewMetrics?.salarySpentFy || 0).toLocaleString()}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
                   </div>
   
                   {/* 2. Budget Summary (Bottom Section) */}

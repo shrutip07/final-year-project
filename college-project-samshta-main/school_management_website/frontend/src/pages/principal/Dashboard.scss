@@ -427,82 +427,88 @@ $lavender-accent: #818cf8;
 
         .finance-stat-card {
           background: #F8FAFC;
-          padding: 24px;
+          padding: 20px 15px; // Reduced padding for better fit in one row
           border-radius: 14px;
           border: 1px solid $border-color;
           height: 100%;
           display: flex;
-          align-items: flex-start;
-          gap: 20px;
+          align-items: center; // Vertical center
+          gap: 12px; // Reduced gap
           transition: transform 0.2s ease;
 
           &:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); }
 
           .stat-icon {
-            width: 50px;
-            height: 50px;
+            width: 40px; // Slightly smaller
+            height: 40px;
             background: $white;
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            flex-shrink: 0;
           }
 
           .stat-info {
             display: flex;
             flex-direction: column;
-            .stat-label { font-size: 15px; font-weight: 700; color: $text-dark; margin-bottom: 2px; }
-            .stat-subtitle { font-size: 12px; color: $text-muted; margin-bottom: 12px; line-height: 1.4; }
-            .stat-value { font-size: 24px; font-weight: 800; color: $primary; }
+            overflow: hidden;
+            .stat-label { font-size: 13px; font-weight: 700; color: $text-dark; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .stat-subtitle { font-size: 11px; color: $text-muted; margin-bottom: 4px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .stat-value { font-size: 18px; font-weight: 800; color: $primary; }
           }
 
           &.budget-card .stat-icon { color: $indigo-accent; }
           &.spent-card .stat-icon { color: #ef4444; }
           &.income-card .stat-icon { color: $teal-accent; }
           &.expenditure-card .stat-icon { color: $amber-accent; }
-          &.collected-card .stat-icon { color: $green-accent; }
-          &.pending-card .stat-icon { color: $amber-accent; }
-          &.metric-fy-card {
-            padding: 16px 20px;
-            background: $white;
-            .stat-label { font-size: 13px; color: $text-muted; }
-            .stat-value { font-size: 20px; }
-          }
         }
+      }
+    }
 
-        .balance-strip-modern {
-          margin-top: 10px;
-          background: linear-gradient(to right, #F1F5F9, $white);
-          border: 1px solid $border-color;
-          padding: 20px 30px;
-          border-radius: 12px;
+    .summary-section {
+      .finance-stat-card {
+        padding: 24px;
+        .stat-icon { width: 50px; height: 50px; font-size: 24px; }
+        .stat-info {
+          .stat-label { font-size: 15px; }
+          .stat-subtitle { font-size: 12px; white-space: normal; }
+          .stat-value { font-size: 24px; }
+        }
+      }
+    }
+
+    .balance-strip-modern {
+      margin-top: 10px;
+      background: linear-gradient(to right, #F1F5F9, $white);
+      border: 1px solid $border-color;
+      padding: 20px 30px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .balance-label-group {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        i { font-size: 24px; color: $primary; opacity: 0.8; }
+        .label-text {
           display: flex;
-          justify-content: space-between;
-          align-items: center;
-
-          .balance-label-group {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            i { font-size: 24px; color: $primary; opacity: 0.8; }
-            .label-text {
-              display: flex;
-              flex-direction: column;
-              .main-label { font-size: 15px; font-weight: 700; color: $text-dark; }
-              .calc-formula { font-family: 'Courier New', Courier, monospace; font-size: 14px; color: $text-muted; font-weight: 600; }
-            }
-          }
-
-          .balance-result {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            .equals { font-size: 20px; font-weight: 300; color: $text-muted; }
-            .final-amount { font-size: 28px; font-weight: 900; color: $primary; text-shadow: 0 1px 1px rgba(0,0,0,0.1); }
-          }
+          flex-direction: column;
+          .main-label { font-size: 15px; font-weight: 700; color: $text-dark; }
+          .calc-formula { font-family: 'Courier New', Courier, monospace; font-size: 14px; color: $text-muted; font-weight: 600; }
         }
+      }
+
+      .balance-result {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        .equals { font-size: 20px; font-weight: 300; color: $text-muted; }
+        .final-amount { font-size: 28px; font-weight: 900; color: $primary; text-shadow: 0 1px 1px rgba(0,0,0,0.1); }
       }
     }
   }
