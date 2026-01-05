@@ -631,8 +631,23 @@ $lavender-accent: #818cf8;
                 padding: 18px 20px;
                 border-bottom: 1px solid rgba($border-color, 0.5);
                 font-size: 15px;
-                color: $text-dark;
+                color: #000000 !important;
                 vertical-align: middle;
+
+                &.text-primary, &.text-muted, &.text-danger, &.text-success, &.text-warning, &.small {
+                  color: #000000 !important;
+                }
+
+                a {
+                  color: #000000 !important;
+                  &:hover {
+                    text-decoration: underline;
+                  }
+                }
+
+                .badge {
+                  color: #000000 !important;
+                }
               }
 
               &:hover {
