@@ -23,6 +23,7 @@ export default function AdminDashboard() {
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [unitDetails, setUnitDetails] = useState(null);
   const [unitLoading, setUnitLoading] = useState(false);
+  const [selectedDetailTab, setSelectedDetailTab] = useState("overview");
 
   const [teacherSearch, setTeacherSearch] = useState("");
   const [studentSearch, setStudentSearch] = useState("");
@@ -670,6 +671,7 @@ export default function AdminDashboard() {
   async function handleUnitCardClick(unitId) {
     setUnitLoading(true);
     setSelectedUnit(unitId);
+    setSelectedDetailTab("overview");
     setTeacherSearch("");
     setStudentSearch("");
     setStudentsYear("");
@@ -887,495 +889,197 @@ export default function AdminDashboard() {
     );
   }
 
-  const renderUnitDetails = () =>
-    unitDetails ? (
-      <div className="page-inner">
-        <PageHeader
-          title={unitDetails.kendrashala_name}
-          subtitle={t("school_overview")}
-          actions={
-            <button
-              className="btn btn-primary back-btn mb-3"
-              onClick={() => {
-                setSelectedUnit(null);
-                setUnitDetails(null);
-              }}
-            >
-              ← {t("back_to_units")}
-            </button>
-          }
-        />
+  const renderSchoolDetailView = () => {
+    if (!unitDetails) return null;
 
-        <div className="unit-details-grid">
-          <AdminCard header={t("school_summary")} className="summary-card">
-            <div className="summary-grid">
-              <div className="summary-item">
-                <div className="summary-value">
-                  {unitDetails.teachers?.length ?? 0}
-                </div>
-                <div className="summary-label">{t("total_staff")}</div>
-              </div>
-              <div className="summary-item">
-                <div className="summary-value">
-                  {unitDetails.students?.length ?? 0}
-                </div>
-                <div className="summary-label">{t("total_students")}</div>
-              </div>
-              <div className="summary-item">
-                <div className="summary-value">
-                  {unitDetails.headmistress_name || "-"}
-                </div>
-                <div className="summary-label">{t("headmistress_name")}</div>
-              </div>
-              <div className="summary-item">
-                <div className="summary-value">{unitDetails.semis_no || "-"}</div>
-                <div className="summary-label">SEMIS No</div>
+    const detailTabs = [
+      { id: "overview", label: "Overview", icon: "bi-grid-1x2" },
+      { id: "finance", label: "Finance", icon: "bi-cash-stack" },
+      { id: "teachers", label: "Teachers", icon: "bi-people" },
+      { id: "students", label: "Students", icon: "bi-mortarboard" },
+      { id: "payments", label: "Payments", icon: "bi-credit-card" },
+      { id: "banks", label: "Banks", icon: "bi-bank" },
+      { id: "legal", label: "Legal / Cases", icon: "bi-shield-shaded" },
+    ];
+
+    return (
+      <div className="school-detail-view-container">
+        {/* Static School Information Card */}
+        <div className="school-static-info-card shadow-sm">
+          <div className="info-card-header">
+            <div className="school-identity">
+              <h2 className="school-name">{unitDetails.kendrashala_name}</h2>
+              <div className="school-meta-pills">
+                <span className="meta-pill">
+                  <i className="bi bi-hash"></i> SEMIS No: {unitDetails.semis_no}
+                </span>
+                <span className="meta-pill">
+                  <i className="bi bi-person-badge"></i> Headmaster: {unitDetails.headmistress_name || "N/A"}
+                </span>
               </div>
             </div>
-          </AdminCard>
-
-          <AdminCard header={t("school_details")} className="details-card">
-            <div className="details-grid">
-              {[
-                ["unit_id", "Unit ID"],
-                ["semis_no", "SEMIS No"],
-                ["dcf_no", "DCF No"],
-                ["nmms_no", "NMMS No"],
-                ["scholarship_code", "Scholarship Code"],
-                ["first_grant_in_aid_year", "First Grant Year"],
-                ["type_of_management", "Management Type"],
-                ["school_jurisdiction", "School Jurisdiction"],
-                ["competent_authority_name", "Competent Authority"],
-                ["authority_number", "Authority Number"],
-                ["authority_zone", "Authority Zone"],
-                ["info_authority_name", "Info Authority"],
-                ["appellate_authority_name", "Appellate Authority"],
-                ["midday_meal_org_name", "Midday Meal Org"],
-                ["midday_meal_org_contact", "Midday Meal Contact"],
-                ["standard_range", "Standard Range"],
-                ["school_shift", "School Shift"],
-              ].map(([key, label]) => (
-                <div key={key} className="details-row">
-                  <div className="details-key">{t(key) || label}</div>
-                  <div className="details-value">{unitDetails[key] ?? "-"}</div>
-                </div>
-              ))}
+            
+            <div className="info-card-actions">
+              <div className="academic-year-badge">
+                <span className="label">ACADEMIC YEAR</span>
+                <span className="value">AY 2024-25</span>
+              </div>
+              <button 
+                className="btn btn-dark btn-back"
+                onClick={() => {
+                  setSelectedUnit(null);
+                  setUnitDetails(null);
+                }}
+              >
+                <i className="bi bi-arrow-left"></i> Back to Units
+              </button>
+              <button className="btn btn-outline-primary btn-generate">
+                <i className="bi bi-file-earmark-text"></i> Generate Report
+              </button>
             </div>
-          </AdminCard>
+          </div>
+
+          <div className="info-card-stats-row">
+            <div className="mini-stat-box">
+              <span className="label">TOTAL STUDENTS</span>
+              <span className="value">{unitDetails.students?.length || 0}</span>
+            </div>
+            <div className="mini-stat-box">
+              <span className="label">TOTAL TEACHERS</span>
+              <span className="value">{unitDetails.teachers?.length || 0}</span>
+            </div>
+          </div>
         </div>
 
-        {unitDashboard && (
-          <AdminCard header={t("unit_overview")} className="mt-3 section-card">
-            <div className="unit-metrics-grid">
-              <div className="metric-card metric-card--teachers">
-                <div className="metric-label">{t("teachers")}</div>
-                <div className="metric-value">
-                  {unitDashboard.teacherCount || 0}
+        {/* Horizontal Detail Tabs */}
+        <div className="school-detail-tabs shadow-sm">
+          {detailTabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`detail-tab-item ${selectedDetailTab === tab.id ? "active" : ""}`}
+              onClick={() => setSelectedDetailTab(tab.id)}
+            >
+              <i className={`bi ${tab.icon}`}></i>
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content Area */}
+        <div className="school-tab-content-area">
+          {selectedDetailTab === "overview" && (
+            <div className="tab-pane-fade-in">
+              <div className="content-section-title">Unit Overview Summary</div>
+              <div className="overview-summary-grid">
+                <div className="overview-card staff">
+                  <span className="label">TOTAL STAFF</span>
+                  <span className="value">{unitDetails.teachers?.length || 0}</span>
                 </div>
-              </div>
-              <div className="metric-card metric-card--students">
-                <div className="metric-label">{t("students")}</div>
-                <div className="metric-value">
-                  {unitDashboard.studentCount || 0}
+                <div className="overview-card students">
+                  <span className="label">TOTAL STUDENTS</span>
+                  <span className="value">{unitDetails.students?.length || 0}</span>
                 </div>
-              </div>
-              <div className="metric-card metric-card--ratio">
-                <div className="metric-label">{t("teacher_ratio")}</div>
-                <div className="metric-value">
-                  {unitDashboard.studentCount && unitDashboard.teacherCount
-                    ? (
-                        unitDashboard.studentCount / unitDashboard.teacherCount
-                      ).toFixed(1)
-                    : 0}
+                <div className="overview-card ratio">
+                  <span className="label">RATIO</span>
+                  <span className="value">
+                    {(unitDetails.students?.length / (unitDetails.teachers?.length || 1)).toFixed(1)}
+                  </span>
+                  <span className="sub">Student/Teacher</span>
+                </div>
+                <div className="overview-card finance">
+                  <span className="label">COLLECTED FEES</span>
+                  <span className="value">₹0</span>
+                  <span className="sub">Financial Snapshot</span>
                 </div>
               </div>
             </div>
-          </AdminCard>
-        )}
+          )}
 
-        {overviewMetrics && (
-          <AdminCard header={t("finance_overview")} className="mt-3 section-card">
-            <div className="finance-header-row finance-header-colored">
-              <div className="finance-header-text">
-                {t("financial_year")} &nbsp; <strong>{selectedOverviewFy}</strong>
-              </div>
-              <select
-                value={selectedOverviewFy}
-                onChange={(e) => setSelectedOverviewFy(e.target.value)}
-                className="form-select form-select-sm fy-select"
-              >
-                <option value="2023-24">2023-24</option>
-                <option value="2024-25">2024-25</option>
-                <option value="2025-26">2025-26</option>
-              </select>
+          {selectedDetailTab === "finance" && (
+            <div className="tab-pane-fade-in">
+               <div className="content-section-title">Financial Data</div>
+               <div className="empty-tab-state">
+                 <i className="bi bi-cash-stack"></i>
+                 <p>No financial records found for this academic year.</p>
+               </div>
             </div>
-            <div className="finance-grid">
-              <div className="finance-card finance-card--budget">
-                <div className="finance-label">{t("total_budget")}</div>
-                <div className="finance-subtitle">{t("expected_fee_master")}</div>
-                <div className="finance-value">
-                  ₹ {(overviewMetrics.feesCollectedFy || 0).toLocaleString("en-IN")}
-                </div>
-              </div>
-              <div className="finance-card finance-card--spent">
-                <div className="finance-label">{t("total_spent")}</div>
-                <div className="finance-subtitle">{t("teacher_salary_paid")}</div>
-                <div className="finance-value">
-                  ₹ {(overviewMetrics.salarySpentFy || 0).toLocaleString("en-IN")}
-                </div>
-              </div>
+          )}
+
+          {selectedDetailTab === "teachers" && (
+            <div className="tab-pane-fade-in h-100">
+               <div className="table-fixed-wrapper">
+                 <table className="table table-hover modern-table">
+                   <thead>
+                     <tr>
+                       <th>Staff ID</th>
+                       <th>Full Name</th>
+                       <th>Designation</th>
+                       <th>Subject</th>
+                       <th>Phone</th>
+                     </tr>
+                   </thead>
+                   <tbody>
+                     {unitDetails.teachers?.slice(0, 10).map(t => (
+                       <tr key={t.staff_id}>
+                         <td>{t.staff_id}</td>
+                         <td>{t.full_name}</td>
+                         <td>{t.designation}</td>
+                         <td>{t.subject}</td>
+                         <td>{t.phone}</td>
+                       </tr>
+                     ))}
+                   </tbody>
+                 </table>
+               </div>
             </div>
-          </AdminCard>
-        )}
+          )}
 
-        {overviewMetrics && (
-          <AdminCard header={t("budget_summary")} className="mt-3 section-card">
-            <div className="finance-header-row finance-header-colored">
-              <div className="finance-header-text">
-                {t("Financial Year")} &nbsp; <strong>{selectedOverviewFy}</strong>
-              </div>
-              <select
-                value={selectedOverviewFy}
-                onChange={(e) => setSelectedOverviewFy(e.target.value)}
-                className="form-select form-select-sm fy-select"
-              >
-                <option value="2023-24">2023-24</option>
-                <option value="2024-25">2024-25</option>
-                <option value="2025-26">2025-26</option>
-              </select>
+          {selectedDetailTab === "students" && (
+            <div className="tab-pane-fade-in h-100">
+               <div className="table-fixed-wrapper">
+                 <table className="table table-hover modern-table">
+                   <thead>
+                     <tr>
+                       <th>Student ID</th>
+                       <th>Full Name</th>
+                       <th>Standard</th>
+                       <th>Division</th>
+                       <th>Roll No</th>
+                     </tr>
+                   </thead>
+                   <tbody>
+                     {unitDetails.students?.slice(0, 10).map(s => (
+                       <tr key={s.student_id}>
+                         <td>{s.student_id}</td>
+                         <td>{s.full_name}</td>
+                         <td>{s.standard}</td>
+                         <td>{s.division}</td>
+                         <td>{s.roll_number}</td>
+                       </tr>
+                     ))}
+                   </tbody>
+                 </table>
+               </div>
             </div>
+          )}
 
-            <div className="finance-grid">
-              <div className="finance-card finance-card--positive">
-                <div className="finance-label">{t("fees_collected")}</div>
-                <div className="finance-subtitle">{t("actual_fees_collected")}</div>
-                <div className="finance-value">
-                  ₹ {(overviewMetrics.feesCollectedFy || 0).toLocaleString("en-IN")}
-                </div>
-              </div>
-              <div className="finance-card finance-card--pending">
-                <div className="finance-label">{t("pending_fees")}</div>
-                <div className="finance-subtitle">{t("fees_yet_to_collect")}</div>
-                <div className="finance-value">
-                  ₹{" "}
-                  {(
-                    (overviewMetrics.feesCollectedFy || 0) -
-                    (overviewMetrics.salarySpentFy || 0)
-                  ).toLocaleString("en-IN")}
-                </div>
-              </div>
+          {["payments", "banks", "legal"].includes(selectedDetailTab) && (
+            <div className="tab-pane-fade-in">
+               <div className="empty-tab-state">
+                 <i className="bi bi-info-circle"></i>
+                 <p>No data available for {selectedDetailTab} yet.</p>
+               </div>
             </div>
-
-            <div className="balance-strip">
-              <div className="balance-label">
-                {t("balance")} ({t("collected_minus_spent")})
-              </div>
-              <div className="balance-equation">
-                ₹{(overviewMetrics.feesCollectedFy || 0).toLocaleString("en-IN")} - ₹{" "}
-                {(overviewMetrics.salarySpentFy || 0).toLocaleString("en-IN")} =
-              </div>
-              <div
-                className={
-                  (overviewMetrics.feesCollectedFy || 0) -
-                    (overviewMetrics.salarySpentFy || 0) >=
-                  0
-                    ? "balance-value balance-value--positive"
-                    : "balance-value balance-value--negative"
-                }
-              >
-                ₹{" "}
-                {(
-                  (overviewMetrics.feesCollectedFy || 0) -
-                  (overviewMetrics.salarySpentFy || 0)
-                ).toLocaleString("en-IN")}
-              </div>
-            </div>
-          </AdminCard>
-        )}
-
-        {fyMetrics && (
-          <AdminCard
-            header={`${t("financial_year")} ${fyMetrics.financial_year}`}
-            className="mt-3 section-card"
-          >
-            <div className="finance-header-row finance-header-colored">
-              <div className="finance-header-text">
-                {t("Financial Year")} &nbsp; <strong>{selectedOverviewFy}</strong>
-              </div>
-              <select
-                value={selectedFy}
-                onChange={(e) => setSelectedFy(e.target.value)}
-                className="form-select form-select-sm fy-select"
-              >
-                <option value="2023-24">2023-24</option>
-                <option value="2024-25">2024-25</option>
-                <option value="2025-26">2025-26</option>
-              </select>
-            </div>
-            <div className="fy-metrics-grid">
-              <div className="fy-metric-card">
-                <div className="fy-label">{t("fees_collected_in_fy")}</div>
-                <div className="fy-value">
-                  ₹{Number(fyMetrics.feesCollectedFy || 0).toLocaleString("en-IN")}
-                </div>
-              </div>
-              <div className="fy-metric-card fy-metric-card--spent">
-                <div className="fy-label">{t("salary_spent_in_fy")}</div>
-                <div className="fy-value">
-                  ₹{Number(fyMetrics.salarySpentFy || 0).toLocaleString("en-IN")}
-                </div>
-              </div>
-            </div>
-          </AdminCard>
-        )}
-
-        <AdminCard
-          header={t("teachers")}
-          className="mt-4 section-card section-card--table"
-        >
-          <TableContainer
-            title={t("teachers")}
-            toolbar={
-              <Toolbar
-                left={
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder={t("search_teachers") || "Search teachers..."}
-                    style={{ maxWidth: 320 }}
-                    value={teacherSearch}
-                    onChange={(e) => setTeacherSearch(e.target.value)}
-                  />
-                }
-                right={
-                  <div>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-secondary"
-                      onClick={() => setTeachersShowColDropdown((s) => !s)}
-                    >
-                      Select Columns
-                    </button>
-                    {teachersShowColDropdown && (
-                      <div className="col-dropdown p-2">
-                        {teacherFields.map(([key, label]) => (
-                          <div key={key} className="form-check">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id={`col-check-teacher-${key}`}
-                              checked={teacherVisibleColumns.includes(key)}
-                              onChange={() => handleTeacherColumnToggle(key)}
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor={`col-check-teacher-${key}`}
-                            >
-                              {label}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                }
-              />
-            }
-          >
-            {filteredTeachers.length === 0 ? (
-              <EmptyState
-                title={t("no_teachers")}
-                description={t("no_teachers_found") || "No teachers found"}
-              />
-            ) : (
-              <table className="table table-striped table-bordered">
-                <thead>
-                  <tr>
-                    {teacherFields
-                      .filter(([key]) => teacherVisibleColumns.includes(key))
-                      .map(([key, label]) => (
-                        <th key={key}>{label}</th>
-                      ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredTeachers.map((tch) => (
-                    <tr key={tch.staff_id}>
-                      {teacherFields
-                        .filter(([key]) => teacherVisibleColumns.includes(key))
-                        .map(([key]) => (
-                          <td key={key}>{tch[key] != null ? tch[key] : ""}</td>
-                        ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </TableContainer>
-        </AdminCard>
-
-        <AdminCard
-          header={t("students")}
-          className="mt-4 section-card section-card--table"
-        >
-          <TableContainer
-            title={t("students")}
-            toolbar={
-              <Toolbar
-                left={
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder={t("search_students") || "Search students..."}
-                    style={{ maxWidth: 320 }}
-                    value={studentSearch}
-                    onChange={(e) => setStudentSearch(e.target.value)}
-                  />
-                }
-                right={
-                  <>
-                    <select
-                      value={studentsYear}
-                      onChange={(e) => setStudentsYear(e.target.value)}
-                      className="form-control form-control-sm"
-                      style={{
-                        width: 160,
-                        display: "inline-block",
-                        marginLeft: 8,
-                      }}
-                    >
-                      <option value="">All Years</option>
-                      {allStudentYears.map((y) => (
-                        <option key={y} value={y}>
-                          {y}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-secondary"
-                      style={{ marginLeft: 8 }}
-                      onClick={() => setStudentsShowColDropdown((s) => !s)}
-                    >
-                      Select Columns
-                    </button>
-                    {studentsShowColDropdown && (
-                      <div className="col-dropdown p-2">
-                        {studentFields.map(([key, label]) => (
-                          <div key={key} className="form-check">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              id={`col-check-student-${key}`}
-                              checked={studentVisibleColumns.includes(key)}
-                              onChange={() => handleStudentColumnToggle(key)}
-                            />
-                            <label
-                              className="form-check-label"
-                              htmlFor={`col-check-student-${key}`}
-                            >
-                              {label}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                }
-              />
-            }
-          >
-            {filteredStudents.length === 0 ? (
-              <EmptyState
-                title={t("no_students")}
-                description={t("no_students_found") || "No students found"}
-              />
-            ) : (
-              <table className="table table-striped table-bordered">
-                <thead>
-                  <tr>
-                    {studentFields
-                      .filter(([key]) => studentVisibleColumns.includes(key))
-                      .map(([key, label]) => (
-                        <th key={key}>{label}</th>
-                      ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredStudents.map((s) => (
-                    <tr
-                      key={s.student_id + "-" + s.roll_number + "-" + s.academic_year}
-                    >
-                      {studentFields
-                        .filter(([key]) => studentVisibleColumns.includes(key))
-                        .map(([key]) => (
-                          <td key={key}>
-                            {key === "passed"
-                              ? s[key]
-                                ? "Yes"
-                                : "No"
-                              : key === "dob" || key === "admission_date"
-                              ? s[key]
-                                ? new Date(s[key]).toLocaleDateString()
-                                : ""
-                              : s[key] != null
-                              ? s[key]
-                              : ""}
-                          </td>
-                        ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </TableContainer>
-        </AdminCard>
-
-        <div className="mt-4">
-          <AdminCard
-            header={t("Payments")}
-            className="mt-4 section-card section-card--table"
-          >
-            <DynamicDropdownTable
-              tableName="Payments"
-              data={unitDetails.payments ?? []}
-            />
-          </AdminCard>
-          <AdminCard
-            header={t("Budgets")}
-            className="mt-4 section-card section-card--table"
-          >
-            <DynamicDropdownTable
-              tableName="Budgets"
-              data={unitDetails.budgets ?? []}
-            />
-          </AdminCard>
-          <AdminCard
-            header={t("Banks")}
-            className="mt-4 section-card section-card--table"
-          >
-            <DynamicDropdownTable
-              tableName="Banks"
-              data={unitDetails.banks ?? []}
-            />
-          </AdminCard>
-          <AdminCard
-            header={t("Cases")}
-            className="mt-4 section-card section-card--table"
-          >
-            <DynamicDropdownTable
-              tableName="Cases"
-              data={unitDetails.cases ?? []}
-            />
-          </AdminCard>
+          )}
         </div>
       </div>
-    ) : null;
+    );
+  };
 
   const renderContent = () => {
     switch (sidebarTab) {
         case "dashboard":
-          if (selectedUnit && unitDetails) return renderUnitDetails();
+          if (selectedUnit && unitDetails) return renderSchoolDetailView();
           return (
             <div className="page-inner">
               <PageHeader
@@ -2095,11 +1799,13 @@ export default function AdminDashboard() {
     return null;
   }
 
-  return (
-    <AdminLayout 
-      activeSidebarTab={sidebarTab} 
-      onSidebarTabChange={setSidebarTab}
-    >
+    return (
+      <AdminLayout 
+        activeSidebarTab={sidebarTab} 
+        onSidebarTabChange={setSidebarTab}
+        schoolName={unitDetails?.kendrashala_name}
+        semisId={unitDetails?.semis_no}
+      >
       {loading ? (
         <div className="loading-spinner">
           <div className="spinner-border text-primary" role="status">
