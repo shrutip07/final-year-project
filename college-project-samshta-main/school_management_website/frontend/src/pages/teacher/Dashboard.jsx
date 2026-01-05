@@ -107,124 +107,138 @@ export default function TeacherDashboard() {
     }
   }
 
-  const renderDashboardContent = () => (
-    <div className="teacher-main-inner">
-      <div className="section-header-pro">
-        <h3>Institutional Overview</h3>
-        <p>Manage your academic profile and assigned classes</p>
+  const ProfileInfoBlock = ({ icon, label, value, colorClass = "" }) => (
+    <div className={`profile-info-block ${colorClass}`}>
+      <div className="info-icon">
+        <i className={`bi ${icon}`}></i>
       </div>
-
-      <div className="row g-4">
-        {/* Profile card */}
-        <div className="col-lg-6">
-          {profile ? (
-            <AdminCard header="Teacher Profile">
-              <div className="profile-details-grid">
-                <div className="detail-item">
-                  <span className="label">Full Name</span>
-                  <span className="value">{profile.full_name}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="label">Email Address</span>
-                  <span className="value">{profile.email}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="label">Phone Number</span>
-                  <span className="value">{profile.phone}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="label">Primary Subject</span>
-                  <span className="value">{profile.subject}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="label">Designation</span>
-                  <span className="value">{profile.designation}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="label">Qualification</span>
-                  <span className="value">{profile.qualification}</span>
-                </div>
-              </div>
-            </AdminCard>
-          ) : (
-            <AdminCard header="Teacher Profile">
-              <div className="text-center py-4">
-                <div className="spinner-border text-primary spinner-border-sm" role="status"></div>
-                <p className="mt-2 text-muted small">Loading profile...</p>
-              </div>
-            </AdminCard>
-          )}
-        </div>
-
-        {/* My classes card */}
-        <div className="col-lg-6">
-          <AdminCard 
-            header={
-              <div className="d-flex justify-content-between align-items-center w-100">
-                <h4 className="mb-0">My Classes</h4>
-                <div className="d-flex gap-2">
-                  <select
-                    value={academicYear}
-                    onChange={(e) => setAcademicYear(e.target.value)}
-                    className="form-select form-select-sm"
-                    style={{ width: '130px' }}
-                  >
-                    {allYears.length === 0 && (
-                      <option value="">{t("loading", "Loading...")}</option>
-                    )}
-                    {allYears.map((year) => (
-                      <option value={year} key={year}>
-                        {year}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            }
-          >
-            {classes.length === 0 ? (
-              <div className="empty-state-container text-center py-5">
-                <i className="bi bi-journal-x text-muted fs-1"></i>
-                <p className="text-muted mt-2">No classes assigned for this year.</p>
-              </div>
-            ) : (
-              <div className="table-responsive professional-table">
-                <table className="table align-middle">
-                  <thead>
-                    <tr>
-                      <th>Academic Year</th>
-                      <th>Standard</th>
-                      <th>Division</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {classes.map((cls, idx) => (
-                      <tr key={idx}>
-                        <td><span className="erp-badge badge-year">{cls.academic_year}</span></td>
-                        <td><span className="fw-bold">{cls.standard}</span></td>
-                        <td><span className="fw-bold text-primary">{cls.division}</span></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            
-            <div className="mt-4 pt-3 border-top d-flex justify-content-end">
-              <button
-                className="btn btn-primary btn-sm px-4"
-                type="button"
-                onClick={handleMarkYearDone}
-              >
-                <i className="bi bi-check-circle me-2"></i>
-                Mark Year as Completed
-              </button>
-            </div>
-          </AdminCard>
-        </div>
+      <div className="info-content">
+        <span className="info-label">{label}</span>
+        <span className="info-value">{value || "Not Set"}</span>
       </div>
     </div>
   );
+
+  const renderDashboardContent = () => {
+    const totalClasses = classes.length;
+    // Assuming each class might have students count, if not default to 0
+    const totalStudents = classes.reduce((sum, cls) => sum + (cls.student_count || 0), 0);
+
+    return (
+      <div className="teacher-main-inner">
+        <div className="section-header-pro">
+          <h3>Institutional Overview</h3>
+          <p>Manage your academic profile and assigned classes</p>
+        </div>
+
+        <div className="row g-4">
+          {/* Profile card */}
+          <div className="col-lg-6">
+            {profile ? (
+              <AdminCard header="Teacher Profile">
+                <div className="profile-info-grid">
+                  <div className="info-row">
+                    <ProfileInfoBlock icon="bi-person" label="Full Name" value={profile.full_name} colorClass="profile-primary" />
+                    <ProfileInfoBlock icon="bi-book" label="Primary Subject" value={profile.subject} colorClass="profile-info" />
+                    <ProfileInfoBlock icon="bi-briefcase" label="Designation" value={profile.designation} colorClass="profile-warning" />
+                  </div>
+                  <div className="info-row">
+                    <ProfileInfoBlock icon="bi-envelope" label="Email Address" value={profile.email} colorClass="profile-danger" />
+                    <ProfileInfoBlock icon="bi-telephone" label="Phone Number" value={profile.phone} colorClass="profile-success" />
+                    <ProfileInfoBlock icon="bi-mortarboard" label="Qualification" value={profile.qualification} colorClass="profile-secondary" />
+                  </div>
+                </div>
+              </AdminCard>
+            ) : (
+              <AdminCard header="Teacher Profile">
+                <div className="text-center py-4">
+                  <div className="spinner-border text-primary spinner-border-sm" role="status"></div>
+                  <p className="mt-2 text-muted small">Loading profile...</p>
+                </div>
+              </AdminCard>
+            )}
+          </div>
+
+          {/* My classes card */}
+          <div className="col-lg-6">
+            <AdminCard 
+              header={
+                <div className="d-flex justify-content-between align-items-center w-100">
+                  <div className="d-flex align-items-center gap-3">
+                    <h4 className="mb-0">My Classes</h4>
+                    <div className="d-flex gap-2">
+                      <span className="badge bg-soft-primary text-primary border-0 rounded-pill px-3">Classes: {totalClasses}</span>
+                      <span className="badge bg-soft-info text-info border-0 rounded-pill px-3">Students: {totalStudents}</span>
+                    </div>
+                  </div>
+                  <div className="d-flex gap-2">
+                    <select
+                      value={academicYear}
+                      onChange={(e) => setAcademicYear(e.target.value)}
+                      className="form-select form-select-sm"
+                      style={{ width: '130px' }}
+                    >
+                      {allYears.length === 0 && (
+                        <option value="">{t("loading", "Loading...")}</option>
+                      )}
+                      {allYears.map((year) => (
+                        <option value={year} key={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              }
+            >
+              {classes.length === 0 ? (
+                <div className="empty-state-centered py-5">
+                  <div className="empty-icon-wrapper mb-3">
+                    <i className="bi bi-journal-x text-muted"></i>
+                  </div>
+                  <h5 className="fw-bold text-dark">No Classes Assigned</h5>
+                  <p className="text-muted small px-4">You haven't been assigned to any classes for the academic year {academicYear}.</p>
+                </div>
+              ) : (
+                <div className="table-responsive professional-table" style={{ maxHeight: '280px' }}>
+                  <table className="table align-middle">
+                    <thead>
+                      <tr>
+                        <th>Academic Year</th>
+                        <th>Standard</th>
+                        <th>Division</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {classes.map((cls, idx) => (
+                        <tr key={idx}>
+                          <td><span className="erp-badge badge-year">{cls.academic_year}</span></td>
+                          <td><span className="fw-bold">{cls.standard}</span></td>
+                          <td><span className="fw-bold text-primary">{cls.division}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              
+              <div className="mt-4 pt-3 border-top d-flex justify-content-end">
+                <button
+                  className="btn btn-outline-secondary btn-sm px-3"
+                  type="button"
+                  onClick={handleMarkYearDone}
+                  style={{ fontSize: '0.75rem', fontWeight: '600' }}
+                >
+                  <i className="bi bi-check-circle me-2"></i>
+                  Mark Year as Completed
+                </button>
+              </div>
+            </AdminCard>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderMainContent = () => {
     switch (sidebarTab) {
