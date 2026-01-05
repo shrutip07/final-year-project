@@ -19,7 +19,7 @@ const TeacherNotificationsPage = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const res = await axiosInstance.get("/notifications");
+        const res = await axiosInstance.get("/notifications/teacher");
         if (res.data) {
           const sortedNotifications = res.data.sort(
             (a, b) => new Date(b.created_at) - new Date(a.created_at)
