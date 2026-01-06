@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -29,6 +29,8 @@ export default function ClerkDashboard() {
   const [loading, setLoading] = useState(true);
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [notifications, setNotifications] = useState([]);
+  const [selectedYear, setSelectedYear] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const navigate = useNavigate();
 
@@ -64,10 +66,12 @@ export default function ClerkDashboard() {
     if (checkingProfile) return;
 
     async function fetchData() {
+      setIsRefreshing(true);
       try {
         const token = localStorage.getItem("token");
+        const q = selectedYear ? `?academic_year=${encodeURIComponent(selectedYear)}` : "";
         const [dashboardRes, notificationsRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/clerk/unit", {
+          axios.get(`http://localhost:5000/api/clerk/unit${q}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
           axios.get("http://localhost:5000/api/notifications", {
@@ -75,34 +79,73 @@ export default function ClerkDashboard() {
           })
         ]);
         setDashboard(dashboardRes.data);
+        if (!selectedYear) setSelectedYear(dashboardRes.data.academic_year);
         setNotifications(notificationsRes.data);
       } catch (err) {
         console.error("Failed to load clerk data", err);
       } finally {
         setLoading(false);
+        setIsRefreshing(false);
       }
     }
 
     fetchData();
-  }, [checkingProfile]);
+  }, [checkingProfile, selectedYear]);
+
+  /* -------------------- DYNAMIC YEARS -------------------- */
+  const availableYears = React.useMemo(() => {
+    const years = new Set();
+    if (dashboard?.academic_year) years.add(dashboard.academic_year);
+    
+    // Derive from upcoming retirements (assuming they represent calendar years that can start academic years)
+    dashboard?.upcomingRetirements?.forEach(ret => {
+      const y = ret.year;
+      // We can infer YYYY-YY format. If 2026 is a retirement year, 2025-26 and 2026-27 are relevant.
+      // To be safe and dynamic, we just follow the start-year pattern.
+      years.add(`${y}-${String(y + 1).slice(-2)}`);
+      // Also add the year before if it looks like the current year
+      const prevY = y - 1;
+      years.add(`${prevY}-${String(prevY + 1).slice(-2)}`);
+    });
+    
+    return Array.from(years).sort().reverse();
+  }, [dashboard]);
 
   /* -------------------- RENDER HELPERS -------------------- */
   
     const renderDashboardMain = () => (
       <div className="dashboard-main-view">
         <div className="section-header-pro mb-4">
-          <div className="d-flex align-items-center gap-3">
-            <div className="header-icon-box">
-              <i className="bi bi-grid-fill text-primary"></i>
+          <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div className="d-flex align-items-center gap-3">
+              <div className="header-icon-box">
+                <i className="bi bi-grid-fill text-primary"></i>
+              </div>
+              <div>
+                <h3 className="mb-1">Institutional Overview</h3>
+                <p className="text-muted small mb-0">Unit-level management for student records, financial compliance, and safety standards.</p>
+              </div>
             </div>
-            <div>
-              <h3 className="mb-1">Institutional Overview</h3>
-              <p className="text-muted small mb-0">Unit-level management for student records, financial compliance, and safety standards.</p>
+
+            {/* Academic Year Selector */}
+            <div className="academic-year-selector shadow-sm border rounded-pill px-3 py-2 bg-white d-flex align-items-center gap-2 transition-all">
+              <i className="bi bi-calendar3 text-primary"></i>
+              <span className="text-muted small fw-bold text-uppercase me-1" style={{ fontSize: '0.7rem' }}>Academic Year</span>
+              <select 
+                className="form-select form-select-sm border-0 bg-transparent fw-bold text-dark p-0" 
+                style={{ width: 'auto', outline: 'none', boxShadow: 'none', fontSize: '0.85rem', cursor: 'pointer' }}
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+              >
+                {availableYears.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
   
-        <div className="metrics-grid mb-5">
+        <div className={`metrics-grid mb-5 transition-all ${isRefreshing ? 'opacity-50' : ''}`}>
           <div className="metric-box metric-students">
             <div className="metric-icon">
               <i className="bi bi-people"></i>
