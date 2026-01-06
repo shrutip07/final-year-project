@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 import EmptyState from "../../components/admin/EmptyState";
+import ToppersPanel from "../../components/principal/ToppersPanel";
 
 const COLUMNS = [
   { key: "roll_number", label: "Roll No" },
@@ -79,6 +80,7 @@ export default function Students() {
 
   return (
     <div className="directory-wrapper">
+      <ToppersPanel allYears={allYears} />
       <div className="directory-controls">
         <div className="search-box">
           <i className="bi bi-search search-icon"></i>
