@@ -8,7 +8,11 @@ import TabNavigation from "../components/admin/TabNavigation";
 export default function AdminNotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const [forms, setForms] = useState([]);
+  const [adminForms, setAdminForms] = useState([]);
   const [selectedTab, setSelectedTab] = useState("send_notification");
+  const [selectedFormResponses, setSelectedFormResponses] = useState(null);
+  const [viewingFormId, setViewingFormId] = useState(null);
+  const [loadingResponses, setLoadingResponses] = useState(false);
 
   // Notification state
   const [title, setTitle] = useState("");
@@ -34,6 +38,7 @@ export default function AdminNotificationsPage() {
   useEffect(() => {
     loadNotifications();
     loadForms();
+    loadAdminForms();
     fetchUnits();
   }, [receiverRole]);
 
@@ -84,7 +89,7 @@ export default function AdminNotificationsPage() {
     }
   };
 
-  // Load active forms
+  // Load active forms for creation tab
   const loadForms = async () => {
     const token = localStorage.getItem("token");
     try {
@@ -94,6 +99,38 @@ export default function AdminNotificationsPage() {
       setForms(res.data);
     } catch {
       setForms([]);
+    }
+  };
+
+  // Load all forms for responses tab
+  const loadAdminForms = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const [pForms, tForms] = await Promise.all([
+        axios.get(`${formAPI}/active?role=principal`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${formAPI}/active?role=teacher`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      const combined = [...pForms.data, ...tForms.data];
+      // Sort by created_at desc
+      setAdminForms(combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
+    } catch {
+      setAdminForms([]);
+    }
+  };
+
+  const viewResponses = async (formId) => {
+    const token = localStorage.getItem("token");
+    setLoadingResponses(true);
+    setViewingFormId(formId);
+    try {
+      const res = await axios.get(`${formAPI}/${formId}/responses`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSelectedFormResponses(res.data);
+    } catch {
+      setSelectedFormResponses([]);
+    } finally {
+      setLoadingResponses(false);
     }
   };
 
@@ -180,14 +217,15 @@ export default function AdminNotificationsPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      alert("Form Created and Notification Sent ✅");
-      setFormTitle("");
-      setFormDesc("");
-      setFormDeadline("");
-      setFormQuestions([{ question_text: "", question_type: "text", options: "" }]);
-      loadForms();
-      loadNotifications();
-    } catch (error) {
+        alert("Form Created and Notification Sent ✅");
+        setFormTitle("");
+        setFormDesc("");
+        setFormDeadline("");
+        setFormQuestions([{ question_text: "", question_type: "text", options: "" }]);
+        loadForms();
+        loadAdminForms();
+        loadNotifications();
+      } catch (error) {
       alert("Error creating form or notification: " + error.message);
     }
   };
@@ -231,7 +269,7 @@ export default function AdminNotificationsPage() {
           tabs={[
             { id: "send_notification", label: "Send Notification", icon: "bi-send-fill" },
             { id: "create_form", label: "Create Form", icon: "bi-file-earmark-plus-fill" },
-            { id: "received", label: "Received Notifications", icon: "bi-inbox-fill" },
+            { id: "form_responses", label: "Form Responses", icon: "bi-file-earmark-spreadsheet-fill" },
             { id: "active_forms", label: "Active Forms", icon: "bi-card-list" },
           ]}
           activeTab={selectedTab}
@@ -466,49 +504,138 @@ export default function AdminNotificationsPage() {
             </div>
           )}
 
-          {selectedTab === "received" && (
+          {selectedTab === "form_responses" && (
             <div className="row g-4">
               <div className="col-lg-10 mx-auto">
                 <AdminCard header={
-                  <div className="d-flex align-items-center gap-2">
-                    <i className="bi bi-envelope-paper-fill text-info"></i>
-                    <span>Inbox - Administrator Notifications</span>
-                  </div>
-                }>
-                  <div className="notification-list">
-                    {notifications.length === 0 ? (
-                      <div className="text-center py-5">
-                        <i className="bi bi-mailbox2 text-muted fs-1 mb-3"></i>
-                        <p className="text-muted fw-bold">Your inbox is clear</p>
-                      </div>
-                    ) : (
-                      <div className="row g-3">
-                        {notifications.map((n) => (
-                          <div key={n.id} className="col-md-12">
-                            <div
-                              className={`p-4 rounded border-start border-4 shadow-sm transition-all ${n.is_read ? "bg-light border-secondary opacity-75" : "bg-white border-primary border-shadow-custom"}`}
-                              style={{ cursor: "pointer" }}
-                              onClick={() => markRead(n.id)}
-                            >
-                              <div className="d-flex justify-content-between align-items-start mb-2">
-                                <h6 className={`mb-0 fw-bold ${n.is_read ? "text-muted" : "text-dark"}`}>{n.title}</h6>
-                                {!n.is_read && <span className="badge bg-primary rounded-pill">New</span>}
-                              </div>
-                              <p className="m-0 text-muted small lh-lg">{n.message}</p>
-                              <div className="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
-                                <span className="text-uppercase fw-bold text-muted" style={{ fontSize: '10px', letterSpacing: '1px' }}>
-                                  <i className="bi bi-person-circle me-1"></i> {n.receiver_role}
-                                </span>
-                                <span className="text-muted" style={{ fontSize: '10px' }}>
-                                  <i className="bi bi-clock me-1"></i> {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                  <div className="d-flex align-items-center justify-content-between w-100">
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="bi bi-file-earmark-spreadsheet-fill text-primary"></i>
+                      <span>{selectedFormResponses ? "Response Details" : "Form Submission Monitoring"}</span>
+                    </div>
+                    {selectedFormResponses && (
+                      <button className="btn btn-sm btn-outline-secondary" onClick={() => setSelectedFormResponses(null)}>
+                        <i className="bi bi-arrow-left me-1"></i> Back to Forms
+                      </button>
                     )}
                   </div>
+                }>
+                  {!selectedFormResponses ? (
+                    <div className="form-responses-list">
+                      {adminForms.length === 0 ? (
+                        <div className="text-center py-5">
+                          <i className="bi bi-clipboard-x text-muted fs-1 mb-3"></i>
+                          <p className="text-muted fw-bold">No forms created yet</p>
+                        </div>
+                      ) : (
+                        <div className="row g-3">
+                          {adminForms.map((form) => (
+                            <div key={form.id} className="col-md-12">
+                              <div className="p-4 rounded border bg-white shadow-sm hover-shadow transition-all">
+                                <div className="d-flex justify-content-between align-items-start mb-3">
+                                  <div>
+                                    <h6 className="text-dark fw-bold mb-1">{form.title}</h6>
+                                    <span className="text-muted small">Target: <span className="text-capitalize">{form.receiver_role}s</span></span>
+                                  </div>
+                                  <div className="text-end">
+                                    <div className="text-danger small fw-bold mb-1">
+                                      <i className="bi bi-calendar-event me-1"></i> 
+                                      Deadline: {new Date(form.deadline).toLocaleDateString()}
+                                    </div>
+                                    <span className="badge bg-light text-dark border">
+                                      ID: #{form.id}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="d-flex justify-content-between align-items-center pt-3 border-top">
+                                  <div className="text-muted small">
+                                    <i className="bi bi-info-circle me-1"></i>
+                                    {form.description || 'Monitor submissions for this campaign.'}
+                                  </div>
+                                  <button 
+                                    className="btn btn-primary btn-sm px-4"
+                                    onClick={() => viewResponses(form.id)}
+                                    disabled={loadingResponses && viewingFormId === form.id}
+                                  >
+                                    {loadingResponses && viewingFormId === form.id ? (
+                                      <span className="spinner-border spinner-border-sm me-2"></span>
+                                    ) : (
+                                      <i className="bi bi-eye-fill me-2"></i>
+                                    )}
+                                    View Responses
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="responses-detail-view">
+                      {selectedFormResponses.length === 0 ? (
+                        <div className="text-center py-5">
+                          <i className="bi bi-chat-left-dots text-muted fs-1 mb-3"></i>
+                          <p className="text-muted fw-bold">No responses submitted yet</p>
+                          <p className="small text-muted">Wait for recipients to fill the form.</p>
+                        </div>
+                      ) : (
+                        <div className="response-items">
+                          <div className="mb-4 p-3 bg-primary bg-opacity-10 rounded border border-primary-subtle">
+                            <h6 className="mb-0 text-primary fw-bold">
+                              Total Submissions: {selectedFormResponses.length}
+                            </h6>
+                          </div>
+                          {selectedFormResponses.map((resp, idx) => (
+                            <div key={resp.id} className="card mb-4 shadow-sm border-0 bg-light">
+                              <div className="card-header bg-white border-bottom-0 pt-3 px-4">
+                                <div className="d-flex justify-content-between align-items-center">
+                                  <div>
+                                    <h6 className="mb-0 fw-bold text-dark">Submission #{idx + 1}</h6>
+                                    <span className="text-muted small">
+                                      <i className="bi bi-clock me-1"></i>
+                                      {new Date(resp.submitted_at).toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="text-end">
+                                    <span className="badge bg-info text-white me-2">Response ID: {resp.id}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="card-body px-4 pb-4">
+                                <div className="row g-3 mb-4">
+                                  <div className="col-md-4">
+                                    <label className="text-muted small fw-bold d-block">SUBMITTED BY</label>
+                                    <span className="fw-semibold">User ID: {resp.submitted_by}</span>
+                                  </div>
+                                  <div className="col-md-4">
+                                    <label className="text-muted small fw-bold d-block">SCHOOL ID</label>
+                                    <span className="fw-semibold">#{resp.school_id}</span>
+                                  </div>
+                                </div>
+                                <div className="questions-answers bg-white p-4 rounded border">
+                                  <h6 className="border-bottom pb-2 mb-3 text-secondary small fw-bold">QUESTION & ANSWER LIST</h6>
+                                  {resp.answers && resp.answers.map((ans, aIdx) => (
+                                    <div key={aIdx} className="mb-3 last-child-mb-0">
+                                      <p className="mb-1 fw-bold text-dark" style={{ fontSize: '0.9rem' }}>
+                                        Q{aIdx + 1}: {ans.question_text}
+                                      </p>
+                                      <div className="p-2 bg-light rounded border-start border-3 border-primary">
+                                        {ans.answer || <span className="text-muted italic">No answer provided</span>}
+                                      </div>
+                                    </div>
+                                  ))}
+                                  {(!resp.answers || resp.answers.length === 0) && (
+                                    <p className="text-muted small italic">No detailed answers found for this response.</p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </AdminCard>
               </div>
             </div>
