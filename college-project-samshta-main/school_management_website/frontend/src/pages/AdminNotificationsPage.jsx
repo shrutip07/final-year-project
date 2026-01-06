@@ -21,13 +21,55 @@ export default function AdminNotificationsPage() {
   const [formDeadline, setFormDeadline] = useState("");
   const [formQuestions, setFormQuestions] = useState([{ question_text: "", question_type: "text", options: "" }]);
 
+  // Optional targeting state
+  const [units, setUnits] = useState([]);
+  const [selectedSchool, setSelectedSchool] = useState("");
+  const [teachers, setTeachers] = useState([]);
+  const [sendToAllTeachers, setSendToAllTeachers] = useState(true);
+  const [selectedTeachers, setSelectedTeachers] = useState([]);
+
   const notifAPI = "http://localhost:5000/api/notifications";
   const formAPI = "http://localhost:5000/api/forms";
 
   useEffect(() => {
     loadNotifications();
     loadForms();
+    fetchUnits();
   }, [receiverRole]);
+
+  useEffect(() => {
+    if (selectedSchool && receiverRole === "teacher") {
+      fetchTeachers(selectedSchool);
+    } else {
+      setTeachers([]);
+      setSelectedTeachers([]);
+      setSendToAllTeachers(true);
+    }
+  }, [selectedSchool, receiverRole]);
+
+  const fetchUnits = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get("http://localhost:5000/api/admin/units", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUnits(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Failed to fetch units", err);
+    }
+  };
+
+  const fetchTeachers = async (unitId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get(`http://localhost:5000/api/admin/units/${unitId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTeachers(res.data.teachers || []);
+    } catch (err) {
+      console.error("Failed to fetch teachers", err);
+    }
+  };
 
   // Load notifications
   const loadNotifications = async () => {
@@ -59,22 +101,32 @@ export default function AdminNotificationsPage() {
   const sendNotification = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-    await axios.post(
-      notifAPI,
-      {
-        title,
-        message,
-        receiver_role: receiverRole,
-        sender_role: "admin",
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
+
+    const payload = {
+      title,
+      message,
+      receiver_role: receiverRole,
+      sender_role: "admin",
+    };
+
+    if (selectedSchool) {
+      payload.school_id = selectedSchool;
+      if (receiverRole === "teacher" && !sendToAllTeachers && selectedTeachers.length > 0) {
+        payload.teacher_ids = selectedTeachers;
       }
-    );
-    setTitle("");
-    setMessage("");
-    loadNotifications();
-    alert("Notification Sent ✅");
+    }
+
+    try {
+      await axios.post(notifAPI, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTitle("");
+      setMessage("");
+      loadNotifications();
+      alert("Notification Sent ✅");
+    } catch (error) {
+      alert("Error sending notification: " + error.message);
+    }
   };
 
   // Create form and send notification with form link
@@ -88,35 +140,45 @@ export default function AdminNotificationsPage() {
       options: q.options ? q.options : null,
     }));
 
+    const formPayload = {
+      title: formTitle,
+      description: formDesc,
+      receiver_role: receiverRole,
+      deadline: formDeadline,
+      questions: questionsPayload,
+    };
+
+    if (selectedSchool) {
+      formPayload.school_id = selectedSchool;
+      if (receiverRole === "teacher" && !sendToAllTeachers && selectedTeachers.length > 0) {
+        formPayload.teacher_ids = selectedTeachers;
+      }
+    }
+
     try {
-      const formRes = await axios.post(
-        formAPI + "/create",
-        {
-          title: formTitle,
-          description: formDesc,
-          receiver_role: receiverRole,
-          deadline: formDeadline,
-          questions: questionsPayload,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const formRes = await axios.post(formAPI + "/create", formPayload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const formId = formRes.data.form.id;
       const formLink = `http://localhost:3000/forms/${formId}`;
 
-      await axios.post(
-        notifAPI,
-        {
-          title: `New Form: ${formTitle}`,
-          message: `Please fill this form before deadline: ${formLink}`,
-          receiver_role: receiverRole,
-          sender_role: "admin",
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
+      const notifPayload = {
+        title: `New Form: ${formTitle}`,
+        message: `Please fill this form before deadline: ${formLink}`,
+        receiver_role: receiverRole,
+        sender_role: "admin",
+      };
+
+      if (selectedSchool) {
+        notifPayload.school_id = selectedSchool;
+        if (receiverRole === "teacher" && !sendToAllTeachers && selectedTeachers.length > 0) {
+          notifPayload.teacher_ids = selectedTeachers;
         }
-      );
+      }
+
+      await axios.post(notifAPI, notifPayload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       alert("Form Created and Notification Sent ✅");
       setFormTitle("");
@@ -156,6 +218,12 @@ export default function AdminNotificationsPage() {
     loadNotifications();
   };
 
+  const handleTeacherSelection = (teacherId) => {
+    setSelectedTeachers((prev) =>
+      prev.includes(teacherId) ? prev.filter((id) => id !== teacherId) : [...prev, teacherId]
+    );
+  };
+
   return (
     <AdminLayout activeSidebarTab="notifications">
       <div className="notifications-page erp-container">
@@ -182,13 +250,66 @@ export default function AdminNotificationsPage() {
                 }>
                   <form onSubmit={sendNotification}>
                     <div className="row g-3">
-                      <div className="col-md-12">
+                      <div className="col-md-6">
                         <label className="form-label small fw-bold text-muted">TARGET AUDIENCE</label>
                         <select className="form-select border-primary-subtle" value={receiverRole} onChange={(e) => setReceiverRole(e.target.value)}>
                           <option value="principal">Principals (Heads of Schools)</option>
                           <option value="teacher">Teachers (Staff Members)</option>
                         </select>
                       </div>
+
+                      <div className="col-md-6">
+                        <label className="form-label small fw-bold text-muted">TARGET SCHOOL (OPTIONAL)</label>
+                        <select className="form-select border-primary-subtle" value={selectedSchool} onChange={(e) => setSelectedSchool(e.target.value)}>
+                          <option value="">All Schools</option>
+                          {units.map((u) => (
+                            <option key={u.unit_id} value={u.unit_id}>
+                              {u.kendrashala_name || `Unit ${u.unit_id}`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {receiverRole === "teacher" && selectedSchool && (
+                        <div className="col-md-12 bg-light p-3 rounded border">
+                          <label className="form-label small fw-bold text-primary mb-2">ADVANCED TEACHER TARGETING</label>
+                          <div className="form-check mb-2">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="sendAllTeachersNotif"
+                              checked={sendToAllTeachers}
+                              onChange={(e) => setSendToAllTeachers(e.target.checked)}
+                            />
+                            <label className="form-check-label small fw-bold" htmlFor="sendAllTeachersNotif">
+                              Send to all teachers in this school
+                            </label>
+                          </div>
+                          {!sendToAllTeachers && teachers.length > 0 && (
+                            <div className="teacher-selector mt-2" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                              <label className="form-label small text-muted d-block mb-1">Select Specific Teachers:</label>
+                              {teachers.map((t) => (
+                                <div key={t.staff_id} className="form-check">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id={`t-${t.staff_id}`}
+                                    checked={selectedTeachers.includes(t.staff_id)}
+                                    onChange={() => handleTeacherSelection(t.staff_id)}
+                                  />
+                                  <label className="form-check-label small" htmlFor={`t-${t.staff_id}`}>
+                                    {t.full_name} ({t.designation})
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {!sendToAllTeachers && teachers.length === 0 && (
+                            <p className="text-muted small mb-0">No teachers found for this school.</p>
+                          )}
+                        </div>
+                      )}
+
                       <div className="col-md-12">
                         <label className="form-label small fw-bold text-muted">ANNOUNCEMENT TITLE</label>
                         <input type="text" className="form-control" placeholder="Subject of the notification" value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -228,10 +349,62 @@ export default function AdminNotificationsPage() {
                         </select>
                       </div>
                       <div className="col-md-6">
+                        <label className="form-label small fw-bold text-muted">TARGET SCHOOL (OPTIONAL)</label>
+                        <select className="form-select border-success-subtle" value={selectedSchool} onChange={(e) => setSelectedSchool(e.target.value)}>
+                          <option value="">All Schools</option>
+                          {units.map((u) => (
+                            <option key={u.unit_id} value={u.unit_id}>
+                              {u.kendrashala_name || `Unit ${u.unit_id}`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {receiverRole === "teacher" && selectedSchool && (
+                        <div className="col-md-12 bg-light p-3 rounded border">
+                          <label className="form-label small fw-bold text-success mb-2">ADVANCED TEACHER TARGETING</label>
+                          <div className="form-check mb-2">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="sendAllTeachersForm"
+                              checked={sendToAllTeachers}
+                              onChange={(e) => setSendToAllTeachers(e.target.checked)}
+                            />
+                            <label className="form-check-label small fw-bold" htmlFor="sendAllTeachersForm">
+                              Send to all teachers in this school
+                            </label>
+                          </div>
+                          {!sendToAllTeachers && teachers.length > 0 && (
+                            <div className="teacher-selector mt-2" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                              <label className="form-label small text-muted d-block mb-1">Select Specific Teachers:</label>
+                              {teachers.map((t) => (
+                                <div key={t.staff_id} className="form-check">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id={`tf-${t.staff_id}`}
+                                    checked={selectedTeachers.includes(t.staff_id)}
+                                    onChange={() => handleTeacherSelection(t.staff_id)}
+                                  />
+                                  <label className="form-check-label small" htmlFor={`tf-${t.staff_id}`}>
+                                    {t.full_name} ({t.designation})
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {!sendToAllTeachers && teachers.length === 0 && (
+                            <p className="text-muted small mb-0">No teachers found for this school.</p>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="col-md-6">
                         <label className="form-label small fw-bold text-muted">SUBMISSION DEADLINE</label>
                         <input type="datetime-local" className="form-control border-danger-subtle" value={formDeadline} onChange={(e) => setFormDeadline(e.target.value)} required />
                       </div>
-                      <div className="col-md-12">
+                      <div className="col-md-6">
                         <label className="form-label small fw-bold text-muted">FORM TITLE</label>
                         <input type="text" className="form-control" placeholder="e.g. Monthly Attendance Registry" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required />
                       </div>
@@ -391,4 +564,3 @@ export default function AdminNotificationsPage() {
     </AdminLayout>
   );
 }
-
