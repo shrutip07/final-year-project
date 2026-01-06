@@ -347,24 +347,24 @@ $hm-bg-soft: #FCF8F1;
       border: 1px solid rgba($border-color, 0.8);
       overflow: hidden;
 
-      .custom-table-wrapper {
-        overflow-x: auto;
+        .custom-table-wrapper {
+          overflow-x: auto;
 
-        .table {
-          margin-bottom: 0;
-          
-          thead {
-            background: rgba($primary, 0.02);
-            tr th {
-              padding: 18px 20px;
-              font-size: 0.8rem;
-              text-transform: uppercase;
-              letter-spacing: 1px;
-              font-weight: 800;
-              color: $text-muted;
-              border-bottom: 1px solid $border-color;
+          .table {
+            margin-bottom: 0;
+            
+            thead {
+              background: $primary;
+              tr th {
+                padding: 18px 20px;
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-weight: 800;
+                color: $white;
+                border-bottom: none;
+              }
             }
-          }
 
           tbody {
             tr {
@@ -467,31 +467,41 @@ $hm-bg-soft: #FCF8F1;
       border: 1px solid rgba($border-color, 0.6);
       overflow: hidden;
 
-      .finance-card-header {
-        padding: 24px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid $border-color;
+        .finance-card-header {
+          padding: 24px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: $primary;
+          border-bottom: 1px solid rgba($white, 0.1);
 
-        .header-left {
-          display: flex; align-items: center; gap: 12px;
-          i { font-size: 1.5rem; color: $accent; }
-          h3 { margin: 0; font-size: 1.25rem; font-weight: 800; color: $primary; }
-        }
+          .header-left {
+            display: flex; align-items: center; gap: 12px;
+            i { font-size: 1.5rem; color: $white; }
+            h3 { margin: 0; font-size: 1.25rem; font-weight: 800; color: $white; }
+          }
 
-        .fy-dropdown-wrap {
-          display: flex; align-items: center; gap: 12px;
-          label { font-weight: 700; color: $text-muted; font-size: 0.85rem; }
-          .finance-select {
-            width: 140px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            &:focus { border-color: $accent; box-shadow: 0 0 0 3px rgba($accent, 0.1); }
+          .fy-dropdown-wrap {
+            display: flex; align-items: center; gap: 12px;
+            label { font-weight: 700; color: rgba($white, 0.8); font-size: 0.85rem; }
+            .finance-select {
+              width: 140px;
+              border-radius: 10px;
+              font-weight: 700;
+              cursor: pointer;
+              background-color: rgba($white, 0.1);
+              color: $white;
+              border: 1px solid rgba($white, 0.2);
+              
+              option {
+                background-color: $primary;
+                color: $white;
+              }
+
+              &:focus { border-color: $white; box-shadow: 0 0 0 3px rgba($white, 0.2); }
+            }
           }
         }
-      }
 
       .finance-card-body { padding: 24px; }
     }
