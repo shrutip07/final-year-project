@@ -4,6 +4,7 @@ import AdminCard from "../../components/admin/AdminCard";
 import TableContainer from "../../components/admin/TableContainer";
 import Toolbar from "../../components/admin/Toolbar";
 import EmptyState from "../../components/admin/EmptyState";
+import TabNavigation from "../../components/admin/TabNavigation";
 import ChatWidget from "../../components/ChatWidget";
 
 export default function StudentFees() {
@@ -30,6 +31,8 @@ export default function StudentFees() {
   const [feePaidSuccess, setFeePaidSuccess] = useState("");
   const [feeInputs, setFeeInputs] = useState({});
   const [studentFeeFilter, setStudentFeeFilter] = useState("all");
+
+  const [activeTab, setActiveTab] = useState("fee-directory");
 
   useEffect(() => {
     fetchFees();
@@ -184,70 +187,30 @@ export default function StudentFees() {
     return true;
   });
 
+  const feeTabs = [
+    { id: "fee-directory", label: "Fee Directory", icon: "bi-journal-text" },
+    { id: "collect-fees", label: "Collect Student Fees", icon: "bi-cash-coin" },
+    { id: "set-fees", label: "Set Standard Fees", icon: "bi-gear" },
+  ];
+
   return (
     <div className="fees-management-module">
-      <div className="section-header-pro">
+      <div className="section-header-pro mb-3">
         <h3>Fee Management</h3>
         <p>Configure fee structures and track student payment compliance</p>
       </div>
 
-      <div className="row">
-        <div className="col-lg-4">
-          <AdminCard header="Set Standard Fees">
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label className="form-label small fw-bold text-muted">STANDARD</label>
-                <select
-                  required
-                  name="standard"
-                  value={form.standard}
-                  onChange={handleChange}
-                  className="form-select border-primary-subtle"
-                >
-                  <option value="">Select Standard</option>
-                  {standards.map((std) => (
-                    <option key={std} value={std}>STD {std}</option>
-                  ))}
-                </select>
-              </div>
+      <TabNavigation
+        tabs={feeTabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
 
-              <div className="mb-3">
-                <label className="form-label small fw-bold text-muted">ACADEMIC YEAR</label>
-                <input
-                  name="academic_year"
-                  className="form-control"
-                  placeholder="e.g. 2025-26"
-                  value={form.academic_year}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="form-label small fw-bold text-muted">FEE AMOUNT (₹)</label>
-                <input
-                  name="fee_amount"
-                  type="number"
-                  className="form-control"
-                  placeholder="Enter amount"
-                  value={form.fee_amount}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              <button type="submit" className="btn btn-primary w-100 py-2">
-                Update Fee Structure
-              </button>
-            </form>
-
-            {error && <div className="alert alert-danger py-2 mt-3 small">{error}</div>}
-            {success && <div className="alert alert-success py-2 mt-3 small">{success}</div>}
-          </AdminCard>
-
+      <div className="mt-3">
+        {activeTab === "fee-directory" && (
           <AdminCard header="Fee Directory">
-            <div className="d-flex align-items-center gap-2 mb-3 bg-light p-2 rounded">
-              <span className="small text-muted fw-bold">Filter:</span>
+            <div className="d-flex align-items-center gap-2 mb-3 bg-light p-2 rounded" style={{maxWidth: '300px'}}>
+              <span className="small text-muted fw-bold">Filter Year:</span>
               <select
                 className="form-select form-select-sm border-0 bg-transparent"
                 value={yearFilter}
@@ -260,13 +223,13 @@ export default function StudentFees() {
               </select>
             </div>
 
-            <div className="table-responsive professional-table" style={{maxHeight: '400px'}}>
-              <table className="table align-middle small">
+            <div className="table-responsive professional-table">
+              <table className="table align-middle">
                 <thead>
                   <tr>
-                    <th>STD</th>
-                    <th>Year</th>
-                    <th>Amount</th>
+                    <th>STANDARD</th>
+                    <th>ACADEMIC YEAR</th>
+                    <th>FEE AMOUNT</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -281,9 +244,9 @@ export default function StudentFees() {
               </table>
             </div>
           </AdminCard>
-        </div>
+        )}
 
-        <div className="col-lg-8">
+        {activeTab === "collect-fees" && (
           <AdminCard header="Collect Student Fees">
             <div className="row g-3 mb-4">
               <div className="col-md-4">
@@ -426,7 +389,65 @@ export default function StudentFees() {
               </div>
             </TableContainer>
           </AdminCard>
-        </div>
+        )}
+
+        {activeTab === "set-fees" && (
+          <AdminCard header="Set Standard Fees">
+            <div className="row justify-content-center">
+              <div className="col-lg-6">
+                <form onSubmit={handleSubmit} className="p-3 border rounded-3 bg-light shadow-sm">
+                  <div className="mb-3">
+                    <label className="form-label small fw-bold text-muted">STANDARD</label>
+                    <select
+                      required
+                      name="standard"
+                      value={form.standard}
+                      onChange={handleChange}
+                      className="form-select border-primary-subtle"
+                    >
+                      <option value="">Select Standard</option>
+                      {standards.map((std) => (
+                        <option key={std} value={std}>STD {std}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label small fw-bold text-muted">ACADEMIC YEAR</label>
+                    <input
+                      name="academic_year"
+                      className="form-control"
+                      placeholder="e.g. 2025-26"
+                      value={form.academic_year}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="form-label small fw-bold text-muted">FEE AMOUNT (₹)</label>
+                    <input
+                      name="fee_amount"
+                      type="number"
+                      className="form-control"
+                      placeholder="Enter amount"
+                      value={form.fee_amount}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <button type="submit" className="btn btn-primary w-100 py-2 fw-bold">
+                    Update Fee Structure
+                  </button>
+                </form>
+
+                {error && <div className="alert alert-danger py-2 mt-3 small">{error}</div>}
+                {success && <div className="alert alert-success py-2 mt-3 small">{success}</div>}
+              </div>
+            </div>
+          </AdminCard>
+        )}
       </div>
     </div>
   );

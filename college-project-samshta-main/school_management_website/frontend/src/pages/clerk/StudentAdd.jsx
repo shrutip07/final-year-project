@@ -3,9 +3,12 @@ import AdminCard from "../../components/admin/AdminCard";
 import TableContainer from "../../components/admin/TableContainer";
 import Toolbar from "../../components/admin/Toolbar";
 import EmptyState from "../../components/admin/EmptyState";
+import TabNavigation from "../../components/admin/TabNavigation";
 import ChatWidget from "../../components/ChatWidget";
 
 export default function StudentAdd() {
+  const [activeTab, setActiveTab] = useState("add-profile");
+
   // ---------------- ADD NEW STUDENT ----------------
   const [form, setForm] = useState({
     full_name: "",
@@ -190,183 +193,207 @@ export default function StudentAdd() {
     }
   }
 
+  const studentTabs = [
+    { id: "add-profile", label: "Add New Student Profile", icon: "bi-person-plus" },
+    { id: "promotion", label: "Annual Promotion", icon: "bi-arrow-up-circle" },
+    { id: "allocation", label: "Staff Class Allocation", icon: "bi-people" },
+  ];
+
   return (
     <div className="registration-management-module">
-      <div className="section-header-pro">
+      <div className="section-header-pro mb-3">
         <h3>Student & Staff Registration</h3>
         <p>Enroll new students and manage academic year class allocations</p>
       </div>
 
-      <AdminCard header="Add New Student Profile">
-        {message && <div className={`alert ${message.includes('successfully') ? 'alert-success' : 'alert-danger'} py-2 mb-3 small`}>{message}</div>}
-        <form onSubmit={handleSubmit}>
-          <div className="row g-3">
-            <div className="col-md-6">
-              <label className="form-label small fw-bold text-muted">FULL NAME</label>
-              <input name="full_name" className="form-control" value={form.full_name} onChange={handleChange} required />
-            </div>
-            <div className="col-md-3">
-              <label className="form-label small fw-bold text-muted">DATE OF BIRTH</label>
-              <input name="dob" type="date" className="form-control" value={form.dob} onChange={handleChange} required />
-            </div>
-            <div className="col-md-3">
-              <label className="form-label small fw-bold text-muted">GENDER</label>
-              <select name="gender" className="form-select" value={form.gender} onChange={handleChange} required>
-                <option value="">Select</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div className="col-12">
-              <label className="form-label small fw-bold text-muted">RESIDENTIAL ADDRESS</label>
-              <input name="address" className="form-control" value={form.address} onChange={handleChange} />
-            </div>
-            <div className="col-md-6">
-              <label className="form-label small fw-bold text-muted">PARENT/GUARDIAN NAME</label>
-              <input name="parent_name" className="form-control" value={form.parent_name} onChange={handleChange} />
-            </div>
-            <div className="col-md-6">
-              <label className="form-label small fw-bold text-muted">CONTACT NUMBER</label>
-              <input name="parent_phone" className="form-control" value={form.parent_phone} onChange={handleChange} />
-            </div>
-          </div>
+      <TabNavigation
+        tabs={studentTabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
 
-          <div className="mt-4 p-3 bg-light rounded-3 border">
-            <h6 className="fw-bold text-primary mb-3"><i className="bi bi-mortarboard me-2"></i>Initial Enrollment</h6>
-            <div className="row g-3">
-              <div className="col-md-3">
-                <label className="form-label small fw-bold">ACADEMIC YEAR</label>
-                <input name="academic_year" className="form-control form-control-sm" placeholder="2025-26" value={form.academic_year} onChange={handleChange} required />
+      <div className="mt-3">
+        {activeTab === "add-profile" && (
+          <AdminCard header="Add New Student Profile">
+            {message && <div className={`alert ${message.includes('successfully') ? 'alert-success' : 'alert-danger'} py-2 mb-3 small`}>{message}</div>}
+            <form onSubmit={handleSubmit}>
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold text-muted">FULL NAME</label>
+                  <input name="full_name" className="form-control" value={form.full_name} onChange={handleChange} required />
+                </div>
+                <div className="col-md-3">
+                  <label className="form-label small fw-bold text-muted">DATE OF BIRTH</label>
+                  <input name="dob" type="date" className="form-control" value={form.dob} onChange={handleChange} required />
+                </div>
+                <div className="col-md-3">
+                  <label className="form-label small fw-bold text-muted">GENDER</label>
+                  <select name="gender" className="form-select" value={form.gender} onChange={handleChange} required>
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div className="col-12">
+                  <label className="form-label small fw-bold text-muted">RESIDENTIAL ADDRESS</label>
+                  <input name="address" className="form-control" value={form.address} onChange={handleChange} />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold text-muted">PARENT/GUARDIAN NAME</label>
+                  <input name="parent_name" className="form-control" value={form.parent_name} onChange={handleChange} />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold text-muted">CONTACT NUMBER</label>
+                  <input name="parent_phone" className="form-control" value={form.parent_phone} onChange={handleChange} />
+                </div>
               </div>
-              <div className="col-md-3">
-                <label className="form-label small fw-bold">STANDARD</label>
-                <input name="standard" className="form-control form-control-sm" value={form.standard} onChange={handleChange} required />
-              </div>
-              <div className="col-md-2">
-                <label className="form-label small fw-bold">DIVISION</label>
-                <input name="division" className="form-control form-control-sm" value={form.division} onChange={handleChange} />
-              </div>
-              <div className="col-md-2">
-                <label className="form-label small fw-bold">ROLL NO</label>
-                <input name="roll_number" type="number" className="form-control form-control-sm" value={form.roll_number} onChange={handleChange} />
-              </div>
-              <div className="col-md-2">
-                <label className="form-label small fw-bold">ADMISSION DATE</label>
-                <input name="admission_date" type="date" className="form-control form-control-sm" value={form.admission_date} onChange={handleChange} />
-              </div>
-            </div>
-          </div>
 
-          <button type="submit" className="btn btn-primary mt-4 px-5 py-2 shadow-sm" disabled={loading}>
-            {loading ? "Registering..." : "Create Student Record"}
-          </button>
-        </form>
-      </AdminCard>
+              <div className="mt-4 p-3 bg-light rounded-3 border">
+                <h6 className="fw-bold text-primary mb-3"><i className="bi bi-mortarboard me-2"></i>Initial Enrollment</h6>
+                <div className="row g-3">
+                  <div className="col-md-3">
+                    <label className="form-label small fw-bold">ACADEMIC YEAR</label>
+                    <input name="academic_year" className="form-control form-control-sm" placeholder="2025-26" value={form.academic_year} onChange={handleChange} required />
+                  </div>
+                  <div className="col-md-3">
+                    <label className="form-label small fw-bold">STANDARD</label>
+                    <input name="standard" className="form-control form-control-sm" value={form.standard} onChange={handleChange} required />
+                  </div>
+                  <div className="col-md-2">
+                    <label className="form-label small fw-bold">DIVISION</label>
+                    <input name="division" className="form-control form-control-sm" value={form.division} onChange={handleChange} />
+                  </div>
+                  <div className="col-md-2">
+                    <label className="form-label small fw-bold">ROLL NO</label>
+                    <input name="roll_number" type="number" className="form-control form-control-sm" value={form.roll_number} onChange={handleChange} />
+                  </div>
+                  <div className="col-md-2">
+                    <label className="form-label small fw-bold">ADMISSION DATE</label>
+                    <input name="admission_date" type="date" className="form-control form-control-sm" value={form.admission_date} onChange={handleChange} />
+                  </div>
+                </div>
+              </div>
 
-      <AdminCard header="Annual Promotion (Passed Students)">
-        <Toolbar
-          left={
-            <div className="d-flex gap-2">
-              <input
-                className="form-control form-control-sm"
-                placeholder="From Year (e.g. 2024-25)"
-                value={studYear}
-                onChange={(e) => setStudYear(e.target.value)}
-                style={{ width: 200 }}
-              />
-              <button className="btn btn-sm btn-primary" onClick={loadPassedStudents}>Load Directory</button>
-            </div>
-          }
-        />
-        {studAllocMsg && <div className="text-muted small mb-3">{studAllocMsg}</div>}
-        {passedStudents.length > 0 && (
-          <TableContainer title="">
-            <div className="table-responsive professional-table">
-              <table className="table align-middle">
-                <thead>
-                  <tr>
-                    <th>Student Name</th>
-                    <th>Current</th>
-                    <th>Next Year</th>
-                    <th>Next Std</th>
-                    <th>Next Div</th>
-                    <th>Roll</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {passedStudents.map((s) => {
-                    const inputs = studAllocInputs[s.student_id] || {};
-                    return (
-                      <tr key={s.student_id}>
-                        <td className="fw-bold">{s.full_name}</td>
-                        <td><span className="erp-badge badge-year">{s.standard}-{s.division}</span></td>
-                        <td><input className="form-control form-control-sm border-primary-subtle" placeholder="2025-26" value={inputs.to_academic_year || ""} onChange={(e) => handleStudAllocInputChange(s.student_id, "to_academic_year", e.target.value)} /></td>
-                        <td><input className="form-control form-control-sm border-primary-subtle" style={{width: 80}} value={inputs.standard || ""} onChange={(e) => handleStudAllocInputChange(s.student_id, "standard", e.target.value)} /></td>
-                        <td><input className="form-control form-control-sm border-primary-subtle" style={{width: 60}} value={inputs.division || ""} onChange={(e) => handleStudAllocInputChange(s.student_id, "division", e.target.value)} /></td>
-                        <td><input className="form-control form-control-sm border-primary-subtle" style={{width: 60}} value={inputs.roll_number || ""} onChange={(e) => handleStudAllocInputChange(s.student_id, "roll_number", e.target.value)} /></td>
-                        <td><button className="btn btn-sm btn-success" onClick={() => handlePromoteStudent(s)}>Promote</button></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </TableContainer>
+              <button type="submit" className="btn btn-primary mt-4 px-5 py-2 shadow-sm" disabled={loading}>
+                {loading ? "Registering..." : "Create Student Record"}
+              </button>
+            </form>
+          </AdminCard>
         )}
-      </AdminCard>
 
-      <AdminCard header="Staff Class Allocation">
-        <Toolbar
-          left={
-            <div className="d-flex gap-2">
-              <input
-                className="form-control form-control-sm"
-                placeholder="Year (e.g. 2025-26)"
-                value={teacherYear}
-                onChange={(e) => setTeacherYear(e.target.value)}
-                style={{ width: 200 }}
-              />
-              <button className="btn btn-sm btn-primary" onClick={loadTeachers}>Load Staff</button>
-            </div>
-          }
-        />
-        {teacherMsg && <div className="text-muted small mb-3">{teacherMsg}</div>}
-        {teachers.length > 0 && (
-          <TableContainer title="">
-            <div className="table-responsive professional-table">
-              <table className="table align-middle">
-                <thead>
-                  <tr>
-                    <th>Teacher Name</th>
-                    <th>Current Role</th>
-                    <th>Assign Year</th>
-                    <th>Std</th>
-                    <th>Div</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {teachers.map((t) => {
-                    const inputs = teacherAllocInputs[t.staff_id] || {};
-                    return (
-                      <tr key={t.staff_id}>
-                        <td className="fw-bold">{t.full_name}</td>
-                        <td><span className="small text-muted">{t.standard ? `${t.standard}-${t.division}` : 'No current assignment'}</span></td>
-                        <td><input className="form-control form-control-sm border-primary-subtle" placeholder={teacherYear} value={inputs.academic_year || ""} onChange={(e) => handleTeacherAllocInputChange(t.staff_id, "academic_year", e.target.value)} /></td>
-                        <td><input className="form-control form-control-sm border-primary-subtle" style={{width: 80}} value={inputs.standard || ""} onChange={(e) => handleTeacherAllocInputChange(t.staff_id, "standard", e.target.value)} /></td>
-                        <td><input className="form-control form-control-sm border-primary-subtle" style={{width: 60}} value={inputs.division || ""} onChange={(e) => handleTeacherAllocInputChange(t.staff_id, "division", e.target.value)} /></td>
-                        <td><button className="btn btn-sm btn-primary" onClick={() => handleAllocateTeacher(t)}>Assign</button></td>
+        {activeTab === "promotion" && (
+          <AdminCard header="Annual Promotion (Passed Students)">
+            <Toolbar
+              left={
+                <div className="d-flex gap-2">
+                  <input
+                    className="form-control form-control-sm"
+                    placeholder="From Year (e.g. 2024-25)"
+                    value={studYear}
+                    onChange={(e) => setStudYear(e.target.value)}
+                    style={{ width: 200 }}
+                  />
+                  <button className="btn btn-sm btn-primary" onClick={loadPassedStudents}>Load Directory</button>
+                </div>
+              }
+            />
+            {studAllocMsg && <div className="text-muted small mb-3">{studAllocMsg}</div>}
+            {passedStudents.length > 0 ? (
+              <TableContainer title="">
+                <div className="table-responsive professional-table">
+                  <table className="table align-middle">
+                    <thead>
+                      <tr>
+                        <th>Student Name</th>
+                        <th>Current</th>
+                        <th>Next Year</th>
+                        <th>Next Std</th>
+                        <th>Next Div</th>
+                        <th>Roll</th>
+                        <th>Action</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </TableContainer>
+                    </thead>
+                    <tbody>
+                      {passedStudents.map((s) => {
+                        const inputs = studAllocInputs[s.student_id] || {};
+                        return (
+                          <tr key={s.student_id}>
+                            <td className="fw-bold">{s.full_name}</td>
+                            <td><span className="erp-badge badge-year">{s.standard}-{s.division}</span></td>
+                            <td><input className="form-control form-control-sm border-primary-subtle" placeholder="2025-26" value={inputs.to_academic_year || ""} onChange={(e) => handleStudAllocInputChange(s.student_id, "to_academic_year", e.target.value)} /></td>
+                            <td><input className="form-control form-control-sm border-primary-subtle" style={{width: 80}} value={inputs.standard || ""} onChange={(e) => handleStudAllocInputChange(s.student_id, "standard", e.target.value)} /></td>
+                            <td><input className="form-control form-control-sm border-primary-subtle" style={{width: 60}} value={inputs.division || ""} onChange={(e) => handleStudAllocInputChange(s.student_id, "division", e.target.value)} /></td>
+                            <td><input className="form-control form-control-sm border-primary-subtle" style={{width: 60}} value={inputs.roll_number || ""} onChange={(e) => handleStudAllocInputChange(s.student_id, "roll_number", e.target.value)} /></td>
+                            <td><button className="btn btn-sm btn-success" onClick={() => handlePromoteStudent(s)}>Promote</button></td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </TableContainer>
+            ) : (
+              !studAllocMsg && <EmptyState title="No Students" description="Enter academic year and load directory." />
+            )}
+          </AdminCard>
         )}
-      </AdminCard>
+
+        {activeTab === "allocation" && (
+          <AdminCard header="Staff Class Allocation">
+            <Toolbar
+              left={
+                <div className="d-flex gap-2">
+                  <input
+                    className="form-control form-control-sm"
+                    placeholder="Year (e.g. 2025-26)"
+                    value={teacherYear}
+                    onChange={(e) => setTeacherYear(e.target.value)}
+                    style={{ width: 200 }}
+                  />
+                  <button className="btn btn-sm btn-primary" onClick={loadTeachers}>Load Staff</button>
+                </div>
+              }
+            />
+            {teacherMsg && <div className="text-muted small mb-3">{teacherMsg}</div>}
+            {teachers.length > 0 ? (
+              <TableContainer title="">
+                <div className="table-responsive professional-table">
+                  <table className="table align-middle">
+                    <thead>
+                      <tr>
+                        <th>Teacher Name</th>
+                        <th>Current Role</th>
+                        <th>Assign Year</th>
+                        <th>Std</th>
+                        <th>Div</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {teachers.map((t) => {
+                        const inputs = teacherAllocInputs[t.staff_id] || {};
+                        return (
+                          <tr key={t.staff_id}>
+                            <td className="fw-bold">{t.full_name}</td>
+                            <td><span className="small text-muted">{t.standard ? `${t.standard}-${t.division}` : 'No current assignment'}</span></td>
+                            <td><input className="form-control form-control-sm border-primary-subtle" placeholder={teacherYear} value={inputs.academic_year || ""} onChange={(e) => handleTeacherAllocInputChange(t.staff_id, "academic_year", e.target.value)} /></td>
+                            <td><input className="form-control form-control-sm border-primary-subtle" style={{width: 80}} value={inputs.standard || ""} onChange={(e) => handleTeacherAllocInputChange(t.staff_id, "standard", e.target.value)} /></td>
+                            <td><input className="form-control form-control-sm border-primary-subtle" style={{width: 60}} value={inputs.division || ""} onChange={(e) => handleTeacherAllocInputChange(t.staff_id, "division", e.target.value)} /></td>
+                            <td><button className="btn btn-sm btn-primary" onClick={() => handleAllocateTeacher(t)}>Assign</button></td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </TableContainer>
+            ) : (
+              !teacherMsg && <EmptyState title="No Staff" description="Enter academic year and load staff list." />
+            )}
+          </AdminCard>
+        )}
+      </div>
 
       <ChatWidget />
     </div>
