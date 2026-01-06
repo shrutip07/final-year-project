@@ -1,8 +1,10 @@
-// src/pages/clerk/FireSafety.jsx
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import AdminCard from "../../components/admin/AdminCard";
 import TableContainer from "../../components/admin/TableContainer";
 import Toolbar from "../../components/admin/Toolbar";
+import EmptyState from "../../components/admin/EmptyState";
+import ChatWidget from "../../components/ChatWidget";
 
 function formatSeconds(s) {
   if (isNaN(s)) return "-";
@@ -41,22 +43,22 @@ export default function FireSafety() {
 
   const addDrill = async (e) => {
     e.preventDefault();
-    const drillForm = e.target;
+    const data = {
+      drill_date: e.target.drill_date.value,
+      participants_students: e.target.students.value,
+      participants_staff: e.target.staff.value,
+      evacuation_time_seconds: e.target.evacuation.value
+    };
     await fetch("http://localhost:5000/api/clerk/fire-safety/drill", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        drill_date: drillForm.drill_date.value,
-        participants_students: drillForm.students.value,
-        participants_staff: drillForm.staff.value,
-        evacuation_time_seconds: drillForm.evacuation.value
-      })
+      body: JSON.stringify(data)
     });
-    drillForm.reset();
-    setEditing(false);
-    // Reload data
-    fetch("http://localhost:5000/api/clerk/fire-safety", { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json()).then(setInfo);
+    e.target.reset();
+    // Refresh
+    const res = await fetch("http://localhost:5000/api/clerk/fire-safety", { headers: { Authorization: `Bearer ${token}` } });
+    const newData = await res.json();
+    setInfo(newData);
   };
 
   const uniqueDrills = [];
@@ -69,137 +71,156 @@ export default function FireSafety() {
   });
 
   return (
-    <div className="clerk-fire-safety-page">
+    <div className="fire-safety-module">
       <div className="section-header-pro">
         <h3>Fire Safety & Drill Management</h3>
-        <p>Monitor equipment status and record emergency evacuation drills</p>
+        <p>Maintain fire safety infrastructure and record emergency evacuation drills</p>
       </div>
 
-      <div className="row g-4">
-        <div className="col-lg-7">
-          <AdminCard header={editing ? "Edit Equipment Info" : "Equipment Status Overview"}>
+      <div className="row">
+        <div className="col-lg-5">
+          <AdminCard header={
+            <div className="d-flex justify-content-between align-items-center w-100">
+              <span>Safety Infrastructure</span>
+              {!editing && (
+                <button className="btn btn-sm btn-outline-primary" onClick={() => setEditing(true)}>
+                  <i className="bi bi-pencil-square me-1"></i> Edit
+                </button>
+              )}
+            </div>
+          }>
             {!editing ? (
-              <div className="table-responsive professional-table">
-                <table className="table table-hover align-middle">
-                  <tbody>
-                    <tr>
-                      <th className="text-muted small text-uppercase" style={{ width: "40%" }}>Extinguishers Count</th>
-                      <td className="fw-bold text-navy">{info?.safety?.extinguisher_count ?? "-"}</td>
-                    </tr>
-                    <tr>
-                      <th className="text-muted small text-uppercase">Primary Locations</th>
-                      <td className="text-navy">{info?.safety?.extinguisher_locations ?? "-"}</td>
-                    </tr>
-                    <tr>
-                      <th className="text-muted small text-uppercase">Last Inspection Date</th>
-                      <td><span className="erp-badge badge-year">{info?.safety?.extinguisher_last_inspection ? new Date(info.safety.extinguisher_last_inspection).toLocaleDateString() : "-"}</span></td>
-                    </tr>
-                    <tr>
-                      <th className="text-muted small text-uppercase">Evacuation Routes</th>
-                      <td>
-                        <span className={`erp-badge ${info?.safety?.evacuation_routes_marked ? 'badge-success' : 'badge-danger'}`}>
-                          {info?.safety?.evacuation_routes_marked ? "Marked & Clear" : "Not Marked"}
-                        </span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th className="text-muted small text-uppercase">Assembly Points</th>
-                      <td className="text-navy">{info?.safety?.assembly_points ?? "-"}</td>
-                    </tr>
-                  </tbody>
-                </table>
-                <div className="pt-3">
-                  <button className="btn btn-navy px-4" onClick={() => setEditing(true)}>Update Status</button>
+              <div className="safety-details-list">
+                <div className="d-flex justify-content-between mb-3 border-bottom pb-2">
+                  <span className="text-muted small fw-bold">EXTINGUISHERS</span>
+                  <span className="fw-bold text-dark">{info?.safety?.extinguisher_count ?? "-"} Units</span>
+                </div>
+                <div className="d-flex flex-column mb-3 border-bottom pb-2">
+                  <span className="text-muted small fw-bold">LOCATIONS</span>
+                  <span className="text-dark small mt-1">{info?.safety?.extinguisher_locations ?? "-"}</span>
+                </div>
+                <div className="d-flex justify-content-between mb-3 border-bottom pb-2">
+                  <span className="text-muted small fw-bold">LAST INSPECTION</span>
+                  <span className="text-dark">
+                    {info?.safety?.extinguisher_last_inspection
+                      ? new Date(info.safety.extinguisher_last_inspection).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                      : "-"}
+                  </span>
+                </div>
+                <div className="d-flex justify-content-between mb-3 border-bottom pb-2">
+                  <span className="text-muted small fw-bold">EVACUATION MARKED</span>
+                  <span className={`erp-badge ${info?.safety?.evacuation_routes_marked ? 'badge-success' : 'badge-danger'}`}>
+                    {info?.safety?.evacuation_routes_marked ? "YES" : "NO"}
+                  </span>
+                </div>
+                <div className="d-flex flex-column mb-2">
+                  <span className="text-muted small fw-bold">ASSEMBLY POINTS</span>
+                  <span className="text-dark small mt-1">{info?.safety?.assembly_points ?? "-"}</span>
                 </div>
               </div>
             ) : (
-              <form onSubmit={saveInfo} className="row g-3">
-                <div className="col-md-6">
+              <form onSubmit={saveInfo}>
+                <div className="mb-3">
                   <label className="form-label small fw-bold text-muted">EXTINGUISHER COUNT</label>
-                  <input type="number" name="extinguisher_count" className="form-control" value={form.extinguisher_count ?? ''} onChange={change} required />
+                  <input type="number" className="form-control" name="extinguisher_count" value={form.extinguisher_count ?? ''} onChange={change} required />
                 </div>
-                <div className="col-md-6">
-                  <label className="form-label small fw-bold text-muted">LAST INSPECTION</label>
-                  <input type="date" name="extinguisher_last_inspection" className="form-control" value={form.extinguisher_last_inspection?.slice(0,10) ?? ''} onChange={change} required />
-                </div>
-                <div className="col-12">
+                <div className="mb-3">
                   <label className="form-label small fw-bold text-muted">LOCATIONS</label>
-                  <input name="extinguisher_locations" className="form-control" value={form.extinguisher_locations ?? ''} onChange={change} required />
+                  <textarea className="form-control" rows="2" name="extinguisher_locations" value={form.extinguisher_locations ?? ''} onChange={change} required />
                 </div>
-                <div className="col-12">
+                <div className="mb-3">
+                  <label className="form-label small fw-bold text-muted">LAST INSPECTION</label>
+                  <input type="date" className="form-control" name="extinguisher_last_inspection" value={form.extinguisher_last_inspection ? form.extinguisher_last_inspection.slice(0, 10) : ''} onChange={change} required />
+                </div>
+                <div className="form-check form-switch mb-3">
+                  <input className="form-check-input" type="checkbox" checked={!!form.evacuation_routes_marked} name="evacuation_routes_marked" onChange={change} id="evacCheck" />
+                  <label className="form-check-label small fw-bold" htmlFor="evacCheck">EVACUATION ROUTES MARKED</label>
+                </div>
+                <div className="mb-4">
                   <label className="form-label small fw-bold text-muted">ASSEMBLY POINTS</label>
-                  <input name="assembly_points" className="form-control" value={form.assembly_points ?? ''} onChange={change} required />
+                  <input type="text" className="form-control" name="assembly_points" value={form.assembly_points ?? ''} onChange={change} required />
                 </div>
-                <div className="col-12">
-                  <div className="form-check form-switch mt-2">
-                    <input className="form-check-input" type="checkbox" checked={!!form.evacuation_routes_marked} name="evacuation_routes_marked" onChange={change} id="evacSwitch" />
-                    <label className="form-check-label small fw-bold text-muted" htmlFor="evacSwitch">Evacuation Routes Marked</label>
-                  </div>
-                </div>
-                <div className="col-12 d-flex gap-2 pt-2">
-                  <button type="submit" className="btn btn-primary px-4">Save Changes</button>
+                <div className="d-flex gap-2">
+                  <button type="submit" className="btn btn-primary flex-grow-1">Save Infrastructure</button>
                   <button type="button" className="btn btn-outline-secondary" onClick={() => setEditing(false)}>Cancel</button>
                 </div>
               </form>
             )}
           </AdminCard>
-        </div>
 
-        <div className="col-lg-5">
-          <AdminCard header="Record New Fire Drill">
-            <form onSubmit={addDrill} className="row g-3">
-              <div className="col-md-12">
-                <label className="form-label small fw-bold text-muted">DRILL DATE</label>
-                <input name="drill_date" type="date" className="form-control" required />
+          <AdminCard header="Record New Drill">
+            <form onSubmit={addDrill}>
+              <div className="row g-2 mb-3">
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold text-muted">DRILL DATE</label>
+                  <input name="drill_date" type="date" className="form-control" required />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold text-muted">EVAC TIME (SEC)</label>
+                  <input name="evacuation" type="number" className="form-control" placeholder="Seconds" required />
+                </div>
               </div>
-              <div className="col-md-6">
-                <label className="form-label small fw-bold text-muted">STUDENT PARTICIPANTS</label>
-                <input name="students" type="number" className="form-control" placeholder="0" required />
+              <div className="row g-2 mb-4">
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold text-muted">STUDENT COUNT</label>
+                  <input name="students" type="number" className="form-control" required />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold text-muted">STAFF COUNT</label>
+                  <input name="staff" type="number" className="form-control" required />
+                </div>
               </div>
-              <div className="col-md-6">
-                <label className="form-label small fw-bold text-muted">STAFF PARTICIPANTS</label>
-                <input name="staff" type="number" className="form-control" placeholder="0" required />
-              </div>
-              <div className="col-md-12">
-                <label className="form-label small fw-bold text-muted">EVACUATION TIME (SECONDS)</label>
-                <input name="evacuation" type="number" className="form-control" placeholder="e.g. 180" required />
-              </div>
-              <div className="col-12 pt-2">
-                <button type="submit" className="btn btn-success w-100">Log Drill Session</button>
-              </div>
+              <button type="submit" className="btn btn-success w-100">
+                <i className="bi bi-plus-circle me-2"></i> Register Drill
+              </button>
             </form>
           </AdminCard>
         </div>
 
-        <div className="col-lg-12">
-          <AdminCard>
-            <TableContainer 
-              title="Recent Drill History"
-              toolbar={<Toolbar left={<div className="text-muted small">Showing records from the last 12 months</div>} />}
-            >
+        <div className="col-lg-7">
+          <AdminCard header="Drill Registry (Last 12 Months)">
+            <TableContainer title="">
               <div className="table-responsive professional-table">
-                <table className="table table-hover align-middle">
+                <table className="table align-middle">
                   <thead>
                     <tr>
-                      <th>Date</th>
-                      <th>Student Participants</th>
-                      <th>Staff Participants</th>
+                      <th>Drill Date</th>
+                      <th>Participants</th>
                       <th>Evacuation Time</th>
-                      <th className="text-end">Status</th>
+                      <th>Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {uniqueDrills.map((drill, idx) => (
-                      <tr key={idx}>
-                        <td><span className="fw-bold text-navy">{new Date(drill.drill_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span></td>
-                        <td>{drill.participants_students}</td>
-                        <td>{drill.participants_staff}</td>
-                        <td><span className="erp-badge badge-designation">{formatSeconds(Number(drill.evacuation_time_seconds))}</span></td>
-                        <td className="text-end text-success"><i className="bi bi-check-circle-fill me-2"></i>Recorded</td>
+                    {uniqueDrills.length > 0 ? (
+                      uniqueDrills.map(drill => (
+                        <tr key={drill.id}>
+                          <td>
+                            <span className="fw-bold text-dark">
+                              {new Date(drill.drill_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="small text-muted">
+                              <div><i className="bi bi-mortarboard me-1"></i> Students: {drill.participants_students}</div>
+                              <div><i className="bi bi-people me-1"></i> Staff: {drill.participants_staff}</div>
+                            </div>
+                          </td>
+                          <td>
+                            <span className={`fw-bold ${Number(drill.evacuation_time_seconds) < 180 ? 'text-success' : 'text-warning'}`}>
+                              {formatSeconds(Number(drill.evacuation_time_seconds))}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="erp-badge badge-success">COMPLETED</span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="text-center py-5">
+                          <EmptyState title="No Drills Recorded" description="Record your first fire safety drill to see it here." />
+                        </td>
                       </tr>
-                    ))}
-                    {uniqueDrills.length === 0 && (
-                      <tr><td colSpan={5} className="text-center py-4 text-muted small">No drill records found.</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -208,6 +229,7 @@ export default function FireSafety() {
           </AdminCard>
         </div>
       </div>
+      <ChatWidget />
     </div>
   );
 }

@@ -1,19 +1,25 @@
-// src/pages/clerk/TeacherSalaries.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AdminCard from "../../components/admin/AdminCard";
 import TableContainer from "../../components/admin/TableContainer";
 import Toolbar from "../../components/admin/Toolbar";
+import EmptyState from "../../components/admin/EmptyState";
+import ChatWidget from "../../components/ChatWidget";
 
-const monthsArr = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const monthsArr = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+];
 
-export default function TeacherSalaries() {
+export default function TeacherSalaryManagerAndPayments() {
+  // ----- Salary Assignment -----
   const [teachers, setTeachers] = useState([]);
   const [editRow, setEditRow] = useState({});
   const [success, setSuccess] = useState("");
   const [salaryHistory, setSalaryHistory] = useState({});
   const [showHistoryFor, setShowHistoryFor] = useState(null);
 
+  // ----- Monthly Payments -----
   const [year, setYear] = useState(new Date().getFullYear());
   const [salaryGrid, setSalaryGrid] = useState([]);
   const [editPay, setEditPay] = useState({});
@@ -21,30 +27,31 @@ export default function TeacherSalaries() {
   const [payErr, setPayErr] = useState("");
   const [pendingOnly, setPendingOnly] = useState(false);
 
+  // --- Assignment + history ---
   useEffect(() => {
     fetchSalaries();
   }, []);
 
-  useEffect(() => {
-    fetchGrid(year);
-  }, [year]);
-
   const fetchSalaries = async () => {
     const token = localStorage.getItem("token");
-    const res = await axios.get("http://localhost:5000/api/clerk/teacher-salaries", {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const res = await axios.get(
+      "http://localhost:5000/api/clerk/teacher-salaries",
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
     setTeachers(res.data);
   };
 
   const fetchSalaryHistory = async (staff_id) => {
     const token = localStorage.getItem("token");
-    const res = await axios.get("http://localhost:5000/api/clerk/teacher-salary-history", {
-      headers: { Authorization: `Bearer ${token}` },
-      params: { staff_id }
-    });
+    const res = await axios.get(
+      "http://localhost:5000/api/clerk/teacher-salary-history",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { staff_id }
+      }
+    );
     setSalaryHistory((prev) => ({ ...prev, [staff_id]: res.data }));
-    setShowHistoryFor(showHistoryFor === staff_id ? null : staff_id);
+    setShowHistoryFor(staff_id);
   };
 
   const handleChange = (id, field, value) => {
@@ -57,27 +64,44 @@ export default function TeacherSalaries() {
     const payload = {
       staff_id: t.staff_id,
       amount: tr.amount ?? t.amount,
-      effective_from: tr.effective_from ?? t.effective_from ?? new Date().toISOString().slice(0, 10),
+      effective_from:
+        tr.effective_from ??
+        t.effective_from ??
+        new Date().toISOString().slice(0, 10),
       remarks: tr.remarks ?? t.remarks ?? ""
     };
 
-    await axios.post("http://localhost:5000/api/clerk/teacher-salary", payload, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    try {
+      await axios.post(
+        "http://localhost:5000/api/clerk/teacher-salary",
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    setSuccess("Salary updated successfully! ✅");
-    setTimeout(() => setSuccess(""), 2000);
-    setEditRow({});
-    fetchSalaries();
+      setSuccess("Salary configuration updated ✅");
+      setTimeout(() => setSuccess(""), 3000);
+      setEditRow({});
+      fetchSalaries();
+    } catch (err) {
+      setPayErr("Failed to update salary configuration.");
+    }
   };
+
+  // --- Monthly payments grid ---
+  useEffect(() => {
+    fetchGrid(year);
+  }, [year]);
 
   const fetchGrid = async (yr) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/clerk/teacher-salary-grid", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { year: yr }
-      });
+      const res = await axios.get(
+        "http://localhost:5000/api/clerk/teacher-salary-grid",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { year: yr }
+        }
+      );
       setSalaryGrid(res.data.staff || []);
     } catch {
       setSalaryGrid([]);
@@ -109,15 +133,24 @@ export default function TeacherSalaries() {
       return;
     }
 
-    const payload = { staff_id, year, month, amount, paid_on, remarks: cell.remarks || "" };
+    const payload = {
+      staff_id,
+      year,
+      month,
+      amount,
+      paid_on,
+      remarks: cell.remarks || ""
+    };
 
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:5000/api/clerk/teacher-salary-pay", payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.post(
+        "http://localhost:5000/api/clerk/teacher-salary-pay",
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      setPayMsg("Payment recorded! ✅");
+      setPayMsg("Salary disbursement recorded! ✅");
       setTimeout(() => setPayMsg(""), 2000);
 
       setEditPay((prev) => {
@@ -128,7 +161,7 @@ export default function TeacherSalaries() {
 
       fetchGrid(year);
     } catch {
-      setPayErr("Failed to record payment!");
+      setPayErr("Failed to record salary disbursement!");
       setTimeout(() => setPayErr(""), 2000);
     }
   };
@@ -145,64 +178,95 @@ export default function TeacherSalaries() {
     : salaryGrid;
 
   return (
-    <div className="clerk-salaries-page">
+    <div className="salaries-management-module">
       <div className="section-header-pro">
-        <h3>Payroll Management</h3>
-        <p>Assign teacher salaries and record monthly payments</p>
+        <h3>Teacher Salaries</h3>
+        <p>Manage base salary structures and record monthly disbursements</p>
       </div>
 
-      <div className="row g-4">
-        <div className="col-lg-12">
-          <AdminCard header="Salary Assignment Registry">
-            {success && <div className="alert alert-success py-2 mb-3 small">{success}</div>}
-            <div className="table-responsive professional-table">
-              <table className="table table-hover align-middle">
-                <thead>
-                  <tr>
-                    <th>Teacher Name</th>
-                    <th>Base Salary</th>
-                    <th>Effective From</th>
-                    <th>Remarks</th>
-                    <th className="text-end">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {teachers.map((t) => (
+      <AdminCard header="Salary Configuration">
+        {success && <div className="alert alert-success py-2 mb-3 small">{success}</div>}
+        <TableContainer title="">
+          <div className="table-responsive professional-table">
+            <table className="table align-middle">
+              <thead>
+                <tr>
+                  <th>Teacher Name</th>
+                  <th>Current Base (₹)</th>
+                  <th>Effective From</th>
+                  <th>Audit Remarks</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {teachers.length > 0 ? (
+                  teachers.map((t) => (
                     <tr key={t.staff_id}>
-                      <td>
+                      <td className="fw-bold">
                         <div className="d-flex align-items-center gap-2">
-                          <div className="avatar-circle">{t.full_name.charAt(0)}</div>
-                          <span className="fw-semibold">{t.full_name}</span>
+                          <div className="avatar-circle">{t.full_name?.charAt(0)}</div>
+                          {t.full_name}
                         </div>
                       </td>
-                      <td style={{ width: 140 }}>
-                        <div className="input-group input-group-sm">
-                          <span className="input-group-text bg-light">₹</span>
-                          <input type="number" className="form-control" value={editRow[t.staff_id]?.amount ?? t.amount ?? ""} onChange={(e) => handleChange(t.staff_id, "amount", e.target.value)} />
-                        </div>
+                      <td style={{ width: "160px" }}>
+                        <input
+                          type="number"
+                          className="form-control form-control-sm border-primary-subtle"
+                          value={editRow[t.staff_id]?.amount ?? t.amount ?? ""}
+                          placeholder="Enter Amount"
+                          onChange={(e) => handleChange(t.staff_id, "amount", e.target.value)}
+                        />
                       </td>
-                      <td style={{ width: 150 }}>
-                        <input type="date" className="form-control form-control-sm" value={editRow[t.staff_id]?.effective_from ?? (t.effective_from ? t.effective_from.slice(0, 10) : "")} onChange={(e) => handleChange(t.staff_id, "effective_from", e.target.value)} />
+                      <td style={{ width: "180px" }}>
+                        <input
+                          type="date"
+                          className="form-control form-control-sm border-primary-subtle"
+                          value={editRow[t.staff_id]?.effective_from ?? (t.effective_from ? t.effective_from.slice(0, 10) : "")}
+                          onChange={(e) => handleChange(t.staff_id, "effective_from", e.target.value)}
+                        />
                       </td>
                       <td>
-                        <input type="text" className="form-control form-control-sm" value={editRow[t.staff_id]?.remarks ?? t.remarks ?? ""} onChange={(e) => handleChange(t.staff_id, "remarks", e.target.value)} placeholder="Notes..." />
+                        <input
+                          type="text"
+                          className="form-control form-control-sm border-primary-subtle"
+                          value={editRow[t.staff_id]?.remarks ?? t.remarks ?? ""}
+                          onChange={(e) => handleChange(t.staff_id, "remarks", e.target.value)}
+                          placeholder="Optional notes"
+                        />
                       </td>
-                      <td className="text-end">
-                        <div className="d-flex justify-content-end gap-2">
-                          <button className="btn btn-sm btn-outline-navy" onClick={() => fetchSalaryHistory(t.staff_id)}>History</button>
-                          <button className="btn btn-sm btn-navy" onClick={() => handleSave(t)}>Update</button>
+                      <td>
+                        <div className="d-flex gap-2">
+                          <button
+                            className="btn btn-sm btn-primary px-3"
+                            onClick={() => handleSave(t)}
+                          >Update</button>
+                          <button
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => fetchSalaryHistory(t.staff_id)}
+                            title="View History"
+                          ><i className="bi bi-clock-history"></i></button>
                         </div>
+
                         {showHistoryFor === t.staff_id && salaryHistory[t.staff_id] && (
-                          <div className="history-dropdown mt-2 p-3 border rounded shadow-sm bg-light text-start" style={{ position: 'absolute', zIndex: 100, right: 0, minWidth: 400 }}>
-                            <div className="fw-bold small mb-2">Salary History: {t.full_name}</div>
-                            <table className="table table-sm table-borderless mb-0 x-small">
-                              <thead><tr className="border-bottom"><th>Amt</th><th>From</th><th>To</th></tr></thead>
+                          <div className="salary-history-popover mt-3 p-3 bg-light border rounded shadow-sm">
+                            <div className="d-flex justify-content-between align-items-center mb-2">
+                              <span className="fw-bold small text-primary">Revision History</span>
+                              <button className="btn-close" style={{fontSize: '0.6rem'}} onClick={() => setShowHistoryFor(null)}></button>
+                            </div>
+                            <table className="table table-sm small mb-0">
+                              <thead>
+                                <tr className="text-muted">
+                                  <th>Amount</th>
+                                  <th>From</th>
+                                  <th>To</th>
+                                </tr>
+                              </thead>
                               <tbody>
-                                {salaryHistory[t.staff_id].map((h, i) => (
+                                {salaryHistory[t.staff_id].map((hist, i) => (
                                   <tr key={i}>
-                                    <td>₹{h.amount}</td>
-                                    <td>{h.effective_from?.slice(0, 10)}</td>
-                                    <td>{h.effective_to?.slice(0, 10) || "Present"}</td>
+                                    <td className="fw-bold text-success">₹{hist.amount}</td>
+                                    <td>{hist.effective_from?.slice(0, 10)}</td>
+                                    <td>{hist.effective_to ? hist.effective_to.slice(0, 10) : "Current"}</td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -211,75 +275,149 @@ export default function TeacherSalaries() {
                         )}
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </AdminCard>
-        </div>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="text-center py-4">
+                      <EmptyState title="No Staff" description="No teaching staff found in this unit." />
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </TableContainer>
+      </AdminCard>
 
-        <div className="col-lg-12">
-          <AdminCard>
-            <TableContainer 
-              title="Monthly Payment Grid"
-              toolbar={
-                <Toolbar 
-                  left={
-                    <div className="d-flex gap-2">
-                      <select className="form-select form-select-sm" style={{ width: 100 }} value={year} onChange={handleYearChange}>
-                        {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
-                      </select>
-                      <button className={`btn btn-sm ${pendingOnly ? 'btn-danger' : 'btn-outline-navy'}`} onClick={togglePending}>
-                        {pendingOnly ? "Showing Pending" : "Filter Pending"}
-                      </button>
-                    </div>
-                  }
-                  right={
-                    <div className="text-muted small">Academic Year: {year}</div>
-                  }
-                />
-              }
-            >
-              {payMsg && <div className="alert alert-success py-2 mb-2 small">{payMsg}</div>}
-              {payErr && <div className="alert alert-danger py-2 mb-2 small">{payErr}</div>}
-              
-              <div className="table-responsive professional-table salary-grid-container" style={{ maxHeight: 600 }}>
-                <table className="table table-bordered align-middle text-center mb-0">
-                  <thead className="table-light sticky-top">
-                    <tr>
-                      <th className="text-start sticky-left bg-light" style={{ minWidth: 200 }}>Teacher</th>
-                      {monthsArr.map(m => <th key={m} style={{ minWidth: 200 }}>{m}</th>)}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredGrid.map((staff) => (
-                      <tr key={staff.staff_id}>
-                        <td className="text-start fw-bold sticky-left bg-white">{staff.full_name}</td>
-                        {staff.payments.map((mObj) => (
-                          <td key={mObj.month} className={mObj.paid_on ? "bg-success-subtle" : "bg-danger-subtle"}>
-                            {mObj.paid_on ? (
-                              <div className="small">
-                                <div className="fw-bold text-success">₹{mObj.amount?.toLocaleString()}</div>
-                                <div className="text-muted" style={{ fontSize: '0.7rem' }}>{new Date(mObj.paid_on).toLocaleDateString()}</div>
-                              </div>
-                            ) : (
-                              <div className="p-1">
-                                <input type="number" className="form-control form-control-sm mb-1" placeholder="₹" value={editPay[staff.staff_id]?.[mObj.month]?.amount || mObj.amount || ""} onChange={(e) => handleEditPay(staff.staff_id, mObj.month, "amount", e.target.value)} />
-                                <input type="date" className="form-control form-control-sm mb-1" value={editPay[staff.staff_id]?.[mObj.month]?.paid_on || ""} onChange={(e) => handleEditPay(staff.staff_id, mObj.month, "paid_on", e.target.value)} />
-                                <button className="btn btn-xs btn-success w-100" style={{ fontSize: '0.7rem' }} onClick={() => paySalary(staff.staff_id, mObj)}>Mark Paid</button>
-                              </div>
-                            )}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+      <AdminCard header="Monthly Payroll Disbursement">
+        <Toolbar
+          left={
+            <div className="d-flex align-items-center gap-3">
+              <div className="d-flex align-items-center gap-2 bg-light px-3 py-1 rounded-pill border">
+                <span className="small text-muted fw-bold">Select Year:</span>
+                <select
+                  className="form-select form-select-sm border-0 bg-transparent py-0"
+                  style={{fontSize: '0.8rem', width: 'auto'}}
+                  value={year}
+                  onChange={handleYearChange}
+                >
+                  {yearOptions.map((y) => <option key={y} value={y}>{y}</option>)}
+                </select>
               </div>
-            </TableContainer>
-          </AdminCard>
+              <button
+                className={`btn btn-sm rounded-pill px-3 ${pendingOnly ? "btn-danger shadow-sm" : "btn-outline-secondary"}`}
+                onClick={togglePending}
+              >
+                {pendingOnly ? "Showing Pending Only" : "Show All Status"}
+              </button>
+            </div>
+          }
+          right={
+            <div className="d-flex gap-2 small text-muted">
+              <span className="d-flex align-items-center gap-1">
+                <span className="badge bg-success rounded-circle" style={{width: 8, height: 8}}></span> Paid
+              </span>
+              <span className="d-flex align-items-center gap-1">
+                <span className="badge bg-danger rounded-circle" style={{width: 8, height: 8}}></span> Pending
+              </span>
+            </div>
+          }
+        />
+
+        {payMsg && <div className="alert alert-success py-2 mb-3 small">{payMsg}</div>}
+        {payErr && <div className="alert alert-danger py-2 mb-3 small">{payErr}</div>}
+
+        <div className="table-responsive salary-grid-wrapper professional-table mt-3">
+          <table className="table align-middle border-start">
+            <thead>
+              <tr>
+                <th className="bg-light sticky-left" style={{position: 'sticky', left: 0, zIndex: 10, minWidth: '180px'}}>Staff Member</th>
+                {monthsArr.map((m) => (
+                  <th key={m} className="text-center bg-primary text-white border-white" style={{minWidth: '220px'}}>
+                    {m.toUpperCase()} {year}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredGrid.length > 0 ? (
+                filteredGrid.map((staff) => (
+                  <tr key={staff.staff_id}>
+                    <td className="bg-light fw-bold sticky-left border-end shadow-sm" style={{position: 'sticky', left: 0, zIndex: 5}}>
+                      {staff.full_name}
+                    </td>
+                    {staff.payments.map((monthObj) => {
+                      const v = editPay[staff.staff_id]?.[monthObj.month] || {};
+                      return (
+                        <td key={monthObj.month} className="p-2 border-end" style={{backgroundColor: monthObj.paid_on ? 'rgba(5, 150, 105, 0.03)' : 'rgba(225, 29, 72, 0.03)'}}>
+                          {monthObj.paid_on ? (
+                            <div className="p-2 rounded bg-white border border-success-subtle shadow-sm">
+                              <div className="d-flex justify-content-between align-items-center mb-1">
+                                <span className="erp-badge badge-success">PAID</span>
+                                <span className="fw-bold text-success">₹{monthObj.amount}</span>
+                              </div>
+                              <div className="small text-muted mb-1">
+                                <i className="bi bi-calendar-check me-1"></i> 
+                                {new Date(monthObj.paid_on).toLocaleDateString()}
+                              </div>
+                              {monthObj.remarks && (
+                                <div className="small text-muted text-truncate" title={monthObj.remarks}>
+                                  <i className="bi bi-info-circle me-1"></i> {monthObj.remarks}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="p-2 rounded bg-white border border-danger-subtle shadow-sm">
+                              <div className="d-flex justify-content-between align-items-center mb-2">
+                                <span className="erp-badge badge-danger">PENDING</span>
+                              </div>
+                              <div className="d-flex flex-column gap-1">
+                                <input
+                                  type="number"
+                                  className="form-control form-control-sm"
+                                  value={v.amount || monthObj.amount || ""}
+                                  placeholder="Amount"
+                                  onChange={(e) => handleEditPay(staff.staff_id, monthObj.month, "amount", e.target.value)}
+                                />
+                                <input
+                                  type="date"
+                                  className="form-control form-control-sm"
+                                  value={v.paid_on || ""}
+                                  onChange={(e) => handleEditPay(staff.staff_id, monthObj.month, "paid_on", e.target.value)}
+                                />
+                                <input
+                                  type="text"
+                                  className="form-control form-control-sm"
+                                  placeholder="Remarks"
+                                  value={v.remarks || ""}
+                                  onChange={(e) => handleEditPay(staff.staff_id, monthObj.month, "remarks", e.target.value)}
+                                />
+                                <button
+                                  className="btn btn-sm btn-success mt-1 w-100 fw-bold"
+                                  onClick={() => paySalary(staff.staff_id, monthObj)}
+                                  disabled={!v.amount && !monthObj.amount}
+                                >Record Payment</button>
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={1 + monthsArr.length} className="text-center py-5">
+                    <EmptyState title="No Records" description="No payroll data found for this period." />
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      </div>
+      </AdminCard>
+
+      <ChatWidget />
     </div>
   );
 }
