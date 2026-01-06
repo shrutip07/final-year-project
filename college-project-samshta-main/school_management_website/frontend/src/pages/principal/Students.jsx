@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 import EmptyState from "../../components/admin/EmptyState";
-import ToppersPanel from "../../components/principal/ToppersPanel";
 
 const COLUMNS = [
   { key: "roll_number", label: "Roll No" },
@@ -15,6 +14,115 @@ const COLUMNS = [
   { key: "passed", label: "Status" },
   { key: "gender", label: "Gender" },
 ];
+
+const LIMIT_OPTIONS = [1, 2, 3, 5];
+
+function ToppersPanel({ allYears }) {
+  const [toppers, setToppers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [limit, setLimit] = useState(3);
+  const [selectedYear, setSelectedYear] = useState("");
+
+  useEffect(() => {
+    async function fetchToppers() {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        const params = new URLSearchParams({ limit });
+        if (selectedYear) params.append("academic_year", selectedYear);
+        const res = await axios.get(
+          `http://localhost:5000/api/principal/students/toppers?${params.toString()}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setToppers(res.data?.data || []);
+      } catch (err) {
+        console.error("Failed to fetch toppers", err);
+        setToppers([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchToppers();
+  }, [limit, selectedYear]);
+
+  return (
+    <div className="toppers-panel">
+      <div className="toppers-header">
+        <div className="header-left">
+          <i className="bi bi-trophy-fill"></i>
+          <h3>Toppers by Standard</h3>
+        </div>
+        <div className="toppers-controls">
+          <div className="control-group">
+            <label>Top</label>
+            <select
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+              className="form-select form-select-sm"
+            >
+              {LIMIT_OPTIONS.map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </div>
+          <div className="control-group">
+            <label>Year</label>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="form-select form-select-sm"
+            >
+              <option value="">All Years</option>
+              {allYears.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="toppers-body">
+        {loading ? (
+          <div className="toppers-loading">
+            <div className="spinner-border spinner-border-sm text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <span>Loading toppers...</span>
+          </div>
+        ) : toppers.length === 0 ? (
+          <div className="toppers-empty">
+            <i className="bi bi-info-circle"></i>
+            <span>No topper data available</span>
+          </div>
+        ) : (
+          <div className="toppers-grid">
+            {toppers.map((group) => (
+              <div key={group.standard} className="standard-card">
+                <div className="standard-badge">
+                  <span>Std {group.standard}</span>
+                </div>
+                <div className="topper-list">
+                  {group.toppers.map((s, idx) => (
+                    <div key={s.student_id} className={`topper-item rank-${idx + 1}`}>
+                      <span className="rank-badge">#{idx + 1}</span>
+                      <div className="topper-info">
+                        <span className="topper-name">{s.full_name}</span>
+                        <span className="topper-details">
+                          {s.division && `Div ${s.division}`}
+                          {s.percentage != null && ` • ${s.percentage}%`}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Students() {
   const { t } = useTranslation();
@@ -81,6 +189,7 @@ export default function Students() {
   return (
     <div className="directory-wrapper">
       <ToppersPanel allYears={allYears} />
+
       <div className="directory-controls">
         <div className="search-box">
           <i className="bi bi-search search-icon"></i>
