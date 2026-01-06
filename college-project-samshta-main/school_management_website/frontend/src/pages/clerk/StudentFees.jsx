@@ -5,6 +5,7 @@ import TableContainer from "../../components/admin/TableContainer";
 import Toolbar from "../../components/admin/Toolbar";
 import EmptyState from "../../components/admin/EmptyState";
 import TabNavigation from "../../components/admin/TabNavigation";
+import PageHeader from "../../components/admin/PageHeader";
 import ChatWidget from "../../components/ChatWidget";
 
 export default function StudentFees() {
@@ -194,11 +195,11 @@ export default function StudentFees() {
   ];
 
   return (
-    <div className="fees-management-module">
-      <div className="section-header-pro mb-3">
-        <h3>Fee Management</h3>
-        <p>Configure fee structures and track student payment compliance</p>
-      </div>
+    <div className="pb-4">
+      <PageHeader
+        title="Fee Management"
+        subtitle="Configure fee structures and track student payment compliance"
+      />
 
       <TabNavigation
         tabs={feeTabs}
@@ -209,7 +210,7 @@ export default function StudentFees() {
       <div className="mt-3">
         {activeTab === "fee-directory" && (
           <AdminCard header="Fee Directory">
-            <div className="d-flex align-items-center gap-2 mb-3 bg-light p-2 rounded" style={{maxWidth: '300px'}}>
+            <div className="d-flex align-items-center gap-2 mb-3 bg-light p-2 rounded" style={{ maxWidth: "300px" }}>
               <span className="small text-muted fw-bold">Filter Year:</span>
               <select
                 className="form-select form-select-sm border-0 bg-transparent"
@@ -223,36 +224,43 @@ export default function StudentFees() {
               </select>
             </div>
 
-            <div className="table-responsive professional-table">
+            <TableContainer title="">
               <table className="table align-middle">
                 <thead>
                   <tr>
                     <th>STANDARD</th>
                     <th>ACADEMIC YEAR</th>
-                    <th>FEE AMOUNT</th>
+                    <th className="text-end">FEE AMOUNT</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredFees.map((fee) => (
                     <tr key={fee.id}>
-                      <td className="fw-bold">STD {fee.standard}</td>
+                      <td className="fw-bold text-primary">STD {fee.standard}</td>
                       <td>{fee.academic_year}</td>
-                      <td className="text-success fw-bold">₹{fee.fee_amount}</td>
+                      <td className="text-end text-success fw-bold">₹{fee.fee_amount}</td>
                     </tr>
                   ))}
+                  {filteredFees.length === 0 && (
+                    <tr>
+                      <td colSpan="3" className="text-center py-4">
+                        <EmptyState title="No Records" description="No fee structures found for the selected year." />
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
-            </div>
+            </TableContainer>
           </AdminCard>
         )}
 
         {activeTab === "collect-fees" && (
           <AdminCard header="Collect Student Fees">
-            <div className="row g-3 mb-4">
-              <div className="col-md-4">
-                <label className="form-label small fw-bold text-muted">STANDARD</label>
+            <div className="row g-3 mb-4 bg-light p-3 rounded shadow-sm border mx-0">
+              <div className="col-md-3">
+                <label className="form-label small fw-bold text-muted text-uppercase">Standard</label>
                 <select
-                  className="form-select border-primary-subtle"
+                  className="form-select form-select-sm border-primary-subtle"
                   value={feeStandard}
                   onChange={(e) => setFeeStandard(e.target.value)}
                 >
@@ -260,10 +268,10 @@ export default function StudentFees() {
                   {standards.map((std) => <option key={std} value={std}>STD {std}</option>)}
                 </select>
               </div>
-              <div className="col-md-4">
-                <label className="form-label small fw-bold text-muted">DIVISION</label>
+              <div className="col-md-3">
+                <label className="form-label small fw-bold text-muted text-uppercase">Division</label>
                 <select
-                  className="form-select border-primary-subtle"
+                  className="form-select form-select-sm border-primary-subtle"
                   value={feeDivision}
                   onChange={(e) => setFeeDivision(e.target.value)}
                 >
@@ -271,10 +279,10 @@ export default function StudentFees() {
                   {divisions.map((div) => <option key={div} value={div}>DIV {div}</option>)}
                 </select>
               </div>
-              <div className="col-md-4">
-                <label className="form-label small fw-bold text-muted">ACADEMIC YEAR</label>
+              <div className="col-md-3">
+                <label className="form-label small fw-bold text-muted text-uppercase">Academic Year</label>
                 <select
-                  className="form-select border-primary-subtle"
+                  className="form-select form-select-sm border-primary-subtle"
                   value={feeAcademicYear}
                   onChange={(e) => setFeeAcademicYear(e.target.value)}
                 >
@@ -282,173 +290,185 @@ export default function StudentFees() {
                   {allYears.map((year) => <option key={year} value={year}>{year}</option>)}
                 </select>
               </div>
+              <div className="col-md-3 d-flex align-items-end">
+                <div className="btn-group btn-group-sm w-100 shadow-sm">
+                  <button
+                    className={`btn ${studentFeeFilter === "all" ? "btn-primary" : "btn-outline-primary"}`}
+                    onClick={() => setStudentFeeFilter("all")}
+                  >All</button>
+                  <button
+                    className={`btn ${studentFeeFilter === "paid" ? "btn-success" : "btn-outline-success"}`}
+                    onClick={() => setStudentFeeFilter("paid")}
+                  >Paid</button>
+                  <button
+                    className={`btn ${studentFeeFilter === "unpaid" ? "btn-danger" : "btn-outline-danger"}`}
+                    onClick={() => setStudentFeeFilter("unpaid")}
+                  >Unpaid</button>
+                </div>
+              </div>
             </div>
 
-            <div className="d-flex gap-2 mb-4">
-              <button
-                className={`btn btn-sm ${studentFeeFilter === "all" ? "btn-primary" : "btn-outline-primary"}`}
-                onClick={() => setStudentFeeFilter("all")}
-              >All Students</button>
-              <button
-                className={`btn btn-sm ${studentFeeFilter === "paid" ? "btn-success" : "btn-outline-success"}`}
-                onClick={() => setStudentFeeFilter("paid")}
-              >Paid</button>
-              <button
-                className={`btn btn-sm ${studentFeeFilter === "unpaid" ? "btn-danger" : "btn-outline-danger"}`}
-                onClick={() => setStudentFeeFilter("unpaid")}
-              >Unpaid</button>
-            </div>
-
-            {feePaidSuccess && <div className="alert alert-info py-2 mb-3 small">{feePaidSuccess}</div>}
+            {feePaidSuccess && <div className="alert alert-info py-2 mb-3 small shadow-sm">{feePaidSuccess}</div>}
 
             <TableContainer title="">
-              <div className="table-responsive professional-table">
-                <table className="table align-middle">
-                  <thead>
-                    <tr>
-                      <th>Student Name</th>
-                      <th>Status</th>
-                      <th>Payment Details</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredStudents.length > 0 ? (
-                      filteredStudents.map((stu) => (
-                        <tr key={stu.student_id}>
-                          <td>
-                            <div className="d-flex align-items-center gap-2">
-                              <div className="avatar-circle student">
-                                {stu.full_name?.charAt(0)}
-                              </div>
-                              <div>
-                                <span className="d-block fw-bold">{stu.full_name}</span>
-                                <span className="small text-muted">{stu.standard}-{stu.division}</span>
-                              </div>
+              <table className="table align-middle border-top">
+                <thead className="table-light">
+                  <tr>
+                    <th>STUDENT NAME</th>
+                    <th>STATUS</th>
+                    <th style={{ minWidth: '300px' }}>PAYMENT DETAILS</th>
+                    <th className="text-end">ACTION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredStudents.length > 0 ? (
+                    filteredStudents.map((stu) => (
+                      <tr key={stu.student_id}>
+                        <td>
+                          <div className="d-flex align-items-center gap-3">
+                            <div className="avatar-circle student shadow-sm" style={{ width: '32px', height: '32px', fontSize: '0.8rem' }}>
+                              {stu.full_name?.charAt(0)}
                             </div>
-                          </td>
-                          <td>
-                            <span className={`erp-badge ${stu.paid_status ? 'badge-success' : 'badge-danger'}`}>
-                              {stu.paid_status ? "PAID" : "PENDING"}
-                            </span>
-                          </td>
-                          <td>
-                            {stu.paid_status ? (
-                              <div>
-                                <div className="fw-bold text-success">₹{stu.paid_amount}</div>
-                                <div className="small text-muted">
-                                  {new Date(stu.paid_on).toLocaleDateString()}
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="d-flex flex-column gap-1" style={{minWidth: '250px'}}>
-                                <div className="d-flex gap-1">
+                            <div>
+                              <span className="d-block fw-bold text-dark">{stu.full_name}</span>
+                              <span className="small text-muted">{stu.standard}-{stu.division}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`erp-badge ${stu.paid_status ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: '0.65rem' }}>
+                            {stu.paid_status ? "PAID" : "PENDING"}
+                          </span>
+                        </td>
+                        <td>
+                          {stu.paid_status ? (
+                            <div className="d-flex align-items-center gap-3">
+                              <span className="fw-bold text-success">₹{stu.paid_amount}</span>
+                              <span className="small text-muted border-start ps-2">
+                                {new Date(stu.paid_on).toLocaleDateString()}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="d-flex flex-column gap-2 py-1">
+                              <div className="row g-1">
+                                <div className="col-6">
                                   <input
                                     type="number"
-                                    className="form-control form-control-sm"
+                                    className="form-control form-control-sm border-primary-subtle"
                                     placeholder="Amount"
                                     value={feeInputs[stu.student_id]?.paid_amount || ""}
                                     onChange={(e) => handleFeeInput(stu.student_id, "paid_amount", e.target.value)}
                                   />
+                                </div>
+                                <div className="col-6">
                                   <input
                                     type="date"
-                                    className="form-control form-control-sm"
+                                    className="form-control form-control-sm border-primary-subtle"
                                     value={feeInputs[stu.student_id]?.paid_on || ""}
                                     onChange={(e) => handleFeeInput(stu.student_id, "paid_on", e.target.value)}
                                   />
                                 </div>
-                                <input
-                                  type="text"
-                                  className="form-control form-control-sm"
-                                  placeholder="Remarks (Optional)"
-                                  value={feeInputs[stu.student_id]?.remarks || ""}
-                                  onChange={(e) => handleFeeInput(stu.student_id, "remarks", e.target.value)}
-                                />
                               </div>
-                            )}
-                          </td>
-                          <td>
-                            {!stu.paid_status && (
-                              <button
-                                className="btn btn-sm btn-success px-3"
-                                onClick={() => markPaid(stu.student_id)}
-                              >Record Payment</button>
-                            )}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="4" className="text-center py-5 text-muted">
-                          <EmptyState title="No Records" description="Select standard and division to view students." />
+                              <input
+                                type="text"
+                                className="form-control form-control-sm border-primary-subtle"
+                                placeholder="Remarks (Optional)"
+                                value={feeInputs[stu.student_id]?.remarks || ""}
+                                onChange={(e) => handleFeeInput(stu.student_id, "remarks", e.target.value)}
+                              />
+                            </div>
+                          )}
+                        </td>
+                        <td className="text-end">
+                          {!stu.paid_status && (
+                            <button
+                              className="btn btn-sm btn-success px-4 shadow-sm fw-bold"
+                              onClick={() => markPaid(stu.student_id)}
+                              style={{ fontSize: '0.75rem' }}
+                            >Record Payment</button>
+                          )}
                         </td>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="text-center py-5">
+                        <EmptyState title="No Records" description="Select filters above to view students and record payments." />
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </TableContainer>
           </AdminCard>
         )}
 
         {activeTab === "set-fees" && (
           <AdminCard header="Set Standard Fees">
-            <div className="row justify-content-center">
-              <div className="col-lg-6">
-                <form onSubmit={handleSubmit} className="p-3 border rounded-3 bg-light shadow-sm">
-                  <div className="mb-3">
-                    <label className="form-label small fw-bold text-muted">STANDARD</label>
-                    <select
-                      required
-                      name="standard"
-                      value={form.standard}
-                      onChange={handleChange}
-                      className="form-select border-primary-subtle"
-                    >
-                      <option value="">Select Standard</option>
-                      {standards.map((std) => (
-                        <option key={std} value={std}>STD {std}</option>
-                      ))}
-                    </select>
-                  </div>
+            <div className="row justify-content-center py-4">
+              <div className="col-lg-5">
+                <div className="bg-light p-4 rounded-4 shadow-sm border">
+                  <h5 className="mb-4 text-primary fw-bold border-bottom pb-2">Fee Configuration</h5>
+                  <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                      <label className="form-label small fw-bold text-muted text-uppercase">Standard</label>
+                      <select
+                        required
+                        name="standard"
+                        value={form.standard}
+                        onChange={handleChange}
+                        className="form-select border-primary-subtle"
+                      >
+                        <option value="">Select Standard</option>
+                        {standards.map((std) => (
+                          <option key={std} value={std}>STD {std}</option>
+                        ))}
+                      </select>
+                    </div>
 
-                  <div className="mb-3">
-                    <label className="form-label small fw-bold text-muted">ACADEMIC YEAR</label>
-                    <input
-                      name="academic_year"
-                      className="form-control"
-                      placeholder="e.g. 2025-26"
-                      value={form.academic_year}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
+                    <div className="mb-3">
+                      <label className="form-label small fw-bold text-muted text-uppercase">Academic Year</label>
+                      <input
+                        name="academic_year"
+                        className="form-control border-primary-subtle"
+                        placeholder="e.g. 2025-26"
+                        value={form.academic_year}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
 
-                  <div className="mb-4">
-                    <label className="form-label small fw-bold text-muted">FEE AMOUNT (₹)</label>
-                    <input
-                      name="fee_amount"
-                      type="number"
-                      className="form-control"
-                      placeholder="Enter amount"
-                      value={form.fee_amount}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
+                    <div className="mb-4">
+                      <label className="form-label small fw-bold text-muted text-uppercase">Fee Amount (₹)</label>
+                      <div className="input-group border-primary-subtle rounded overflow-hidden">
+                        <span className="input-group-text bg-primary text-white border-0">₹</span>
+                        <input
+                          name="fee_amount"
+                          type="number"
+                          className="form-control border-0"
+                          placeholder="Enter amount"
+                          value={form.fee_amount}
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+                    </div>
 
-                  <button type="submit" className="btn btn-primary w-100 py-2 fw-bold">
-                    Update Fee Structure
-                  </button>
-                </form>
+                    <button type="submit" className="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                      <i className="bi bi-cloud-arrow-up me-2"></i>
+                      Update Fee Structure
+                    </button>
+                  </form>
 
-                {error && <div className="alert alert-danger py-2 mt-3 small">{error}</div>}
-                {success && <div className="alert alert-success py-2 mt-3 small">{success}</div>}
+                  {error && <div className="alert alert-danger py-2 mt-4 small shadow-sm border-0">{error}</div>}
+                  {success && <div className="alert alert-success py-2 mt-4 small shadow-sm border-0">{success}</div>}
+                </div>
               </div>
             </div>
           </AdminCard>
         )}
       </div>
+      <ChatWidget />
     </div>
   );
 }
