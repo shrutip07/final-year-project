@@ -94,6 +94,12 @@ export default function AdminDashboard() {
   ]);
   const [formLoading, setFormLoading] = useState(false);
 
+  const [notifTargetSchool, setNotifTargetSchool] = useState("");
+  const [notifSendToAllTeachers, setNotifSendToAllTeachers] = useState(true);
+  const [notifSelectedTeachers, setNotifSelectedTeachers] = useState([]);
+  const [schoolTeachers, setSchoolTeachers] = useState([]);
+  const [teachersLoading, setTeachersLoading] = useState(false);
+
   // NEW: dashboard / finance data for a unit
   const [selectedFy, setSelectedFy] = useState("2024-25");
   const [fyMetrics, setFyMetrics] = useState(null);
