@@ -1,7 +1,6 @@
-// Color Palette & Variables
-$primary: #002E6D; // Midnight Navy
-$accent: #0057D9; // Royal Blue
-$highlight: #FFC145; // Golden Yellow
+$primary: #002E6D;
+$accent: #0057D9;
+$highlight: #FFC145;
 $success: #10b981;
 $warning: #f59e0b;
 $danger: #ef4444;
@@ -10,9 +9,7 @@ $white: #ffffff;
 $text-dark: #1e293b;
 $text-muted: #64748b;
 $border-color: #e2e8f0;
-
-// Professional HM Theme Colors (Less Flashy)
-$hm-gold: #B8860B; // Dark Goldenrod
+$hm-gold: #B8860B;
 $hm-bg-soft: #FCF8F1;
 
 .principal-dashboard-container {
@@ -27,7 +24,6 @@ $hm-bg-soft: #FCF8F1;
     gap: 30px;
   }
 
-  // 1. Metrics Grid
   .principal-metrics-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -62,6 +58,7 @@ $hm-bg-soft: #FCF8F1;
       .metric-info {
         display: flex;
         flex-direction: column;
+
         .metric-label {
           font-size: 0.85rem;
           font-weight: 700;
@@ -69,6 +66,7 @@ $hm-bg-soft: #FCF8F1;
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
+
         .metric-value {
           font-size: 1.8rem;
           font-weight: 800;
@@ -76,14 +74,57 @@ $hm-bg-soft: #FCF8F1;
         }
       }
 
-      &.teachers { .metric-icon { background: rgba($accent, 0.1); color: $accent; } }
-      &.students { .metric-icon { background: rgba($success, 0.1); color: $success; } }
-      &.ratio { .metric-icon { background: rgba($warning, 0.1); color: $warning; } }
-      &.budget { .metric-icon { background: rgba($primary, 0.1); color: $primary; } }
+      &.teachers .metric-icon {
+        background: rgba($accent, 0.1);
+        color: $accent;
+      }
+
+      &.students .metric-icon {
+        background: rgba($success, 0.1);
+        color: $success;
+      }
+
+      &.ratio {
+        .metric-icon {
+          background: rgba($warning, 0.1);
+          color: $warning;
+          width: 56px;
+          height: 56px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.8rem;
+          padding: 0;
+        }
+
+        .metric-icon_ratio {
+          width: 56px;
+          height: 90px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.8rem;
+          padding: 0;
+        }
+
+        .metric-info {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+        }
+      }
+
+      &.budget .metric-icon {
+        background: rgba($primary, 0.1);
+        color: $primary;
+      }
     }
   }
 
-  // 2. Sub-tabs Navigation
   .principal-sub-tabs {
     display: flex;
     gap: 10px;
@@ -108,7 +149,9 @@ $hm-bg-soft: #FCF8F1;
       white-space: nowrap;
       transition: all 0.3s ease;
 
-      i { font-size: 1.2rem; }
+      i {
+        font-size: 1.2rem;
+      }
 
       &:hover {
         background: $white;
@@ -118,735 +161,67 @@ $hm-bg-soft: #FCF8F1;
       &.active {
         background: $white;
         color: $accent;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       }
     }
   }
+}
 
-  // 3. Modern Profile Section
-  .modern-profile-section {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
+.principal-admin-card {
+  background: $white;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid $border-color;
+  overflow: hidden;
 
-    &.hm-context {
-      .profile-header-card.hm-theme {
-        background: $hm-bg-soft;
-        &::before { background: $hm-gold; }
-        
-        .profile-avatar.hm {
-          background: linear-gradient(135deg, $hm-gold, darken($hm-gold, 15%));
-          box-shadow: 0 8px 20px rgba($hm-gold, 0.2);
-        }
-        
-        .profile-badge.hm {
-          background: rgba($hm-gold, 0.1);
-          color: $hm-gold;
-        }
-      }
+  .card-header {
+    padding: 20px 24px;
+    background: rgba($primary, 0.02);
+    border-bottom: 1px solid $border-color;
 
-      .detail-card {
-        .detail-icon {
-          background: rgba($hm-gold, 0.08);
-          color: $hm-gold;
-        }
-      }
-    }
-
-    .profile-header-card {
-      background: $white;
-      padding: 30px;
-      border-radius: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-      position: relative;
-      overflow: hidden;
-
-      &::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; width: 6px; height: 100%;
-        background: $accent;
-      }
-
-      .profile-main-info {
-        display: flex;
-        align-items: center;
-        gap: 24px;
-
-        .profile-avatar {
-          width: 100px;
-          height: 100px;
-          border-radius: 24px;
-          background: linear-gradient(135deg, $primary, $accent);
-          color: $white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 3rem;
-          font-weight: 800;
-          box-shadow: 0 8px 20px rgba($primary, 0.2);
-        }
-
-        .profile-name-block {
-          h2 { margin: 0; font-weight: 800; color: $primary; }
-          .profile-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            background: rgba($accent, 0.1);
-            color: $accent;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            margin: 8px 0;
-          }
-          .profile-location {
-            margin: 0;
-            color: $text-muted;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-          }
-        }
-      }
-    }
-
-    .profile-details-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-
-      .detail-card {
-        background: $white;
-        padding: 20px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        border: 1px solid rgba($border-color, 0.5);
-        transition: transform 0.2s ease;
-
-        &:hover {
-          transform: scale(1.02);
-        }
-
-        .detail-icon {
-          width: 48px;
-          height: 48px;
-          border-radius: 12px;
-          background: rgba($primary, 0.05);
-          color: $primary;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.4rem;
-        }
-
-        .detail-text {
-          display: flex;
-          flex-direction: column;
-          label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: $text-muted;
-            text-transform: uppercase;
-            margin: 0;
-          }
-          span {
-            font-size: 1rem;
-            font-weight: 700;
-            color: $primary;
-          }
-        }
-      }
-    }
-
-    .modern-info-strip {
-      background: $white;
-      padding: 24px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-
-      .strip-box {
-        text-align: center;
-        label { display: block; font-size: 0.75rem; font-weight: 700; color: $text-muted; text-transform: uppercase; }
-        span { font-size: 1.1rem; font-weight: 800; color: $primary; }
-      }
-
-      .divider { width: 1px; height: 40px; background: $border-color; }
+    h4 {
+      margin: 0;
+      font-weight: 800;
+      color: $primary;
     }
   }
 
-  // 4. Directory & Table Styles (Teacher/Student)
-  .directory-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-
-    .directory-controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 20px;
-      background: $white;
-      padding: 15px 20px;
-      border-radius: 16px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-      border: 1px solid $border-color;
-
-      .search-box {
-        position: relative;
-        flex: 1;
-        max-width: 400px;
-
-        .search-icon {
-          position: absolute;
-          left: 15px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: $text-muted;
-        }
-
-        .form-control {
-          padding-left: 45px;
-          height: 45px;
-          border-radius: 12px;
-          border: 1px solid $border-color;
-          font-size: 0.95rem;
-          transition: all 0.2s;
-
-          &:focus {
-            border-color: $accent;
-            box-shadow: 0 0 0 4px rgba($accent, 0.1);
-          }
-        }
-      }
-
-      .toolbar-actions {
-        .form-select {
-          height: 45px;
-          border-radius: 12px;
-          padding: 0 20px;
-          font-weight: 600;
-          border: 1px solid $border-color;
-          cursor: pointer;
-        }
-      }
-    }
-
-    .table-container {
-      background: $white;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-      border: 1px solid rgba($border-color, 0.8);
-      overflow: hidden;
-
-          .custom-table-wrapper {
-            overflow-x: auto;
-            border-radius: 12px;
-
-            .table {
-              margin-bottom: 0;
-              border-collapse: separate;
-              border-spacing: 0;
-              
-              thead {
-                background: $primary !important;
-                position: sticky;
-                top: 0;
-                z-index: 10;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
-                tr th {
-                  background: $primary !important;
-                  padding: 16px 20px;
-                  font-size: 0.85rem;
-                  text-transform: uppercase;
-                  letter-spacing: 1.2px;
-                  font-weight: 700;
-                  color: $white !important;
-                  border: none;
-                  vertical-align: middle;
-                  white-space: nowrap;
-                }
-              }
-
-              tbody {
-                tr {
-                  background-color: $white;
-                  transition: all 0.2s ease;
-                  
-                  &:hover {
-                    background-color: rgba($accent, 0.03) !important;
-                  }
-
-                  td {
-                    padding: 16px 20px;
-                    border-bottom: 1px solid rgba($border-color, 0.6);
-                    color: $text-dark;
-                    font-size: 0.9rem;
-                    vertical-align: middle;
-                  }
-
-                  &:last-child td {
-                    border-bottom: none;
-                  }
-                }
-              }
-            }
-          }
-    }
-
-    // Custom Badges
-    .badge {
-      padding: 6px 14px;
-      border-radius: 30px;
-      font-weight: 700;
-      font-size: 0.75rem;
-      text-transform: capitalize;
-
-      &-qualification { background: rgba($primary, 0.08); color: $primary; }
-      &-designation { background: rgba($accent, 0.08); color: $accent; }
-      &-subject { background: rgba($success, 0.08); color: $success; }
-      &-status-active { background: #dcfce7; color: #166534; }
-      &-status-inactive { background: #fee2e2; color: #991b1b; }
-    }
-
-    .email-link {
-      color: $accent;
-      text-decoration: none;
-      font-weight: 600;
-      &:hover { text-decoration: underline; }
-    }
-  }
-
-  // 5. Modern Unit Grid
-  .modern-unit-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 24px;
-
-    .unit-card {
-      background: $white;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.04);
-      border: 1px solid rgba($border-color, 0.6);
-
-      .unit-card-header {
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        background: rgba($primary, 0.02);
-        border-bottom: 1px solid $border-color;
-
-        .icon-wrap {
-          width: 40px; height: 40px; border-radius: 10px;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 1.2rem;
-        }
-        h3 { margin: 0; font-size: 1.1rem; font-weight: 800; color: $primary; }
-      }
-
-      .unit-card-body {
-        padding: 20px;
-        display: flex; flex-direction: column; gap: 12px;
-
-        .data-row {
-          display: flex; justify-content: space-between; align-items: center;
-          .label { font-size: 0.9rem; color: $text-muted; font-weight: 500; }
-          .value { 
-            font-size: 0.95rem; font-weight: 700; color: $primary; 
-            &.highlight { color: $accent; }
-          }
-        }
-      }
-
-      &.primary .icon-wrap { background: rgba($accent, 0.1); color: $accent; }
-      &.accent .icon-wrap { background: rgba($primary, 0.1); color: $primary; }
-      &.success .icon-wrap { background: rgba($success, 0.1); color: $success; }
-    }
-  }
-
-  // 6. Finance Section
-  .modern-finance-section {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-
-    .finance-card-container {
-      background: $white;
-      border-radius: 20px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.05);
-      border: 1px solid rgba($border-color, 0.6);
-      overflow: hidden;
-
-        .finance-card-header {
-          padding: 24px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          background: $primary;
-          border-bottom: 1px solid rgba($white, 0.1);
-
-          .header-left {
-            display: flex; align-items: center; gap: 12px;
-            i { font-size: 1.5rem; color: $white; }
-            h3 { margin: 0; font-size: 1.25rem; font-weight: 800; color: $white; }
-          }
-
-          .fy-dropdown-wrap {
-            display: flex; align-items: center; gap: 12px;
-            label { font-weight: 700; color: rgba($white, 0.8); font-size: 0.85rem; }
-            .finance-select {
-              width: 140px;
-              border-radius: 10px;
-              font-weight: 700;
-              cursor: pointer;
-              background-color: rgba($white, 0.1);
-              color: $white;
-              border: 1px solid rgba($white, 0.2);
-              
-              option {
-                background-color: $primary;
-                color: $white;
-              }
-
-              &:focus { border-color: $white; box-shadow: 0 0 0 3px rgba($white, 0.2); }
-            }
-          }
-        }
-
-      .finance-card-body { padding: 24px; }
-    }
-
-    .finance-stat-card {
-      padding: 24px;
-      border-radius: 18px;
-      display: flex;
-      gap: 18px;
-      transition: all 0.3s ease;
-
-      .stat-icon {
-        width: 50px; height: 50px; border-radius: 14px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.5rem;
-      }
-
-      .stat-info {
-        display: flex; flex-direction: column;
-        .stat-label { font-size: 0.85rem; font-weight: 800; color: rgba($primary, 0.7); }
-        .stat-subtitle { font-size: 0.7rem; color: $text-muted; margin-bottom: 6px; }
-        .stat-value { font-size: 1.5rem; font-weight: 900; }
-      }
-
-      &.budget-card { 
-        background: rgba($primary, 0.04); 
-        .stat-icon { background: $primary; color: $white; }
-        .stat-value { color: $primary; }
-      }
-      &.spent-card { 
-        background: rgba($danger, 0.04); 
-        .stat-icon { background: $danger; color: $white; }
-        .stat-value { color: $danger; }
-      }
-      &.income-card { 
-        background: rgba($success, 0.04); 
-        .stat-icon { background: $success; color: $white; }
-        .stat-value { color: $success; }
-      }
-      &.expenditure-card { 
-        background: rgba($danger, 0.04); 
-        .stat-icon { background: #6366f1; color: $white; }
-        .stat-value { color: #6366f1; }
-      }
-      &.collected-card {
-        background: rgba($success, 0.04);
-        border: 1px solid rgba($success, 0.1);
-        .stat-icon { color: $success; }
-      }
-      &.pending-card {
-        background: rgba($warning, 0.04);
-        border: 1px solid rgba($warning, 0.1);
-        .stat-icon { color: $warning; }
-      }
-    }
-
-    .balance-strip-modern {
-      background: linear-gradient(to right, $primary, $accent);
-      padding: 30px;
-      border-radius: 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: $white;
-      box-shadow: 0 10px 25px rgba($primary, 0.2);
-
-      .balance-label-group {
-        display: flex; align-items: center; gap: 20px;
-        i { font-size: 2.5rem; opacity: 0.3; }
-        .label-text {
-          .main-label { display: block; font-size: 1.1rem; font-weight: 800; margin-bottom: 4px; }
-          .calc-formula { font-size: 0.85rem; opacity: 0.8; font-family: monospace; }
-        }
-      }
-
-      .balance-result {
-        display: flex; align-items: center; gap: 15px;
-        .equals { font-size: 2rem; font-weight: 300; opacity: 0.5; }
-        .final-amount { font-size: 2.2rem; font-weight: 900; }
-      }
-    }
-  }
-
-  // Notifications Page Styles
-  .principal-admin-card {
-    background: $white;
-    border-radius: 20px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.05);
-    border: 1px solid $border-color;
-    overflow: hidden;
-
-    .card-header {
-      padding: 20px 24px;
-      background: rgba($primary, 0.02);
-      border-bottom: 1px solid $border-color;
-      h4 { margin: 0; font-weight: 800; color: $primary; }
-    }
-    .card-body { padding: 24px; }
+  .card-body {
+    padding: 24px;
   }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-// 7. Toppers Panel
-.toppers-panel {
-  background: $white;
-  border-radius: 20px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.05);
-  border: 1px solid rgba($border-color, 0.6);
-  overflow: hidden;
-  margin-bottom: 24px;
-
-  .toppers-header {
-    padding: 20px 24px;
-    background: $primary;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      i {
-        font-size: 1.5rem;
-        color: $highlight;
-      }
-
-      h3 {
-        margin: 0;
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: $white;
-      }
-    }
-
-    .toppers-controls {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-
-      .control-group {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-
-        label {
-          font-size: 0.8rem;
-          font-weight: 700;
-          color: rgba($white, 0.8);
-        }
-
-        .form-select {
-          width: auto;
-          min-width: 90px;
-          height: 36px;
-          padding: 0 12px;
-          border-radius: 8px;
-          font-size: 0.85rem;
-          font-weight: 600;
-          background-color: rgba($white, 0.1);
-          color: $white;
-          border: 1px solid rgba($white, 0.2);
-          cursor: pointer;
-
-          option {
-            background-color: $primary;
-            color: $white;
-          }
-
-          &:focus {
-            border-color: $white;
-            box-shadow: 0 0 0 3px rgba($white, 0.2);
-          }
-        }
-      }
-    }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-
-  .toppers-body {
-    padding: 24px;
-
-    .toppers-loading,
-    .toppers-empty {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 40px;
-      color: $text-muted;
-      font-size: 0.95rem;
-
-      i {
-        font-size: 1.2rem;
-      }
-    }
-
-    .toppers-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-
-      .standard-card {
-        background: rgba($primary, 0.02);
-        border: 1px solid rgba($border-color, 0.6);
-        border-radius: 16px;
-        overflow: hidden;
-        transition: all 0.2s ease;
-
-        &:hover {
-          box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-          transform: translateY(-2px);
-        }
-
-        .standard-badge {
-          background: $primary;
-          padding: 12px 16px;
-
-          span {
-            font-size: 0.9rem;
-            font-weight: 800;
-            color: $white;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-          }
-        }
-
-        .topper-list {
-          padding: 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-
-          .topper-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: $white;
-            border-radius: 10px;
-            border: 1px solid rgba($border-color, 0.4);
-            transition: all 0.2s ease;
-
-            &:hover {
-              background: rgba($accent, 0.02);
-            }
-
-            .rank-badge {
-              width: 32px;
-              height: 32px;
-              border-radius: 8px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 0.75rem;
-              font-weight: 800;
-              background: rgba($text-muted, 0.1);
-              color: $text-muted;
-            }
-
-            &.rank-1 .rank-badge {
-              background: linear-gradient(135deg, #ffd700, #ffb700);
-              color: #7c5800;
-            }
-
-            &.rank-2 .rank-badge {
-              background: linear-gradient(135deg, #e0e0e0, #c0c0c0);
-              color: #555;
-            }
-
-            &.rank-3 .rank-badge {
-              background: linear-gradient(135deg, #cd7f32, #b06a1e);
-              color: $white;
-            }
-
-            .topper-info {
-              display: flex;
-              flex-direction: column;
-              gap: 2px;
-              flex: 1;
-              min-width: 0;
-
-              .topper-name {
-                font-size: 0.95rem;
-                font-weight: 700;
-                color: $text-dark;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-              }
-
-              .topper-details {
-                font-size: 0.8rem;
-                color: $text-muted;
-                font-weight: 500;
-              }
-            }
-          }
-        }
-      }
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-// Responsive Tweaks
 @media (max-width: 992px) {
   .principal-dashboard-container {
     .directory-controls {
       flex-direction: column;
       align-items: stretch;
-      .search-box { max-width: none; }
+
+      .search-box {
+        max-width: none;
+      }
     }
+
     .modern-finance-section {
       .balance-strip-modern {
         flex-direction: column;
         gap: 20px;
         text-align: center;
-        .balance-label-group { flex-direction: column; }
+
+        .balance-label-group {
+          flex-direction: column;
+        }
       }
     }
   }
