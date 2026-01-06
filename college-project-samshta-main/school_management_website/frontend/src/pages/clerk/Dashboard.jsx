@@ -84,103 +84,160 @@ export default function ClerkDashboard() {
 
   /* -------------------- RENDER HELPERS -------------------- */
   
-  const renderDashboardMain = () => (
-    <div className="dashboard-main-view">
-      <div className="section-header-pro">
-        <h3>Institutional Overview</h3>
-        <p>Manage unit-level student records, fees, and safety compliance</p>
-      </div>
-
-      <div className="metrics-grid mb-4">
-        <div className="metric-box metric-students">
-          <span className="label">TOTAL STUDENTS</span>
-          <span className="value">{dashboard?.studentCount || 0}</span>
-          <span className="sub-label">Registered in Unit</span>
+    const renderDashboardMain = () => (
+      <div className="dashboard-main-view">
+        <div className="section-header-pro mb-4">
+          <div className="d-flex align-items-center gap-3">
+            <div className="header-icon-box">
+              <i className="bi bi-grid-fill text-primary"></i>
+            </div>
+            <div>
+              <h3 className="mb-1">Institutional Overview</h3>
+              <p className="text-muted small mb-0">Unit-level management for student records, financial compliance, and safety standards.</p>
+            </div>
+          </div>
         </div>
-        <div className="metric-box metric-staff">
-          <span className="label">TOTAL STAFF</span>
-          <span className="value">{dashboard?.teacherCount || 0}</span>
-          <span className="sub-label">Teaching & Non-Teaching</span>
+  
+        <div className="metrics-grid mb-5">
+          <div className="metric-box metric-students">
+            <div className="metric-icon">
+              <i className="bi bi-people"></i>
+            </div>
+            <div className="metric-info">
+              <span className="label">TOTAL STUDENTS</span>
+              <span className="value">{dashboard?.studentCount || 0}</span>
+              <span className="sub-label">Unit Strength</span>
+            </div>
+          </div>
+          <div className="metric-box metric-staff">
+            <div className="metric-icon">
+              <i className="bi bi-person-badge"></i>
+            </div>
+            <div className="metric-info">
+              <span className="label">TOTAL STAFF</span>
+              <span className="value">{dashboard?.teacherCount || 0}</span>
+              <span className="sub-label">Faculty & Staff</span>
+            </div>
+          </div>
+          <div className="metric-box metric-ratio">
+            <div className="metric-icon">
+              <i className="bi bi-calendar-check"></i>
+            </div>
+            <div className="metric-info">
+              <span className="label">ENROLLED AY {dashboard?.academic_year}</span>
+              <span className="value">{dashboard?.totals?.enrolled || 0}</span>
+              <span className="sub-label">Active Admissions</span>
+            </div>
+          </div>
+          <div className="metric-box metric-fees highlight">
+            <div className="metric-icon">
+              <i className="bi bi-bookmark-plus"></i>
+            </div>
+            <div className="metric-info">
+              <span className="label">SEATS REMAINING</span>
+              <span className="value">{dashboard?.totals?.seatsRemaining || 0}</span>
+              <span className="sub-label">Available Capacity</span>
+            </div>
+          </div>
         </div>
-        <div className="metric-box metric-ratio">
-          <span className="label">ENROLLED (AY {dashboard?.academic_year})</span>
-          <span className="value">{dashboard?.totals?.enrolled || 0}</span>
-          <span className="sub-label">Active Enrollments</span>
-        </div>
-        <div className="metric-box metric-fees highlight">
-          <span className="label">SEATS REMAINING</span>
-          <span className="value">{dashboard?.totals?.seatsRemaining || 0}</span>
-          <span className="sub-label">Across all Standards</span>
-        </div>
-      </div>
-
-      <div className="row">
-        <div className="col-lg-8">
-          <AdminCard header="Enrollment Statistics by Class">
-            <TableContainer title="">
-              <div className="table-responsive professional-table">
-                <table className="table align-middle">
-                  <thead>
-                    <tr>
-                      <th>Standard</th>
-                      <th>Division</th>
-                      <th>Capacity</th>
-                      <th>Enrolled</th>
-                      <th>Remaining</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {dashboard?.classStats?.length > 0 ? (
-                      dashboard.classStats.map((stat, i) => (
-                        <tr key={i}>
-                          <td className="fw-bold text-primary">STD {stat.standard}</td>
-                          <td>{stat.division || "ALL"}</td>
-                          <td>{stat.capacity}</td>
-                          <td>
-                            <span className="fw-semibold text-success">{stat.enrolled}</span>
-                          </td>
-                          <td>
-                            <span className={`erp-badge ${stat.seatsRemaining > 0 ? 'badge-success' : 'badge-danger'}`}>
-                              {stat.seatsRemaining} Seats
-                            </span>
+  
+        <div className="row g-4">
+          <div className="col-lg-8">
+            <AdminCard header={
+              <div className="d-flex align-items-center gap-2">
+                <i className="bi bi-table text-primary"></i>
+                <span>Class Enrollment Statistics</span>
+              </div>
+            }>
+              <TableContainer title="">
+                <div className="table-responsive professional-table">
+                  <table className="table align-middle table-hover mb-0">
+                    <thead>
+                      <tr>
+                        <th className="ps-3">Standard</th>
+                        <th>Division</th>
+                        <th>Capacity</th>
+                        <th>Enrolled</th>
+                        <th className="text-end pe-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dashboard?.classStats?.length > 0 ? (
+                        dashboard.classStats.map((stat, i) => (
+                          <tr key={i}>
+                            <td className="ps-3 fw-bold text-dark">STD {stat.standard}</td>
+                            <td><span className="badge bg-light text-dark border">{stat.division || "ALL"}</span></td>
+                            <td>{stat.capacity}</td>
+                            <td>
+                              <div className="d-flex align-items-center gap-2">
+                                <span className="fw-semibold text-primary">{stat.enrolled}</span>
+                                <div className="progress flex-grow-1" style={{ height: '6px', maxWidth: '60px' }}>
+                                  <div 
+                                    className="progress-bar bg-primary" 
+                                    style={{ width: `${(stat.enrolled / stat.capacity) * 100}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="text-end pe-3">
+                              <span className={`erp-badge ${stat.seatsRemaining > 0 ? 'badge-success' : 'badge-danger'}`}>
+                                {stat.seatsRemaining} Left
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="5" className="text-center py-5 text-muted">
+                            <i className="bi bi-inbox fs-2 d-block mb-2"></i>
+                            No enrollment data found for current academic year.
                           </td>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="5" className="text-center py-4 text-muted">
-                          No class statistics available for current year.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </TableContainer>
+            </AdminCard>
+          </div>
+          <div className="col-lg-4">
+            <AdminCard header={
+              <div className="d-flex align-items-center gap-2">
+                <i className="bi bi-calendar3 text-primary"></i>
+                <span>Upcoming Retirements</span>
               </div>
-            </TableContainer>
-          </AdminCard>
-        </div>
-        <div className="col-lg-4">
-          <AdminCard header="Upcoming Retirements">
-            <div className="retirement-list">
-              {dashboard?.upcomingRetirements?.length > 0 ? (
-                dashboard.upcomingRetirements.map((ret, i) => (
-                  <div key={i} className="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded-3">
-                    <div>
-                      <span className="d-block fw-bold text-dark">Year {ret.year}</span>
-                      <span className="small text-muted">{ret.count} staff members</span>
+            }>
+              <div className="retirement-list p-1">
+                {dashboard?.upcomingRetirements?.length > 0 ? (
+                  dashboard.upcomingRetirements.map((ret, i) => (
+                    <div key={i} className="retirement-item d-flex justify-content-between align-items-center mb-3 p-3 rounded-4 border-start border-4 border-primary shadow-sm bg-white">
+                      <div>
+                        <span className="d-block fw-bold text-dark mb-1">Financial Year {ret.year}</span>
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="badge bg-soft-primary text-primary">{ret.count} Staff Members</span>
+                          <span className="small text-muted">Projected</span>
+                        </div>
+                      </div>
+                      <div className="icon-circle bg-light text-primary">
+                        <i className="bi bi-person-x"></i>
+                      </div>
                     </div>
-                    <i className="bi bi-calendar-event text-primary fs-4"></i>
-                  </div>
-                ))
-              ) : (
-                <EmptyState title="No Records" description="No upcoming retirements found." />
-              )}
-            </div>
-          </AdminCard>
+                  ))
+                ) : (
+                  <EmptyState title="No Records" description="No upcoming retirements found in database." />
+                )}
+              </div>
+              <div className="mt-4 p-3 bg-soft-info rounded-3">
+                <p className="small text-info mb-0">
+                  <i className="bi bi-info-circle me-1"></i>
+                  Note: Retirement projections are based on service record data.
+                </p>
+              </div>
+            </AdminCard>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
 
   const renderNotifications = () => (
     <div className="notifications-module">
@@ -230,9 +287,6 @@ export default function ClerkDashboard() {
 
       case "physical-safety":
         return <PhysicalSafety />;
-
-      case "notifications":
-        return renderNotifications();
 
       default:
         return renderDashboardMain();

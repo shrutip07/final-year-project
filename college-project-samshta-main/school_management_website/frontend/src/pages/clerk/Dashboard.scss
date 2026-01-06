@@ -1,6 +1,6 @@
-// src/pages/clerk/ClerkDashboard.scss
+// src/pages/clerk/Dashboard.scss
 
-// --- shared tokens (copied from your Dashboard.scss) ---
+// --- shared tokens ---
 $primary-blue: #003366;
 $secondary-blue: #002244;
 $bg-white: #ffffff;
@@ -11,330 +11,183 @@ $bg-light: #f8f9fa;
 $shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 $shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
-// --- layout ---
-.clerk-dashboard-container {
-  display: flex;
-  min-height: 100vh;
-  background: $bg-light;
-}
-
-.clerk-main-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* Sidebar */
-.clerk-sidebar {
-  width: 280px;
-  background: $bg-white;
-  border-right: 1px solid $border-color;
-  display: flex;
-  flex-direction: column;
-  box-shadow: $shadow-sm;
-
-  @media (max-width: 768px) {
-    width: 240px;
-  }
-}
-
-.clerk-sidebar-header {
-  padding: 24px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-bottom: 1px solid $border-color;
-  background: linear-gradient(135deg, $primary-blue 0%, $secondary-blue 100%);
-  color: white;
-
-  h3 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-  }
-}
-
-.clerk-sidebar-icon {
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
-
-.clerk-sidebar-nav {
-  flex: 1;
-  padding: 16px 8px;
-  overflow-y: auto;
-}
-
-.clerk-nav-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 16px;
-  margin-bottom: 4px;
-  border: none;
-  background: transparent;
-  color: $text-dark;
-  text-align: left;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  font-size: 14px;
-  font-weight: 500;
-
-  i {
-    font-size: 18px;
-    width: 20px;
-    text-align: center;
-  }
-
-  &:hover {
-    background: $bg-light;
-    color: $primary-blue;
-  }
-
-  &.active {
-    background: $primary-blue;
-    color: white;
-    box-shadow: 0 6px 12px rgba(15, 23, 42, 0.18);
-
-    &:hover {
-      background: $secondary-blue;
-    }
-  }
-
-  &.logout-btn {
-    color: #dc2626;
-
-    &:hover {
-      background: #fef2f2;
-      color: #b91c1c;
-    }
-  }
-}
-
-.clerk-sidebar-footer {
-  padding: 16px 8px;
-  border-top: 1px solid $border-color;
-}
-
-/* Main Content */
-.clerk-main-content {
-  flex: 1;
-  padding: 32px;
-  overflow-y: auto;
-  background: $bg-light;
-
-  @media (max-width: 768px) {
-    padding: 16px;
-  }
-}
-
-/* Page header reused from teacher */
-.page-header {
-  margin-bottom: 24px;
-
-  &.page-header-tight {
-    margin-bottom: 16px;
-  }
-
-  h2 {
-    margin: 0;
-    color: $text-dark;
-    font-size: 24px;
-    font-weight: 600;
-  }
-}
-
-/* Dashboard card */
-.clerk-unit-card {
-  background: $bg-white;
-  border-radius: 12px;
+.dashboard-wrapper {
   padding: 24px;
-  box-shadow: $shadow-sm;
-  border: 1px solid $border-color;
+  background: #f4f7fa;
+  min-height: calc(100vh - 120px);
 }
 
-/* Table styling – same feel as students/teacher tables */
-.table-responsive {
-  overflow-x: auto;
-}
-
-.clerk-unit-table {
-  width: 100%;
-  border-collapse: collapse;
-
-  th {
-    width: 260px;
-    padding: 14px 16px;
-    text-align: left;
-    background: linear-gradient(135deg, #002E6D 0%, #0057D9 100%);
-    color: #ffffff;
+.section-header-pro {
+  .header-icon-box {
+    width: 48px;
+    height: 48px;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-color;
+  }
+  
+  h3 {
+    color: $primary-blue;
     font-weight: 700;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    border: none;
+    letter-spacing: -0.5px;
+  }
+}
+
+/* Metrics Grid Refinement */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+
+  .metric-box {
+    background: white;
+    padding: 24px;
+    border-radius: 20px;
+    border: 1px solid $border-color;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.2);
-    
-    &:not(:last-child)::after {
+    overflow: hidden;
+
+    &::before {
       content: '';
       position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 1px;
-      height: 60%;
-      background: rgba(255, 255, 255, 0.15);
-    }
-  }
-
-  td {
-    padding: 14px 16px;
-    border-bottom: 1px solid rgba($border-color, 0.5);
-    font-size: 13.5px;
-    color: $text-dark;
-  }
-
-  tr {
-    transition: background 0.2s;
-    
-    &:hover td {
-      background: rgba(#0057D9, 0.05);
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: transparent;
+      transition: background 0.3s;
     }
 
-    &:nth-child(even) td {
-      background: rgba(#f0f4f8, 0.6);
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.1);
       
-      &:hover {
-        background: rgba(#0057D9, 0.08);
+      &::before {
+        background: $primary-blue;
       }
     }
-    
-    &:last-child td {
-      border-bottom: none;
+
+    .metric-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .metric-info {
+      display: flex;
+      flex-direction: column;
+
+      .label {
+        font-size: 11px;
+        font-weight: 700;
+        color: $text-light;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+
+      .value {
+        font-size: 28px;
+        font-weight: 800;
+        color: $text-dark;
+        line-height: 1.2;
+      }
+
+      .sub-label {
+        font-size: 12px;
+        color: $text-light;
+        margin-top: 2px;
+      }
+    }
+
+    /* Color Variants */
+    &.metric-students {
+      .metric-icon { background: #eef2ff; color: #4f46e5; }
+    }
+    &.metric-staff {
+      .metric-icon { background: #fff7ed; color: #ea580c; }
+    }
+    &.metric-ratio {
+      .metric-icon { background: #f0fdf4; color: #16a34a; }
+    }
+    &.metric-fees {
+      .metric-icon { background: #faf5ff; color: #9333ea; }
+      &.highlight { border-color: #d8b4fe; }
     }
   }
 }
 
-/* Loading state */
-.loading-state {
-  text-align: center;
-  padding: 40px;
-  color: $text-light;
-  font-size: 14px;
-}
-/* Clerk salary page layout */
-.clerk-salary-page {
-  .teacher-students-card {
-    margin-top: 16px;
+/* Professional Table Enhancement */
+.professional-table {
+  th {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    padding: 16px !important;
+    border-bottom: 2px solid #e2e8f0 !important;
   }
-}
 
-/* Assignment table a bit narrower */
-.salary-assign-table {
-  th,
   td {
-    vertical-align: middle;
+    padding: 16px !important;
+    font-size: 14px;
+  }
+
+  .badge {
+    padding: 6px 12px;
+    font-weight: 500;
   }
 }
 
-/* Monthly grid */
-.salary-grid-wrapper {
-  overflow-x: auto;
-}
+/* Retirement List */
+.retirement-item {
+  transition: all 0.2s;
+  cursor: default;
 
-.salary-payments-table {
-  th,
-  td {
-    text-align: center;
-    vertical-align: top;
-    font-size: 13px;
+  &:hover {
+    background: #f8fafc !important;
+    transform: translateX(4px);
   }
 
-  .teacher-col {
-    position: sticky;
-    left: 0;
-    background: #ffffff;
-    text-align: left;
-    min-width: 160px;
-    z-index: 2;
-  }
-
-  .amount-col {
-    min-width: 140px;
-  }
-
-  .action-col {
-    min-width: 110px;
+  .icon-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
   }
 }
 
-.salary-month-header {
-  background: #eff6ff;
-  border-bottom: 1px solid #dbeafe;
-  text-align: center;
+/* Helper Classes */
+.bg-soft-primary { background: #eef2ff; }
+.bg-soft-info { background: #ecfeff; }
+.text-info { color: #0891b2; }
 
-  .salary-month-sub {
-    font-size: 11px;
-    color: #6b7280;
-    margin-top: 2px;
-  }
-}
-
-.salary-status-cell {
-  min-width: 110px;
-}
-
-.salary-remarks {
-  color: #6b7280;
-}
-
-/* History popover */
-.salary-history-popover {
-  margin-top: 6px;
-  padding: 8px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  max-height: 220px;
-  overflow: auto;
-}
-
-.salary-history-title {
-  font-size: 11px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: #374151;
-}
-
-/* Legend pills */
-.salary-legend {
-  margin-top: 12px;
-  font-size: 13px;
-}
-
-.legend-pill {
-  display: inline-block;
-  padding: 2px 10px;
+.erp-badge {
+  padding: 4px 12px;
   border-radius: 999px;
-  font-size: 12px;
-  margin-left: 8px;
-}
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
 
-.legend-paid {
-  background: #dcfce7;
-  color: #166534;
+  &.badge-success { background: #dcfce7; color: #166534; }
+  &.badge-danger { background: #fee2e2; color: #991b1b; }
 }
-
-.legend-pending {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
