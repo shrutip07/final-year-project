@@ -1,5 +1,7 @@
 $primary: #002E6D;
-$secondary: #475569;
+$accent: #0057D9;
+$highlight: #FFC145;
+$support: #00A9A5;
 $background: #F8FAFC;
 $white: #ffffff;
 $border-color: #e2e8f0;
@@ -8,25 +10,27 @@ $text-muted: #64748b;
 
 .charts-wrapper {
   padding: 0;
+  animation: fadeIn 0.4s ease-out;
   
-  .charts-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    
-    .page-subtitle {
-      margin: 0;
-      color: $text-muted;
-      font-size: 14px;
+  .charts-header-container {
+    .header-left {
+      h4 {
+        color: $primary;
+        letter-spacing: -0.5px;
+      }
     }
     
     .charts-unit-select {
-      width: 150px;
       border-radius: 8px;
       border: 1px solid $border-color;
       font-weight: 600;
       color: $primary;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      
+      &:focus {
+        border-color: $accent;
+        box-shadow: 0 0 0 3px rgba($accent, 0.1);
+      }
     }
   }
 
@@ -35,63 +39,55 @@ $text-muted: #64748b;
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
     
-    @media (max-width: 992px) {
+    @media (max-width: 1200px) {
       grid-template-columns: 1fr;
     }
   }
 
-  .chart-card {
-    background: $white;
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid $border-color;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  .admin-card {
+    transition: all 0.3s ease;
     
     &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
-    }
-
-    .chart-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: $text-dark;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      
-      &::before {
-        content: '';
-        width: 4px;
-        height: 16px;
-        background: $primary;
-        border-radius: 2px;
-      }
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
     }
   }
 
   .custom-tooltip {
-    background: rgba($white, 0.95);
-    backdrop-filter: blur(4px);
+    background: rgba($white, 0.98);
+    backdrop-filter: blur(8px);
     border: 1px solid $border-color;
     padding: 12px 16px;
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    pointer-events: none;
     
     .label {
       display: block;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 13px;
       color: $text-dark;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      border-bottom: 1px solid $border-color;
+      padding-bottom: 4px;
     }
     
     .value {
-      font-weight: 600;
+      font-weight: 700;
       font-size: 14px;
-      color: $primary;
+      margin-bottom: 0;
     }
   }
+
+  .recharts-default-legend {
+    margin-top: 15px !important;
+    font-size: 12px;
+    font-weight: 600;
+    color: $text-muted;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

@@ -16,6 +16,8 @@ import {
   Area,
 } from "recharts";
 import { useTranslation } from "react-i18next";
+import TabNavigation from "../../components/admin/TabNavigation";
+import AdminCard from "../../components/admin/AdminCard";
 import "./Charts.scss";
 
 const PASS_COLORS = ["#16a34a", "#dc2626"];
@@ -230,54 +232,62 @@ export default function Charts({ unitId }) {
   );
 
   if (loading || !analytics) {
-    return <div style={{ padding: 24 }}>{t("loading")}...</div>;
+    return (
+      <div className="d-flex flex-column align-items-center justify-content-center py-5">
+        <div className="spinner-border text-primary" role="status"></div>
+        <span className="mt-3 text-muted fw-bold">Generating Analytics Insights...</span>
+      </div>
+    );
   }
 
   return (
     <div className="charts-wrapper">
-      <div className="charts-header">
-        <div>
-          <p className="page-subtitle">
-            {"Visualize key school metrics and performance indicators"}
-          </p>
-        </div>
+      <div className="charts-header-container mb-4">
+        <div className="d-flex align-items-center justify-content-between">
+          <div className="header-left">
+            <h4 className="fw-bold mb-1">Institutional Analytics</h4>
+            <p className="text-muted small mb-0">
+              Visualize key school metrics and performance indicators
+            </p>
+          </div>
 
-        <div className="d-flex align-items-center" style={{ gap: 8 }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: "#475569" }}>
-            {t("financial_year_label") || "Financial Year:"}
-          </span>
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
-            className="form-select form-select-sm charts-unit-select"
-          >
-            {allYears.map((year) => (
-              <option value={year} key={year}>
-                {year}
-              </option>
-            ))}
-          </select>
+          <div className="d-flex align-items-center gap-2">
+            <span className="text-muted small fw-bold">Academic Year:</span>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="form-select form-select-sm charts-unit-select"
+              style={{ width: '130px', borderRadius: '8px' }}
+            >
+              {allYears.map((year) => (
+                <option value={year} key={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
-      <div className="principal-sub-tabs" style={{ marginBottom: 32 }}>
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            className={`principal-sub-tab ${activeTab === tab.id ? "active" : ""}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            <i className={`bi ${tab.icon}`}></i>
-            <span>{tab.label}</span>
-          </button>
-        ))}
+      <div className="charts-tabs-container mb-4">
+        <TabNavigation
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
       </div>
 
       <div className="charts-tab-content">
         {activeTab === "year_overview" && (
           <div className="charts-grid">
-            <div className="chart-card">
-              <div className="chart-title">{t("students_by_gender") || "Students by Gender"}</div>
+            <AdminCard 
+              header={
+                <div className="d-flex align-items-center">
+                  <i className="bi bi-gender-ambiguous me-2 text-primary"></i>
+                  <span className="fw-bold">Students by Gender</span>
+                </div>
+              }
+            >
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <defs>
@@ -309,10 +319,16 @@ export default function Charts({ unitId }) {
                   <Legend verticalAlign="bottom" height={36}/>
                 </PieChart>
               </ResponsiveContainer>
-            </div>
+            </AdminCard>
 
-            <div className="chart-card">
-              <div className="chart-title">{t("pass_fail_distribution") || "Pass / Fail Distribution"}</div>
+            <AdminCard 
+              header={
+                <div className="d-flex align-items-center">
+                  <i className="bi bi-check-all me-2 text-success"></i>
+                  <span className="fw-bold">Pass / Fail Distribution</span>
+                </div>
+              }
+            >
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie 
@@ -334,10 +350,16 @@ export default function Charts({ unitId }) {
                   <Legend verticalAlign="bottom" height={36}/>
                 </PieChart>
               </ResponsiveContainer>
-            </div>
+            </AdminCard>
 
-            <div className="chart-card">
-              <div className="chart-title">{t("students_by_class_year_specific") || "Students by Class (Year Specific)"}</div>
+            <AdminCard 
+              header={
+                <div className="d-flex align-items-center">
+                  <i className="bi bi-bar-chart-steps me-2 text-primary"></i>
+                  <span className="fw-bold">Students by Class (Year Specific)</span>
+                </div>
+              }
+            >
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={studentsByStandardYear}>
                   <defs>
@@ -353,12 +375,18 @@ export default function Charts({ unitId }) {
                   <Bar dataKey="count" fill="url(#barGradient)" radius={[6, 6, 0, 0]} barSize={40} />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+            </AdminCard>
 
-            <div className="chart-card">
-              <div className="chart-title">{t("payments_by_category") || "Payments by Category"}</div>
+            <AdminCard 
+              header={
+                <div className="d-flex align-items-center">
+                  <i className="bi bi-cash-coin me-2 text-primary"></i>
+                  <span className="fw-bold">Payments by Category</span>
+                </div>
+              }
+            >
               {expenseCategories.length === 0 ? (
-                <div className="d-flex align-items-center justify-content-center h-100 text-muted small">
+                <div className="d-flex align-items-center justify-content-center h-100 text-muted small py-5">
                   <i className="bi bi-info-circle me-2"></i> {t("no_payment_data") || "No payment data for this year."}
                 </div>
               ) : (
@@ -383,14 +411,20 @@ export default function Charts({ unitId }) {
                   </PieChart>
                 </ResponsiveContainer>
               )}
-            </div>
+            </AdminCard>
           </div>
         )}
 
         {activeTab === "financial_trends" && (
           <div className="charts-grid">
-            <div className="chart-card">
-              <div className="chart-title">{t("salary_trend") || "Salary Trend"}</div>
+            <AdminCard 
+              header={
+                <div className="d-flex align-items-center">
+                  <i className="bi bi-graph-up me-2 text-warning"></i>
+                  <span className="fw-bold">Salary Trend</span>
+                </div>
+              }
+            >
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={salaryTrendData}>
                   <defs>
@@ -414,10 +448,16 @@ export default function Charts({ unitId }) {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
+            </AdminCard>
 
-            <div className="chart-card">
-              <div className="chart-title">{t("fees_trend") || "Fees Trend"}</div>
+            <AdminCard 
+              header={
+                <div className="d-flex align-items-center">
+                  <i className="bi bi-graph-up-arrow me-2 text-success"></i>
+                  <span className="fw-bold">Fees Trend</span>
+                </div>
+              }
+            >
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={feesTrendData}>
                   <defs>
@@ -441,14 +481,20 @@ export default function Charts({ unitId }) {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
+            </AdminCard>
           </div>
         )}
 
         {activeTab === "student_insights" && (
           <div className="charts-grid">
-            <div className="chart-card">
-              <div className="chart-title">{t("students_by_class") || "Students by Class (Historical)"}</div>
+            <AdminCard 
+              header={
+                <div className="d-flex align-items-center">
+                  <i className="bi bi-people me-2 text-primary"></i>
+                  <span className="fw-bold">Students by Class (Historical)</span>
+                </div>
+              }
+            >
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={studentsByClass}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
@@ -458,10 +504,16 @@ export default function Charts({ unitId }) {
                   <Bar dataKey="count" fill="#002E6D" radius={[6, 6, 0, 0]} barSize={40} />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+            </AdminCard>
 
-            <div className="chart-card">
-              <div className="chart-title">{t("admissions_per_year") || "Admissions per Year"}</div>
+            <AdminCard 
+              header={
+                <div className="d-flex align-items-center">
+                  <i className="bi bi-person-plus me-2 text-success"></i>
+                  <span className="fw-bold">Admissions per Year</span>
+                </div>
+              }
+            >
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={admissionsData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
@@ -471,14 +523,20 @@ export default function Charts({ unitId }) {
                   <Bar dataKey="count" fill="#16a34a" radius={[6, 6, 0, 0]} barSize={40} />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+            </AdminCard>
           </div>
         )}
 
         {activeTab === "historical_analysis" && (
           <div className="charts-grid">
-            <div className="chart-card">
-              <div className="chart-title">{t("budget_vs_expenses") || "Budget vs Expenses"}</div>
+            <AdminCard 
+              header={
+                <div className="d-flex align-items-center">
+                  <i className="bi bi-clock-history me-2 text-primary"></i>
+                  <span className="fw-bold">Budget vs Expenses</span>
+                </div>
+              }
+            >
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={budgetVsExpense}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
@@ -490,7 +548,7 @@ export default function Charts({ unitId }) {
                   <Bar dataKey="Expenses" fill="#F97316" radius={[6, 6, 0, 0]} barSize={30} />
                 </BarChart>
               </ResponsiveContainer>
-            </div>
+            </AdminCard>
           </div>
         )}
       </div>
