@@ -1,6 +1,7 @@
 // src/pages/clerk/ClerkDashboard.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import ClerkProfile from "./Profile";
 import StudentFees from "./StudentFees";
@@ -8,7 +9,10 @@ import TeacherSalaries from "./TeacherSalaries";
 import ClerkAddStudent from "./StudentAdd";
 import FireSafety from "./FireSafety";
 import PhysicalSafety from "./PhysicalSafety";
+import Onboarding from "./Onboarding";
 
+import ClerkLayout from "../../components/clerk/ClerkLayout";
+import AdminCard from "../../components/admin/AdminCard";
 import ChatWidget from "../../components/ChatWidget";
 
 import "./Dashboard.scss";
@@ -18,18 +22,10 @@ export default function ClerkDashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [checkingProfile, setCheckingProfile] = useState(true);
+  const [pendingSalariesCount, setPendingSalariesCount] = useState(0);
+  const [safetyStatus, setSafetyStatus] = useState({ fire: "Pending", physical: "Pending" });
 
   const navigate = useNavigate();
-
-  const sidebarItems = [
-    { key: "dashboard", label: "Dashboard", icon: "bi-speedometer2" },
-    { key: "profile", label: "Profile", icon: "bi-person" },
-    { key: "fees", label: "Student Fees", icon: "bi-cash-stack" },
-    { key: "salaries", label: "Teacher Salaries", icon: "bi-wallet2" },
-    { key: "addStudent", label: "Add Student", icon: "bi-person-plus" },
-    { key: "fire-safety", label: "Fire Safety", icon: "bi-fire" },
-    { key: "physical-safety", label: "Physical Safety", icon: "bi-shield" },
-  ];
 
   /* -------------------- PROFILE CHECK -------------------- */
   useEffect(() => {
@@ -62,62 +58,150 @@ export default function ClerkDashboard() {
   useEffect(() => {
     if (checkingProfile) return;
 
-    async function fetchDashboard() {
+    async function fetchData() {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5000/api/clerk/unit", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        setDashboard(data);
-      } catch {
-        setDashboard(null);
+        const headers = { Authorization: `Bearer ${token}` };
+
+        // Main Dashboard Data
+        const dashRes = await fetch("http://localhost:5000/api/clerk/unit", { headers });
+        const dashData = await dashRes.json();
+        setDashboard(dashData);
+
+        // Pending Salaries Count
+        const pendingSalRes = await axios.get("http://localhost:5000/api/clerk/teacher-salary-pending", { headers });
+        setPendingSalariesCount(pendingSalRes.data?.length || 0);
+
+        // Physical Safety Check
+        const physicalRes = await axios.get("http://localhost:5000/api/clerk/physical-safety", { headers });
+        if (physicalRes.data && Object.keys(physicalRes.data).length > 0) {
+          setSafetyStatus(prev => ({ ...prev, physical: "Completed" }));
+        }
+
+        // Fire Safety Check
+        const fireRes = await axios.get("http://localhost:5000/api/clerk/compliance-certificates", { headers });
+        if (fireRes.data && fireRes.data.some(c => c.certificate_type?.toLowerCase().includes("fire"))) {
+          setSafetyStatus(prev => ({ ...prev, fire: "Completed" }));
+        }
+
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchDashboard();
+    fetchData();
   }, [checkingProfile]);
 
-  function handleLogout() {
-    localStorage.removeItem("token");
-    navigate("/login");
-  }
-
   /* -------------------- RENDER HELPERS -------------------- */
-  function renderDashboardCard() {
+  function renderDashboardMain() {
     return (
-      <div className="clerk-main-inner">
-        <div className="page-header page-header-tight">
-          <h2>School Unit Details</h2>
+      <div className="clerk-dashboard-main">
+        <div className="section-header-pro">
+          <h3>Clerk Overview</h3>
+          <p>Administrative summary for {dashboard?.unit?.kendrashala_name || "your unit"}</p>
         </div>
 
-        <div className="clerk-unit-card">
-          {dashboard?.unit ? (
-            <div className="table-responsive">
-              <table className="clerk-unit-table">
-                <tbody>
-                  {Object.entries(dashboard.unit).map(([key, value]) => (
-                    <tr key={key}>
-                      <th>{key.replace(/_/g, " ")}</th>
-                      <td>{value || "-"}</td>
+        <div className="row g-4 mb-4">
+          <div className="col-md-3">
+            <AdminCard className="h-100">
+              <div className="d-flex align-items-center gap-3">
+                <div className="stat-icon-circle bg-primary-subtle text-primary">
+                  <i className="bi bi-mortarboard-fill fs-4"></i>
+                </div>
+                <div>
+                  <div className="text-muted small fw-bold">TOTAL STUDENTS</div>
+                  <div className="fs-3 fw-bold text-navy">{dashboard?.studentCount || 0}</div>
+                </div>
+              </div>
+            </AdminCard>
+          </div>
+          <div className="col-md-3">
+            <AdminCard className="h-100">
+              <div className="d-flex align-items-center gap-3">
+                <div className="stat-icon-circle bg-success-subtle text-success">
+                  <i className="bi bi-cash-stack fs-4"></i>
+                </div>
+                <div>
+                  <div className="text-muted small fw-bold">CLASS CAPACITY</div>
+                  <div className="fs-3 fw-bold text-navy">{dashboard?.totals?.capacity || 0}</div>
+                </div>
+              </div>
+            </AdminCard>
+          </div>
+          <div className="col-md-3">
+            <AdminCard className="h-100">
+              <div className="d-flex align-items-center gap-3">
+                <div className="stat-icon-circle bg-warning-subtle text-warning">
+                  <i className="bi bi-wallet2 fs-4"></i>
+                </div>
+                <div>
+                  <div className="text-muted small fw-bold">PENDING SALARIES</div>
+                  <div className="fs-3 fw-bold text-navy">{pendingSalariesCount}</div>
+                </div>
+              </div>
+            </AdminCard>
+          </div>
+          <div className="col-md-3">
+            <AdminCard className="h-100">
+              <div className="d-flex align-items-center gap-3">
+                <div className="stat-icon-circle bg-info-subtle text-info">
+                  <i className="bi bi-shield-check fs-4"></i>
+                </div>
+                <div>
+                  <div className="text-muted small fw-bold">SAFETY STATUS</div>
+                  <div className="small fw-bold text-navy">Fire: {safetyStatus.fire}</div>
+                  <div className="small fw-bold text-navy">Physical: {safetyStatus.physical}</div>
+                </div>
+              </div>
+            </AdminCard>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-lg-8">
+            <AdminCard header="Unit Information">
+              <div className="table-responsive professional-table">
+                <table className="table table-hover align-middle">
+                  <tbody>
+                    {dashboard?.unit && Object.entries(dashboard.unit)
+                      .filter(([key]) => ["unit_id", "kendrashala_name", "semis_no", "school_shift", "standard_range"].includes(key))
+                      .map(([key, value]) => (
+                      <tr key={key}>
+                        <th className="text-muted small text-uppercase" style={{ width: "30%" }}>{key.replace(/_/g, " ")}</th>
+                        <td className="fw-bold text-navy">{value || "-"}</td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <th className="text-muted small text-uppercase">Teacher Count</th>
+                      <td className="fw-bold text-navy">{dashboard?.teacherCount ?? "-"}</td>
                     </tr>
+                    <tr>
+                      <th className="text-muted small text-uppercase">Student Count</th>
+                      <td className="fw-bold text-navy">{dashboard?.studentCount ?? "-"}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </AdminCard>
+          </div>
+          <div className="col-lg-4">
+            <AdminCard header="Upcoming Retirements">
+              {dashboard?.upcomingRetirements?.length > 0 ? (
+                <div className="list-group list-group-flush">
+                  {dashboard.upcomingRetirements.map((ret, idx) => (
+                    <div key={idx} className="list-group-item d-flex justify-content-between align-items-center px-0">
+                      <span className="fw-semibold">Year {ret.year}</span>
+                      <span className="badge bg-primary rounded-pill">{ret.count} staff</span>
+                    </div>
                   ))}
-                  <tr>
-                    <th>Teacher Count</th>
-                    <td>{dashboard.teacherCount ?? "-"}</td>
-                  </tr>
-                  <tr>
-                    <th>Student Count</th>
-                    <td>{dashboard.studentCount ?? "-"}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-muted">No unit information found.</div>
-          )}
+                </div>
+              ) : (
+                <div className="text-muted small text-center py-3">No upcoming retirements.</div>
+              )}
+            </AdminCard>
+          </div>
         </div>
       </div>
     );
@@ -126,100 +210,58 @@ export default function ClerkDashboard() {
   function renderContent() {
     switch (sidebarTab) {
       case "dashboard":
-        return renderDashboardCard();
+        return renderDashboardMain();
 
       case "profile":
-        return (
-          <div className="clerk-main-inner">
-            <div className="page-header page-header-tight">
-              <h2>Clerk Profile</h2>
-            </div>
-            <ClerkProfile />
-          </div>
-        );
+        return <ClerkProfile />;
 
       case "fees":
-        return (
-          <div className="clerk-main-inner">
-            <div className="page-header page-header-tight">
-              <h2>Student Fees</h2>
-            </div>
-            <StudentFees />
-          </div>
-        );
+        return <StudentFees />;
 
       case "salaries":
-        return (
-          <div className="clerk-main-inner">
-            <div className="page-header page-header-tight">
-              <h2>Teacher Salaries</h2>
-            </div>
-            <TeacherSalaries />
-          </div>
-        );
+        return <TeacherSalaries />;
 
       case "addStudent":
-        return (
-          <div className="clerk-main-inner">
-            <div className="page-header page-header-tight">
-              <h2>Add Student</h2>
-            </div>
-            <ClerkAddStudent />
-          </div>
-        );
+        return <ClerkAddStudent />;
 
       case "fire-safety":
         return <FireSafety />;
 
       case "physical-safety":
         return <PhysicalSafety />;
+        
+      case "notifications":
+        return <Onboarding />; // Using Onboarding or separate component
 
       default:
         return null;
     }
   }
 
-  if (checkingProfile) return <div className="loading-state">Checking profile…</div>;
-  if (loading) return <div className="loading-state">Loading…</div>;
-
-  /* -------------------- JSX -------------------- */
-  return (
-    <div className="clerk-dashboard-container">
-      {/* SIDEBAR */}
-      <aside className="clerk-sidebar">
-        <div className="clerk-sidebar-header">
-          <i className="bi bi-journal-check" />
-          <h3>Clerk Portal</h3>
-        </div>
-
-        <nav className="clerk-sidebar-nav">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.key}
-              className={`clerk-nav-link ${
-                sidebarTab === item.key ? "active" : ""
-              }`}
-              onClick={() => setSidebarTab(item.key)}
-            >
-              <i className={`bi ${item.icon}`} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className="clerk-sidebar-footer">
-          <button className="clerk-nav-link logout-btn" onClick={handleLogout}>
-            <i className="bi bi-box-arrow-left" />
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* MAIN CONTENT */}
-      <main className="clerk-main-content">
-        {renderContent()}
-        <ChatWidget />
-      </main>
+  if (checkingProfile) return (
+    <div className="d-flex align-items-center justify-content-center vh-100">
+      <div className="spinner-border text-primary" role="status"></div>
+      <span className="ms-2">Checking profile...</span>
     </div>
+  );
+
+  if (loading) return (
+    <div className="d-flex align-items-center justify-content-center vh-100">
+      <div className="spinner-border text-primary" role="status"></div>
+      <span className="ms-2">Syncing Dashboard...</span>
+    </div>
+  );
+
+  return (
+    <ClerkLayout
+      activeSidebarTab={sidebarTab}
+      onSidebarTabChange={setSidebarTab}
+      customGreeting="Welcome, Clerk 👋"
+    >
+      <div className="dashboard-wrapper">
+        {renderContent()}
+      </div>
+      <ChatWidget />
+    </ClerkLayout>
   );
 }

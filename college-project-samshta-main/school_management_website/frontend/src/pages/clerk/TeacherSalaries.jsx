@@ -1,21 +1,19 @@
+// src/pages/clerk/TeacherSalaries.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import ChatWidget from "../../components/ChatWidget";
+import AdminCard from "../../components/admin/AdminCard";
+import TableContainer from "../../components/admin/TableContainer";
+import Toolbar from "../../components/admin/Toolbar";
 
-const monthsArr = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-];
+const monthsArr = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-export default function TeacherSalaryManagerAndPayments() {
-  // ----- Salary Assignment -----
+export default function TeacherSalaries() {
   const [teachers, setTeachers] = useState([]);
   const [editRow, setEditRow] = useState({});
   const [success, setSuccess] = useState("");
   const [salaryHistory, setSalaryHistory] = useState({});
   const [showHistoryFor, setShowHistoryFor] = useState(null);
 
-  // ----- Monthly Payments -----
   const [year, setYear] = useState(new Date().getFullYear());
   const [salaryGrid, setSalaryGrid] = useState([]);
   const [editPay, setEditPay] = useState({});
@@ -23,31 +21,30 @@ export default function TeacherSalaryManagerAndPayments() {
   const [payErr, setPayErr] = useState("");
   const [pendingOnly, setPendingOnly] = useState(false);
 
-  // --- Assignment + history ---
   useEffect(() => {
     fetchSalaries();
   }, []);
 
+  useEffect(() => {
+    fetchGrid(year);
+  }, [year]);
+
   const fetchSalaries = async () => {
     const token = localStorage.getItem("token");
-    const res = await axios.get(
-      "http://localhost:5000/api/clerk/teacher-salaries",
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    const res = await axios.get("http://localhost:5000/api/clerk/teacher-salaries", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
     setTeachers(res.data);
   };
 
   const fetchSalaryHistory = async (staff_id) => {
     const token = localStorage.getItem("token");
-    const res = await axios.get(
-      "http://localhost:5000/api/clerk/teacher-salary-history",
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { staff_id }
-      }
-    );
+    const res = await axios.get("http://localhost:5000/api/clerk/teacher-salary-history", {
+      headers: { Authorization: `Bearer ${token}` },
+      params: { staff_id }
+    });
     setSalaryHistory((prev) => ({ ...prev, [staff_id]: res.data }));
-    setShowHistoryFor(staff_id);
+    setShowHistoryFor(showHistoryFor === staff_id ? null : staff_id);
   };
 
   const handleChange = (id, field, value) => {
@@ -60,40 +57,27 @@ export default function TeacherSalaryManagerAndPayments() {
     const payload = {
       staff_id: t.staff_id,
       amount: tr.amount ?? t.amount,
-      effective_from:
-        tr.effective_from ??
-        t.effective_from ??
-        new Date().toISOString().slice(0, 10),
+      effective_from: tr.effective_from ?? t.effective_from ?? new Date().toISOString().slice(0, 10),
       remarks: tr.remarks ?? t.remarks ?? ""
     };
 
-    await axios.post(
-      "http://localhost:5000/api/clerk/teacher-salary",
-      payload,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    await axios.post("http://localhost:5000/api/clerk/teacher-salary", payload, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-    setSuccess("Salary saved!");
-    setTimeout(() => setSuccess(""), 1000);
+    setSuccess("Salary updated successfully! ✅");
+    setTimeout(() => setSuccess(""), 2000);
     setEditRow({});
     fetchSalaries();
   };
 
-  // --- Monthly payments grid ---
-  useEffect(() => {
-    fetchGrid(year);
-  }, [year]);
-
   const fetchGrid = async (yr) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(
-        "http://localhost:5000/api/clerk/teacher-salary-grid",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { year: yr }
-        }
-      );
+      const res = await axios.get("http://localhost:5000/api/clerk/teacher-salary-grid", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { year: yr }
+      });
       setSalaryGrid(res.data.staff || []);
     } catch {
       setSalaryGrid([]);
@@ -121,29 +105,20 @@ export default function TeacherSalaryManagerAndPayments() {
 
     if (!amount || !paid_on) {
       setPayErr("Amount and Paid On date both required.");
-      setTimeout(() => setPayErr(""), 1500);
+      setTimeout(() => setPayErr(""), 2000);
       return;
     }
 
-    const payload = {
-      staff_id,
-      year,
-      month,
-      amount,
-      paid_on,
-      remarks: cell.remarks || ""
-    };
+    const payload = { staff_id, year, month, amount, paid_on, remarks: cell.remarks || "" };
 
     try {
       const token = localStorage.getItem("token");
-      await axios.post(
-        "http://localhost:5000/api/clerk/teacher-salary-pay",
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.post("http://localhost:5000/api/clerk/teacher-salary-pay", payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-      setPayMsg("Salary marked as paid!");
-      setTimeout(() => setPayMsg(""), 1200);
+      setPayMsg("Payment recorded! ✅");
+      setTimeout(() => setPayMsg(""), 2000);
 
       setEditPay((prev) => {
         const next = { ...prev };
@@ -153,15 +128,14 @@ export default function TeacherSalaryManagerAndPayments() {
 
       fetchGrid(year);
     } catch {
-      setPayErr("Failed to update salary status!");
-      setTimeout(() => setPayErr(""), 1400);
+      setPayErr("Failed to record payment!");
+      setTimeout(() => setPayErr(""), 2000);
     }
   };
 
   const handleYearChange = (e) => setYear(Number(e.target.value));
   const togglePending = () => setPendingOnly((v) => !v);
 
-  // year dropdown
   const yearOptions = [];
   const currentYear = new Date().getFullYear();
   for (let y = currentYear - 2; y <= currentYear + 2; ++y) yearOptions.push(y);
@@ -170,342 +144,142 @@ export default function TeacherSalaryManagerAndPayments() {
     ? salaryGrid.filter((staff) => staff.payments.some((m) => !m.paid_on))
     : salaryGrid;
 
-  const paidCellStyle = { background: "#dcfce7" };
-  const pendingCellStyle = { background: "#fee2e2" };
-
   return (
-    <>
-      <div className="teacher-main-inner clerk-salary-page">
-        {/* Page header – only once */}
-        <div className="page-header page-header-tight">
-          <p className="page-subtitle">
-            Assign base salary for each teacher and track their monthly payments.
-          </p>
-        </div>
+    <div className="clerk-salaries-page">
+      <div className="section-header-pro">
+        <h3>Payroll Management</h3>
+        <p>Assign teacher salaries and record monthly payments</p>
+      </div>
 
-        {/* CARD 1: ASSIGN / UPDATE */}
-        <div className="teacher-students-card">
-          <div className="card-header">
-            <h3>Assign / Update Teacher Salary</h3>
-          </div>
-          <div className="card-body">
-            {success && (
-              <div className="alert alert-success mb-3">{success}</div>
-            )}
-
-            <div className="table-responsive">
-              <table className="teacher-students-table salary-assign-table">
+      <div className="row g-4">
+        <div className="col-lg-12">
+          <AdminCard header="Salary Assignment Registry">
+            {success && <div className="alert alert-success py-2 mb-3 small">{success}</div>}
+            <div className="table-responsive professional-table">
+              <table className="table table-hover align-middle">
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th>Current Salary</th>
+                    <th>Teacher Name</th>
+                    <th>Base Salary</th>
                     <th>Effective From</th>
                     <th>Remarks</th>
-                    <th>History</th>
-                    <th>Assign / Update</th>
+                    <th className="text-end">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {teachers.map((t) => (
                     <tr key={t.staff_id}>
-                      <td>{t.full_name}</td>
-                      <td style={{ maxWidth: 140 }}>
-                        <input
-                          type="number"
-                          className="form-control form-control-sm"
-                          value={editRow[t.staff_id]?.amount ?? t.amount ?? ""}
-                          placeholder="Amount"
-                          onChange={(e) =>
-                            handleChange(t.staff_id, "amount", e.target.value)
-                          }
-                        />
+                      <td>
+                        <div className="d-flex align-items-center gap-2">
+                          <div className="avatar-circle">{t.full_name.charAt(0)}</div>
+                          <span className="fw-semibold">{t.full_name}</span>
+                        </div>
                       </td>
-                      <td style={{ maxWidth: 150 }}>
-                        <input
-                          type="date"
-                          className="form-control form-control-sm"
-                          value={
-                            editRow[t.staff_id]?.effective_from ??
-                            (t.effective_from
-                              ? t.effective_from.slice(0, 10)
-                              : "")
-                          }
-                          onChange={(e) =>
-                            handleChange(
-                              t.staff_id,
-                              "effective_from",
-                              e.target.value
-                            )
-                          }
-                        />
+                      <td style={{ width: 140 }}>
+                        <div className="input-group input-group-sm">
+                          <span className="input-group-text bg-light">₹</span>
+                          <input type="number" className="form-control" value={editRow[t.staff_id]?.amount ?? t.amount ?? ""} onChange={(e) => handleChange(t.staff_id, "amount", e.target.value)} />
+                        </div>
                       </td>
-                      <td style={{ maxWidth: 220 }}>
-                        <input
-                          type="text"
-                          className="form-control form-control-sm"
-                          value={
-                            editRow[t.staff_id]?.remarks ?? t.remarks ?? ""
-                          }
-                          onChange={(e) =>
-                            handleChange(t.staff_id, "remarks", e.target.value)
-                          }
-                          placeholder="Remarks"
-                        />
+                      <td style={{ width: 150 }}>
+                        <input type="date" className="form-control form-control-sm" value={editRow[t.staff_id]?.effective_from ?? (t.effective_from ? t.effective_from.slice(0, 10) : "")} onChange={(e) => handleChange(t.staff_id, "effective_from", e.target.value)} />
                       </td>
-                      <td style={{ width: 110 }}>
-                        <button
-                          type="button"
-                          className="btn btn-outline-primary btn-sm w-100"
-                          onClick={() => fetchSalaryHistory(t.staff_id)}
-                        >
-                          View
-                        </button>
-
-                        {showHistoryFor === t.staff_id &&
-                          salaryHistory[t.staff_id] && (
-                            <div className="salary-history-popover">
-                              <div className="salary-history-title">
-                                Salary History
-                              </div>
-                              <div className="table-responsive">
-                                <table className="table table-sm mb-0">
-                                  <thead>
-                                    <tr>
-                                      <th>Amount</th>
-                                      <th>From</th>
-                                      <th>To</th>
-                                      <th>Remarks</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {salaryHistory[t.staff_id].map((hist) => (
-                                      <tr
-                                        key={
-                                          hist.effective_from + hist.amount
-                                        }
-                                      >
-                                        <td>{hist.amount}</td>
-                                        <td>
-                                          {hist.effective_from?.slice(0, 10)}
-                                        </td>
-                                        <td>
-                                          {hist.effective_to
-                                            ? hist.effective_to.slice(0, 10)
-                                            : "Current"}
-                                        </td>
-                                        <td>{hist.remarks || ""}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          )}
+                      <td>
+                        <input type="text" className="form-control form-control-sm" value={editRow[t.staff_id]?.remarks ?? t.remarks ?? ""} onChange={(e) => handleChange(t.staff_id, "remarks", e.target.value)} placeholder="Notes..." />
                       </td>
-                      <td style={{ width: 130 }}>
-                        <button
-                          type="button"
-                          className="save-btn w-100"
-                          onClick={() => handleSave(t)}
-                        >
-                          Save Salary
-                        </button>
+                      <td className="text-end">
+                        <div className="d-flex justify-content-end gap-2">
+                          <button className="btn btn-sm btn-outline-navy" onClick={() => fetchSalaryHistory(t.staff_id)}>History</button>
+                          <button className="btn btn-sm btn-navy" onClick={() => handleSave(t)}>Update</button>
+                        </div>
+                        {showHistoryFor === t.staff_id && salaryHistory[t.staff_id] && (
+                          <div className="history-dropdown mt-2 p-3 border rounded shadow-sm bg-light text-start" style={{ position: 'absolute', zIndex: 100, right: 0, minWidth: 400 }}>
+                            <div className="fw-bold small mb-2">Salary History: {t.full_name}</div>
+                            <table className="table table-sm table-borderless mb-0 x-small">
+                              <thead><tr className="border-bottom"><th>Amt</th><th>From</th><th>To</th></tr></thead>
+                              <tbody>
+                                {salaryHistory[t.staff_id].map((h, i) => (
+                                  <tr key={i}>
+                                    <td>₹{h.amount}</td>
+                                    <td>{h.effective_from?.slice(0, 10)}</td>
+                                    <td>{h.effective_to?.slice(0, 10) || "Present"}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}
-
-                  {teachers.length === 0 && (
-                    <tr>
-                      <td colSpan={6}>No teachers found.</td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
             </div>
-          </div>
+          </AdminCard>
         </div>
 
-        {/* CARD 2: MONTHLY PAYMENTS */}
-        <div className="teacher-students-card salary-payments-card">
-          <div className="card-header">
-            <h3>Teacher Monthly Salary Payments</h3>
-            <div className="header-controls">
-              <div className="filter-group">
-                <label className="form-label mb-1">Year</label>
-                <select
-                  className="form-control"
-                  value={year}
-                  onChange={handleYearChange}
-                >
-                  {yearOptions.map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button
-                type="button"
-                className="btn btn-outline-secondary btn-sm"
-                onClick={togglePending}
-              >
-                {pendingOnly ? "Show All" : "Show Only Pending"}
-              </button>
-            </div>
-          </div>
-
-          <div className="card-body">
-            {payMsg && (
-              <div className="alert alert-success py-2 mb-2">{payMsg}</div>
-            )}
-            {payErr && (
-              <div className="alert alert-danger py-2 mb-2">{payErr}</div>
-            )}
-
-            <div className="table-responsive salary-grid-wrapper">
-              <table className="teacher-students-table salary-payments-table">
-                <thead>
-                  <tr>
-                    <th className="teacher-col">Teacher</th>
-                    {monthsArr.map((m) => (
-                      <th key={m} colSpan={3} className="salary-month-header">
-                        <div>{m}</div>
-                        <div className="salary-month-sub">
-                          Status · Amount · Action
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredGrid.map((staff) => (
-                    <tr key={staff.staff_id}>
-                      <td className="teacher-col">{staff.full_name}</td>
-
-                      {staff.payments.map((monthObj) => {
-                        if (monthObj.paid_on) {
-                          return [
-                            <td
-                              key={"s-" + monthObj.month}
-                              style={paidCellStyle}
-                              className="salary-status-cell"
-                            >
-                              <span className="badge-soft badge-soft-success">
-                                Paid
-                              </span>
-                              <br />
-                              <small>
-                                {new Date(
-                                  monthObj.paid_on
-                                ).toLocaleDateString()}
-                              </small>
-                              {monthObj.remarks && (
-                                <>
-                                  <br />
-                                  <small className="salary-remarks">
-                                    {monthObj.remarks}
-                                  </small>
-                                </>
-                              )}
-                            </td>,
-                            <td key={"a-" + monthObj.month} className="amount-col">
-                              {monthObj.amount}
-                            </td>,
-                            <td key={"x-" + monthObj.month}></td>
-                          ];
-                        } else {
-                          const v =
-                            editPay[staff.staff_id]?.[monthObj.month] || {};
-                          return [
-                            <td
-                              key={"s-" + monthObj.month}
-                              style={pendingCellStyle}
-                              className="salary-status-cell"
-                            >
-                              <span className="badge-soft badge-soft-danger">
-                                Pending
-                              </span>
-                            </td>,
-                            <td key={"a-" + monthObj.month} className="amount-col">
-                              <input
-                                type="number"
-                                className="form-control form-control-sm mb-1"
-                                value={v.amount || monthObj.amount || ""}
-                                placeholder="Amount"
-                                onChange={(e) =>
-                                  handleEditPay(
-                                    staff.staff_id,
-                                    monthObj.month,
-                                    "amount",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                              <input
-                                type="date"
-                                className="form-control form-control-sm mb-1"
-                                value={v.paid_on || ""}
-                                onChange={(e) =>
-                                  handleEditPay(
-                                    staff.staff_id,
-                                    monthObj.month,
-                                    "paid_on",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                              <input
-                                type="text"
-                                className="form-control form-control-sm"
-                                placeholder="Remarks"
-                                value={v.remarks || ""}
-                                onChange={(e) =>
-                                  handleEditPay(
-                                    staff.staff_id,
-                                    monthObj.month,
-                                    "remarks",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </td>,
-                            <td key={"x-" + monthObj.month} className="action-col">
-                              <button
-                                type="button"
-                                className="btn btn-success btn-sm w-100"
-                                onClick={() => paySalary(staff.staff_id, monthObj)}
-                                disabled={!v.amount || !v.paid_on}
-                              >
-                                Mark Paid
-                              </button>
-                            </td>
-                          ];
-                        }
-                      })}
-                    </tr>
-                  ))}
-
-                  {filteredGrid.length === 0 && (
+        <div className="col-lg-12">
+          <AdminCard>
+            <TableContainer 
+              title="Monthly Payment Grid"
+              toolbar={
+                <Toolbar 
+                  left={
+                    <div className="d-flex gap-2">
+                      <select className="form-select form-select-sm" style={{ width: 100 }} value={year} onChange={handleYearChange}>
+                        {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                      </select>
+                      <button className={`btn btn-sm ${pendingOnly ? 'btn-danger' : 'btn-outline-navy'}`} onClick={togglePending}>
+                        {pendingOnly ? "Showing Pending" : "Filter Pending"}
+                      </button>
+                    </div>
+                  }
+                  right={
+                    <div className="text-muted small">Academic Year: {year}</div>
+                  }
+                />
+              }
+            >
+              {payMsg && <div className="alert alert-success py-2 mb-2 small">{payMsg}</div>}
+              {payErr && <div className="alert alert-danger py-2 mb-2 small">{payErr}</div>}
+              
+              <div className="table-responsive professional-table salary-grid-container" style={{ maxHeight: 600 }}>
+                <table className="table table-bordered align-middle text-center mb-0">
+                  <thead className="table-light sticky-top">
                     <tr>
-                      <td colSpan={1 + monthsArr.length * 3}>
-                        No salary data for this year.
-                      </td>
+                      <th className="text-start sticky-left bg-light" style={{ minWidth: 200 }}>Teacher</th>
+                      {monthsArr.map(m => <th key={m} style={{ minWidth: 200 }}>{m}</th>)}
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="salary-legend">
-              <strong>Legend:</strong>{" "}
-              <span className="legend-pill legend-paid">Paid</span>
-              <span className="legend-pill legend-pending">Pending</span>
-            </div>
-          </div>
+                  </thead>
+                  <tbody>
+                    {filteredGrid.map((staff) => (
+                      <tr key={staff.staff_id}>
+                        <td className="text-start fw-bold sticky-left bg-white">{staff.full_name}</td>
+                        {staff.payments.map((mObj) => (
+                          <td key={mObj.month} className={mObj.paid_on ? "bg-success-subtle" : "bg-danger-subtle"}>
+                            {mObj.paid_on ? (
+                              <div className="small">
+                                <div className="fw-bold text-success">₹{mObj.amount?.toLocaleString()}</div>
+                                <div className="text-muted" style={{ fontSize: '0.7rem' }}>{new Date(mObj.paid_on).toLocaleDateString()}</div>
+                              </div>
+                            ) : (
+                              <div className="p-1">
+                                <input type="number" className="form-control form-control-sm mb-1" placeholder="₹" value={editPay[staff.staff_id]?.[mObj.month]?.amount || mObj.amount || ""} onChange={(e) => handleEditPay(staff.staff_id, mObj.month, "amount", e.target.value)} />
+                                <input type="date" className="form-control form-control-sm mb-1" value={editPay[staff.staff_id]?.[mObj.month]?.paid_on || ""} onChange={(e) => handleEditPay(staff.staff_id, mObj.month, "paid_on", e.target.value)} />
+                                <button className="btn btn-xs btn-success w-100" style={{ fontSize: '0.7rem' }} onClick={() => paySalary(staff.staff_id, mObj)}>Mark Paid</button>
+                              </div>
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </TableContainer>
+          </AdminCard>
         </div>
       </div>
-
-      <ChatWidget />
-    </>
+    </div>
   );
 }
