@@ -35,12 +35,9 @@ export default function PrincipalDashboard() {
           return;
         }
 
-        const [profileRes, studentsRes, dashboardRes, overviewRes] =
+        const [profileRes, dashboardRes, overviewRes] =
           await Promise.all([
             axios.get("http://localhost:5000/api/principal/me", {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axios.get("http://localhost:5000/api/principal/students", {
               headers: { Authorization: `Bearer ${token}` },
             }),
             axios.get("http://localhost:5000/api/principal/dashboard-data", {
@@ -59,7 +56,6 @@ export default function PrincipalDashboard() {
           return;
         }
 
-        setStudents(studentsRes.data || []);
         setDashboardData(dashboardRes.data);
         setOverviewMetrics(overviewRes.data);
       } catch (err) {
