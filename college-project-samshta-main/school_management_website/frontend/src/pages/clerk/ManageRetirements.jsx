@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+import AdminCard from "../../components/admin/AdminCard";
+import TableContainer from "../../components/admin/TableContainer";
+import EmptyState from "../../components/admin/EmptyState";
 
 export default function ManageRetirements() {
   const [loading, setLoading] = useState(true);
@@ -14,7 +17,6 @@ export default function ManageRetirements() {
       try {
         const headers = { Authorization: `Bearer ${token}` };
 
-        // Fetch teachers + dashboard in parallel
         const [tRes, dRes] = await Promise.all([
           fetch("http://localhost:5000/api/clerk/teachers", { headers }),
           fetch("http://localhost:5000/api/clerk/unit", { headers })
@@ -62,13 +64,11 @@ export default function ManageRetirements() {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.message || "Save failed");
       }
-      // refresh dashboard counts after save
       const dRes = await fetch("http://localhost:5000/api/clerk/unit", { headers: { Authorization: `Bearer ${token}` } });
       if (dRes.ok) {
         const dData = await dRes.json();
         setUpcoming(Array.isArray(dData.upcomingRetirements) ? dData.upcomingRetirements : []);
       }
-      console.log("Saved", staff_id);
     } catch (e) {
       console.error("Failed saving retirement date:", e);
       alert("Failed to save. See console for details.");
@@ -77,11 +77,6 @@ export default function ManageRetirements() {
     }
   };
 
-  if (loading) return <div className="loading-state">Loading teachers…</div>;
-
-  const currentYear = new Date().getFullYear();
-
-  // Filter teachers by selected year (if any)
   const filteredTeachers = selectedYear
     ? teachers.filter(t => {
         if (!t.retirement_date) return false;
@@ -94,103 +89,154 @@ export default function ManageRetirements() {
   const showingCount = filteredTeachers.length;
 
   const handleYearClick = (year) => {
-    // toggle selection
     setSelectedYear(prev => (prev === year ? null : year));
   };
 
-  return (
-    <div className="clerk-main-inner">
-      <div className="page-header page-header-tight">
-        <h2>Manage Teacher Retirement Dates</h2>
+  if (loading) {
+    return (
+      <div className="d-flex flex-column align-items-center justify-content-center py-5">
+        <div className="spinner-border text-primary" role="status"></div>
+        <span className="mt-2 text-muted small">Loading staff records...</span>
       </div>
+    );
+  }
 
-      {/* Upcoming retirements summary (clickable) */}
-      <div style={{ marginBottom: 12 }}>
-        <strong>Upcoming retirements:</strong>
-        <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          <button
-            onClick={() => setSelectedYear(null)}
-            style={{
-              padding: "6px 10px",
-              borderRadius: 6,
-              background: selectedYear === null ? "#dfeffd" : "#f4f4f4",
-              border: selectedYear === null ? "1px solid #9fd0ff" : "1px solid #e0e0e0",
-              cursor: "pointer",
-              fontSize: 14
-            }}
-            aria-pressed={selectedYear === null}
-            title="Show all teachers"
-          >
-            All ({totalTeachers})
-          </button>
-
-          {upcoming.length === 0 && <span className="text-muted">No data</span>}
-          {upcoming.map(u => {
-            const isSelected = selectedYear === u.year;
-            return (
-              <button
-                key={u.year}
-                onClick={() => handleYearClick(u.year)}
-                style={{
-                  padding: "6px 10px",
-                  borderRadius: 6,
-                  background: isSelected ? "#e9f5ff" : "#f4f4f4",
-                  border: isSelected ? "1px solid #9fd0ff" : "1px solid #e0e0e0",
-                  cursor: "pointer",
-                  fontSize: 14
-                }}
-                aria-pressed={isSelected}
-                title={`Show teachers retiring in ${u.year}`}
-              >
-                <strong>{u.year}:</strong> {u.count}
-              </button>
-            );
-          })}
+  return (
+    <div className="dashboard-main-view">
+      <div className="section-header-pro mb-4">
+        <div className="d-flex align-items-center gap-3">
+          <div className="header-icon-box">
+            <i className="bi bi-person-x text-primary"></i>
+          </div>
+          <div>
+            <h3 className="mb-1">Retirement Management</h3>
+            <p className="text-muted small mb-0">Monitor and update service records and retirement projections for faculty members.</p>
+          </div>
         </div>
       </div>
 
-      <div style={{ marginBottom: 8, color: "#555" }}>
-        <small>
-          Showing {showingCount} {selectedYear ? `teacher(s) retiring in ${selectedYear}` : "teacher(s)"} (total {totalTeachers})
-        </small>
+      <div className="row g-4 mb-4">
+        <div className="col-12">
+          <AdminCard header={
+            <div className="d-flex align-items-center gap-2">
+              <i className="bi bi-calendar3 text-primary"></i>
+              <span>Retirement Projections (Financial Year)</span>
+            </div>
+          }>
+            <div className="row g-3">
+              <div className="col-md-auto">
+                <button
+                  onClick={() => setSelectedYear(null)}
+                  className={`btn ${selectedYear === null ? 'btn-primary' : 'btn-light'} border px-4 py-2 rounded-3 d-flex flex-column align-items-center`}
+                  style={{ minWidth: '100px' }}
+                >
+                  <span className="small opacity-75">SHOW ALL</span>
+                  <span className="h5 mb-0 fw-bold">{totalTeachers}</span>
+                </button>
+              </div>
+              {upcoming.map(u => (
+                <div key={u.year} className="col-md-auto">
+                  <button
+                    onClick={() => handleYearClick(u.year)}
+                    className={`btn ${selectedYear === u.year ? 'btn-primary' : 'btn-white'} border px-4 py-2 rounded-3 d-flex flex-column align-items-center shadow-sm transition-all`}
+                    style={{ minWidth: '120px' }}
+                  >
+                    <span className="small opacity-75">{u.year}</span>
+                    <span className="h5 mb-0 fw-bold">{u.count}</span>
+                  </button>
+                </div>
+              ))}
+              {upcoming.length === 0 && (
+                <div className="col text-muted small py-2">
+                  No upcoming retirement projections found.
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 p-3 bg-soft-info rounded-3 border-start border-4 border-info">
+              <p className="small text-info mb-0 fw-medium">
+                <i className="bi bi-info-circle-fill me-2"></i>
+                Retirement projections are based on service record data and institutional policy.
+              </p>
+            </div>
+          </AdminCard>
+        </div>
       </div>
 
-      <div className="table-responsive">
-        <table className="clerk-unit-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Retirement Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTeachers.length === 0 && (
-              <tr><td colSpan={3} className="text-muted">No teachers found for the selection.</td></tr>
-            )}
-            {filteredTeachers.map(t => (
-              <tr key={t.staff_id}>
-                <td>{t.full_name}</td>
-                <td>
-                  <input
-                    type="date"
-                    value={t.retirement_date ? t.retirement_date.slice(0,10) : ""}
-                    onChange={(e) => handleChange(t.staff_id, e.target.value || null)}
-                  />
-                </td>
-                <td>
-                  <button
-                    onClick={() => handleSave(t.staff_id)}
-                    disabled={savingId === t.staff_id}
-                    className="btn btn-sm btn-primary"
-                  >
-                    {savingId === t.staff_id ? "Saving…" : "Save"}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="row">
+        <div className="col-12">
+          <AdminCard header={
+            <div className="d-flex align-items-center justify-content-between w-100">
+              <div className="d-flex align-items-center gap-2">
+                <i className="bi bi-people text-primary"></i>
+                <span>Staff Service Records</span>
+              </div>
+              <span className="badge bg-soft-primary text-primary">
+                {selectedYear ? `Filtered: ${selectedYear}` : 'Full Roster'}
+              </span>
+            </div>
+          }>
+            <TableContainer title="">
+              <div className="table-responsive professional-table">
+                <table className="table align-middle table-hover mb-0">
+                  <thead>
+                    <tr>
+                      <th className="ps-3">Staff Member</th>
+                      <th>Staff ID</th>
+                      <th>Retirement Date</th>
+                      <th className="text-end pe-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredTeachers.length > 0 ? (
+                      filteredTeachers.map(t => (
+                        <tr key={t.staff_id}>
+                          <td className="ps-3">
+                            <div className="d-flex align-items-center gap-3">
+                              <div className="avatar-circle-sm bg-soft-primary text-primary fw-bold">
+                                {t.full_name?.charAt(0)}
+                              </div>
+                              <span className="fw-bold text-dark">{t.full_name}</span>
+                            </div>
+                          </td>
+                          <td className="text-muted fw-medium">{t.staff_id}</td>
+                          <td>
+                            <input
+                              type="date"
+                              className="form-control form-control-sm border-0 bg-light fw-medium"
+                              style={{ maxWidth: '160px' }}
+                              value={t.retirement_date ? t.retirement_date.slice(0, 10) : ""}
+                              onChange={(e) => handleChange(t.staff_id, e.target.value || null)}
+                            />
+                          </td>
+                          <td className="text-end pe-3">
+                            <button
+                              onClick={() => handleSave(t.staff_id)}
+                              disabled={savingId === t.staff_id}
+                              className={`btn btn-sm ${savingId === t.staff_id ? 'btn-light' : 'btn-primary'} px-3 rounded-pill`}
+                            >
+                              {savingId === t.staff_id ? (
+                                <><span className="spinner-border spinner-border-sm me-1" role="status"></span>Saving</>
+                              ) : (
+                                <><i className="bi bi-check2-circle me-1"></i>Save</>
+                              )}
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4">
+                          <EmptyState title="No Records" description="No staff members found for the current selection." />
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </TableContainer>
+          </AdminCard>
+        </div>
       </div>
     </div>
   );
