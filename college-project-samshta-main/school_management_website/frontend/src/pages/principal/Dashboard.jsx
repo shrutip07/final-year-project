@@ -372,66 +372,31 @@ export default function PrincipalDashboard() {
       case "profile":
         return (
           <div className="principal-tab-content">
-            <div className="principal-admin-card">
-              <div className="card-header">
-                <h4>{t("profile")}</h4>
-              </div>
-              <div className="card-body">
-                <Profile />
-              </div>
-            </div>
+            <Profile isSubComponent={true} />
           </div>
         );
       case "teachers":
         return (
           <div className="principal-tab-content">
-            <div className="principal-admin-card">
-              <div className="card-header">
-                <h4>{t("teachers")}</h4>
-              </div>
-              <div className="card-body">
-                <Teachers />
-              </div>
-            </div>
+            <Teachers isSubComponent={true} />
           </div>
         );
       case "students":
         return (
           <div className="principal-tab-content">
-            <div className="principal-admin-card">
-              <div className="card-header">
-                <h4>{t("students")}</h4>
-              </div>
-              <div className="card-body">
-                <Students />
-              </div>
-            </div>
+            <Students isSubComponent={true} />
           </div>
         );
       case "charts":
         return (
           <div className="principal-tab-content">
-            <div className="principal-admin-card">
-              <div className="card-header">
-                <h4>{t("charts")}</h4>
-              </div>
-              <div className="card-body">
-                <Charts unitId={dashboardData?.principal?.unit_id} />
-              </div>
-            </div>
+            <Charts isSubComponent={true} unitId={dashboardData?.principal?.unit_id} />
           </div>
         );
       case "notifications":
         return (
           <div className="principal-tab-content">
-            <div className="principal-admin-card">
-              <div className="card-header">
-                <h4>{t("notifications")}</h4>
-              </div>
-              <div className="card-body">
-                <PrincipalNotificationsPage />
-              </div>
-            </div>
+            <PrincipalNotificationsPage isSubComponent={true} />
           </div>
         );
       default:

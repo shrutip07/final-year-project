@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
-
+import PrincipalLayout from "../../components/principal/PrincipalLayout";
+import AdminCard from "../../components/admin/AdminCard";
+import TableContainer from "../../components/admin/TableContainer";
+import Toolbar from "../../components/admin/Toolbar";
 import EmptyState from "../../components/admin/EmptyState";
+import ChatWidget from "../../components/ChatWidget";
 
-export default function Teachers() {
+export default function Teachers({ isSubComponent = false }) {
   const { t } = useTranslation();
   const [teachers, setTeachers] = useState([]);
   const [filtered, setFiltered] = useState([]);
@@ -56,108 +60,138 @@ export default function Teachers() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">{t("loading")}...</span>
+  const content = (
+    <div className={isSubComponent ? "" : "p-4"}>
+      {loading ? (
+        <div className="d-flex flex-column align-items-center justify-content-center py-5">
+          <div className="spinner-grow text-primary" role="status"></div>
+          <span className="mt-3 text-muted fw-bold">Syncing Staff Directory...</span>
         </div>
-      </div>
-    );
-  }
+      ) : error ? (
+        <div className="alert alert-danger shadow-sm border-0 d-flex align-items-center" role="alert">
+          <i className="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+          <div>{error}</div>
+        </div>
+      ) : (
+        <AdminCard 
+          header={
+            <div className="d-flex align-items-center gap-2">
+              <i className="bi bi-people-fill text-primary fs-4"></i>
+              <span className="fw-bold">Teaching & Administrative Staff</span>
+            </div>
+          }
+          className="shadow-sm border-0"
+        >
+          <TableContainer
+            toolbar={
+              <Toolbar
+                left={
+                  <div className="d-flex align-items-center gap-2">
+                    <i className="bi bi-search text-muted"></i>
+                    <input
+                      type="text"
+                      className="form-control form-control-sm border-0 bg-light"
+                      placeholder="Search by name, ID, email, or subject..."
+                      value={search}
+                      onChange={handleSearchChange}
+                      style={{ minWidth: '350px', fontWeight: '500' }}
+                    />
+                  </div>
+                }
+              />
+            }
+          >
+            {filtered.length === 0 ? (
+              <EmptyState
+                title={t("no_teachers") || "No teachers"}
+                description={t("no_teachers_found") || "No teachers match your search."}
+              />
+            ) : (
+              <div className="table-responsive professional-table">
+                <table className="table table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th className="text-uppercase small fw-bold text-muted">Staff ID</th>
+                      <th className="text-uppercase small fw-bold text-muted">Full Name</th>
+                      <th className="text-uppercase small fw-bold text-muted">Contact Info</th>
+                      <th className="text-uppercase small fw-bold text-muted">Credentials</th>
+                      <th className="text-uppercase small fw-bold text-muted">Role & Subject</th>
+                      <th className="text-uppercase small fw-bold text-muted">Joining Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((teacher) => (
+                      <tr key={teacher.staff_id}>
+                        <td>
+                          <span className="fw-bold text-dark">#{teacher.staff_id}</span>
+                        </td>
+                        <td>
+                          <div className="d-flex align-items-center gap-3">
+                            <div className="avatar-circle shadow-sm" style={{ width: '32px', height: '32px', fontSize: '0.8rem' }}>
+                              {teacher.full_name ? teacher.full_name.charAt(0).toUpperCase() : "T"}
+                            </div>
+                            <span className="fw-semibold text-dark">{teacher.full_name}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="d-flex flex-column">
+                            <a href={`mailto:${teacher.email}`} className="text-primary small text-decoration-none fw-medium">
+                              <i className="bi bi-envelope me-1"></i>
+                              {teacher.email}
+                            </a>
+                            <span className="text-muted small mt-1">
+                              <i className="bi bi-telephone me-1"></i>
+                              {teacher.phone || "-"}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="erp-badge badge-qualification px-2 py-1">
+                            {teacher.qualification || "-"}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="d-flex flex-column gap-1">
+                            <span className="badge bg-primary-subtle text-primary border-0 text-start" style={{ width: 'fit-content' }}>
+                              {teacher.designation || "-"}
+                            </span>
+                            <span className="badge bg-light text-muted border text-start" style={{ width: 'fit-content' }}>
+                              {teacher.subject || "General"}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="text-muted small fw-medium">
+                            {teacher.joining_date
+                              ? new Date(teacher.joining_date).toLocaleDateString("en-IN", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : "-"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </TableContainer>
+        </AdminCard>
+      )}
+    </div>
+  );
 
-  if (error) {
-    return <div className="alert alert-danger mt-3">{error}</div>;
+  if (isSubComponent) {
+    return content;
   }
 
   return (
-    <div className="directory-wrapper">
-      <div className="directory-controls">
-        <div className="search-box">
-          <i className="bi bi-search search-icon"></i>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Search by name, ID, email, or subject..."
-            value={search}
-            onChange={handleSearchChange}
-          />
-        </div>
-      </div>
-
-      <div className="table-container">
-        {filtered.length === 0 ? (
-          <EmptyState
-            title={t("no_teachers") || "No teachers"}
-            description={t("no_teachers_found") || "No teachers match your search."}
-          />
-        ) : (
-          <div className="custom-table-wrapper">
-            <table className="table table-hover align-middle">
-              <thead>
-                <tr>
-                  <th>Staff ID</th>
-                  <th>Full Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Qualification</th>
-                  <th>Designation</th>
-                  <th>Subject</th>
-                  <th>Joining Date</th>
-                  <th>Updated At</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((teacher) => (
-                  <tr key={teacher.staff_id}>
-                    <td className="fw-bold text-primary">#{teacher.staff_id}</td>
-                    <td className="fw-semibold">{teacher.full_name}</td>
-                    <td>
-                      <a href={`mailto:${teacher.email}`} className="email-link">
-                        {teacher.email}
-                      </a>
-                    </td>
-                    <td className="text-muted">{teacher.phone || "-"}</td>
-                    <td>
-                      <span className="badge badge-qualification">
-                        {teacher.qualification || "-"}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="badge badge-designation">
-                        {teacher.designation || "-"}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="badge badge-subject">
-                        {teacher.subject || "-"}
-                      </span>
-                    </td>
-                    <td className="text-muted small">
-                      {teacher.joining_date
-                        ? new Date(teacher.joining_date).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : "-"}
-                    </td>
-                    <td className="text-muted small">
-                      {teacher.updated_at
-                        ? new Date(teacher.updated_at).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
+    <PrincipalLayout activeSidebarTab="teachers">
+      {content}
+      <ChatWidget />
+    </PrincipalLayout>
   );
 }
+

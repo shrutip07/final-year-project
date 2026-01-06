@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-
+import PrincipalLayout from "../../components/principal/PrincipalLayout";
 import ChatWidget from "../../components/ChatWidget";
 import "./Profile.scss";
 
-export default function PrincipalProfile() {
+export default function PrincipalProfile({ isSubComponent = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -97,9 +97,9 @@ export default function PrincipalProfile() {
     return <div className="m-4">{t("no_profile_found")}</div>;
   }
 
-  if (isEditing) {
-    return (
-      <div className="principal-profile-page">
+  const content = (
+    <div className={`principal-profile-page ${isSubComponent ? "sub-component" : ""}`}>
+      {isEditing ? (
         <div className="profile-card">
           <div className="profile-card-header">
             <h3>{t("edit_profile")}</h3>
@@ -150,113 +150,121 @@ export default function PrincipalProfile() {
             </form>
           </div>
         </div>
-      </div>
-    );
+      ) : (
+        <>
+          <div className="profile-header-section">
+            <div className="header-main">
+              <div className="profile-avatar">
+                {getInitial(profile.full_name)}
+              </div>
+              <div className="profile-title-block">
+                <div className="name-badge-row">
+                  <h2>{profile.full_name || "-"}</h2>
+                  <span className="role-badge">PRINCIPAL</span>
+                </div>
+                <div className="header-meta-info">
+                  <span className="meta-item"><i className="bi bi-envelope"></i> {profile.email || "-"}</span>
+                  <span className="meta-item"><i className="bi bi-telephone"></i> {profile.phone || "-"}</span>
+                  <span className="meta-item"><i className="bi bi-patch-check"></i> {profile.qualification || "-"}</span>
+                </div>
+              </div>
+            </div>
+            <div className="header-actions">
+              <button className="btn btn-primary edit-profile-btn" onClick={handleEdit}>
+                <i className="bi bi-pencil-square me-2"></i>
+                {t("edit_profile")}
+              </button>
+            </div>
+          </div>
+
+          <div className="profile-details-grid">
+            <div className="info-group-card">
+              <div className="card-header">
+                <i className="bi bi-person-circle"></i>
+                <h4>Personal Details</h4>
+              </div>
+              <div className="card-body">
+                <div className="detail-row">
+                  <span className="label">Full Name</span>
+                  <span className="value">{profile.full_name || "-"}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">Email</span>
+                  <span className="value">{profile.email || "-"}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">Phone</span>
+                  <span className="value">{profile.phone || "-"}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">Qualification</span>
+                  <span className="value">{profile.qualification || "-"}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="info-group-card">
+              <div className="card-header">
+                <i className="bi bi-calendar3"></i>
+                <h4>Tenure Information</h4>
+              </div>
+              <div className="card-body">
+                <div className="detail-row">
+                  <span className="label">Joining Date</span>
+                  <span className="value">{formatDate(profile.joining_date)}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">Tenure Start Date</span>
+                  <span className="value">{formatDate(profile.tenure_start_date)}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">Tenure End Date</span>
+                  <span className="value">{formatDate(profile.tenure_end_date)}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">Status</span>
+                  <span className={`status-pill ${profile.status === 'Active' ? 'active' : 'inactive'}`}>
+                    {profile.status || "Inactive"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="info-group-card system-info">
+              <div className="card-header">
+                <i className="bi bi-cpu"></i>
+                <h4>System Info</h4>
+              </div>
+              <div className="card-body">
+                <div className="detail-row">
+                  <span className="label">Principal ID</span>
+                  <span className="value">{profile.principal_id ?? "-"}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">User ID</span>
+                  <span className="value">{profile.user_id ?? "-"}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">Updated At</span>
+                  <span className="value">{formatDate(profile.updatedAt)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  if (isSubComponent) {
+    return content;
   }
 
   return (
-    <div className="principal-profile-page">
-      <div className="profile-header-section">
-        <div className="header-main">
-          <div className="profile-avatar">
-            {getInitial(profile.full_name)}
-          </div>
-          <div className="profile-title-block">
-            <div className="name-badge-row">
-              <h2>{profile.full_name || "-"}</h2>
-              <span className="role-badge">PRINCIPAL</span>
-            </div>
-            <div className="header-meta-info">
-              <span className="meta-item"><i className="bi bi-envelope"></i> {profile.email || "-"}</span>
-              <span className="meta-item"><i className="bi bi-telephone"></i> {profile.phone || "-"}</span>
-              <span className="meta-item"><i className="bi bi-patch-check"></i> {profile.qualification || "-"}</span>
-            </div>
-          </div>
-        </div>
-        <div className="header-actions">
-          <button className="btn btn-primary edit-profile-btn" onClick={handleEdit}>
-            <i className="bi bi-pencil-square me-2"></i>
-            {t("edit_profile")}
-          </button>
-        </div>
-      </div>
-
-      <div className="profile-details-grid">
-        <div className="info-group-card">
-          <div className="card-header">
-            <i className="bi bi-person-circle"></i>
-            <h4>Personal Details</h4>
-          </div>
-          <div className="card-body">
-            <div className="detail-row">
-              <span className="label">Full Name</span>
-              <span className="value">{profile.full_name || "-"}</span>
-            </div>
-            <div className="detail-row">
-              <span className="label">Email</span>
-              <span className="value">{profile.email || "-"}</span>
-            </div>
-            <div className="detail-row">
-              <span className="label">Phone</span>
-              <span className="value">{profile.phone || "-"}</span>
-            </div>
-            <div className="detail-row">
-              <span className="label">Qualification</span>
-              <span className="value">{profile.qualification || "-"}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="info-group-card">
-          <div className="card-header">
-            <i className="bi bi-calendar3"></i>
-            <h4>Tenure Information</h4>
-          </div>
-          <div className="card-body">
-            <div className="detail-row">
-              <span className="label">Joining Date</span>
-              <span className="value">{formatDate(profile.joining_date)}</span>
-            </div>
-            <div className="detail-row">
-              <span className="label">Tenure Start Date</span>
-              <span className="value">{formatDate(profile.tenure_start_date)}</span>
-            </div>
-            <div className="detail-row">
-              <span className="label">Tenure End Date</span>
-              <span className="value">{formatDate(profile.tenure_end_date)}</span>
-            </div>
-            <div className="detail-row">
-              <span className="label">Status</span>
-              <span className={`status-pill ${profile.status === 'Active' ? 'active' : 'inactive'}`}>
-                {profile.status || "Inactive"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="info-group-card system-info">
-          <div className="card-header">
-            <i className="bi bi-cpu"></i>
-            <h4>System Info</h4>
-          </div>
-          <div className="card-body">
-            <div className="detail-row">
-              <span className="label">Principal ID</span>
-              <span className="value">{profile.principal_id ?? "-"}</span>
-            </div>
-            <div className="detail-row">
-              <span className="label">User ID</span>
-              <span className="value">{profile.user_id ?? "-"}</span>
-            </div>
-            <div className="detail-row">
-              <span className="label">Updated At</span>
-              <span className="value">{formatDate(profile.updatedAt)}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
+    <PrincipalLayout activeSidebarTab="profile">
+      {content}
       <ChatWidget />
-    </div>
+    </PrincipalLayout>
   );
 }
+
