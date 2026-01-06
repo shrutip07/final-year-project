@@ -256,31 +256,59 @@ export default function PrincipalDashboard() {
   };
 
   return (
-    <PrincipalLayout
-      activeSidebarTab={sidebarTab}
-      onSidebarTabChange={setSidebarTab}
-    >
-      <div className="principal-dashboard-container">
-        {loading ? (
-          <div
-            className="d-flex flex-column align-items-center justify-content-center py-5"
-            style={{ minHeight: "400px" }}
+    <div className="dashboard-container d-flex">
+      {/* SIDEBAR */}
+      <div className="sidebar">
+        <div className="sidebar-header">
+          <div className="app-icon">
+            <i className="bi bi-mortarboard-fill" />
+          </div>
+          <h3>{t("principal_portal")}</h3>
+        </div>
+
+        <nav className="sidebar-nav">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.key}
+              className={`nav-link ${sidebarTab === item.key ? "active" : ""}`}
+              onClick={() => setSidebarTab(item.key)}
+            >
+              <i className={`bi ${item.icon}`} />
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="sidebar-footer">
+          <button
+            className="nav-link logout-btn"
+            onClick={() => {
+              localStorage.removeItem("token");
+              navigate("/login");
+            }}
           >
-            <div className="spinner-grow text-primary" role="status"></div>
-            <span className="mt-3 text-muted fw-bold">
-              Loading Principal Portal...
-            </span>
+            <i className="bi bi-box-arrow-left"></i>
+            <span>{t("logout")}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* MAIN CONTENT */}
+      <main className="main-content">
+        {loading ? (
+          <div className="loading-spinner">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">{t("loading")}...</span>
+            </div>
           </div>
         ) : error ? (
-          <div className="alert alert-danger m-4" role="alert">
-            <i className="bi bi-exclamation-triangle-fill me-2"></i>
-            {error}
-          </div>
+          <div className="alert alert-danger m-4">{error}</div>
         ) : (
           renderContent()
         )}
-      </div>
+      </main>
+
       <ChatWidget />
-    </PrincipalLayout>
+    </div>
   );
 }
