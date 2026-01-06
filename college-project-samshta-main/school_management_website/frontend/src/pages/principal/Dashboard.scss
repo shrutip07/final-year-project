@@ -11,6 +11,10 @@ $text-dark: #1e293b;
 $text-muted: #64748b;
 $border-color: #e2e8f0;
 
+// Professional HM Theme Colors (Less Flashy)
+$hm-gold: #B8860B; // Dark Goldenrod
+$hm-bg-soft: #FCF8F1;
+
 .principal-dashboard-container {
   padding: 20px;
   background-color: $background;
@@ -125,6 +129,30 @@ $border-color: #e2e8f0;
     flex-direction: column;
     gap: 24px;
 
+    &.hm-context {
+      .profile-header-card.hm-theme {
+        background: $hm-bg-soft;
+        &::before { background: $hm-gold; }
+        
+        .profile-avatar.hm {
+          background: linear-gradient(135deg, $hm-gold, darken($hm-gold, 15%));
+          box-shadow: 0 8px 20px rgba($hm-gold, 0.2);
+        }
+        
+        .profile-badge.hm {
+          background: rgba($hm-gold, 0.1);
+          color: $hm-gold;
+        }
+      }
+
+      .detail-card {
+        .detail-icon {
+          background: rgba($hm-gold, 0.08);
+          color: $hm-gold;
+        }
+      }
+    }
+
     .profile-header-card {
       background: $white;
       padding: 30px;
@@ -143,8 +171,6 @@ $border-color: #e2e8f0;
         background: $accent;
       }
 
-      &.hm-theme::before { background: $warning; }
-
       .profile-main-info {
         display: flex;
         align-items: center;
@@ -162,8 +188,6 @@ $border-color: #e2e8f0;
           font-size: 3rem;
           font-weight: 800;
           box-shadow: 0 8px 20px rgba($primary, 0.2);
-
-          &.hm { background: linear-gradient(135deg, $warning, #ff8c00); }
         }
 
         .profile-name-block {
@@ -177,8 +201,6 @@ $border-color: #e2e8f0;
             font-size: 0.8rem;
             font-weight: 700;
             margin: 8px 0;
-
-            &.hm { background: rgba($warning, 0.1); color: $warning; }
           }
           .profile-location {
             margin: 0;
@@ -205,6 +227,11 @@ $border-color: #e2e8f0;
         align-items: center;
         gap: 16px;
         border: 1px solid rgba($border-color, 0.5);
+        transition: transform 0.2s ease;
+
+        &:hover {
+          transform: scale(1.02);
+        }
 
         .detail-icon {
           width: 48px;
@@ -256,7 +283,129 @@ $border-color: #e2e8f0;
     }
   }
 
-  // 4. Modern Unit Grid
+  // 4. Directory & Table Styles (Teacher/Student)
+  .directory-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .directory-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      background: $white;
+      padding: 15px 20px;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      border: 1px solid $border-color;
+
+      .search-box {
+        position: relative;
+        flex: 1;
+        max-width: 400px;
+
+        .search-icon {
+          position: absolute;
+          left: 15px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: $text-muted;
+        }
+
+        .form-control {
+          padding-left: 45px;
+          height: 45px;
+          border-radius: 12px;
+          border: 1px solid $border-color;
+          font-size: 0.95rem;
+          transition: all 0.2s;
+
+          &:focus {
+            border-color: $accent;
+            box-shadow: 0 0 0 4px rgba($accent, 0.1);
+          }
+        }
+      }
+
+      .toolbar-actions {
+        .form-select {
+          height: 45px;
+          border-radius: 12px;
+          padding: 0 20px;
+          font-weight: 600;
+          border: 1px solid $border-color;
+          cursor: pointer;
+        }
+      }
+    }
+
+    .table-container {
+      background: $white;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+      border: 1px solid rgba($border-color, 0.8);
+      overflow: hidden;
+
+      .custom-table-wrapper {
+        overflow-x: auto;
+
+        .table {
+          margin-bottom: 0;
+          
+          thead {
+            background: rgba($primary, 0.02);
+            tr th {
+              padding: 18px 20px;
+              font-size: 0.8rem;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+              font-weight: 800;
+              color: $text-muted;
+              border-bottom: 1px solid $border-color;
+            }
+          }
+
+          tbody {
+            tr {
+              transition: all 0.2s;
+              &:hover {
+                background-color: rgba($accent, 0.02);
+              }
+              td {
+                padding: 16px 20px;
+                border-bottom: 1px solid rgba($border-color, 0.5);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Custom Badges
+    .badge {
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: capitalize;
+
+      &-qualification { background: rgba($primary, 0.08); color: $primary; }
+      &-designation { background: rgba($accent, 0.08); color: $accent; }
+      &-subject { background: rgba($success, 0.08); color: $success; }
+      &-status-active { background: #dcfce7; color: #166534; }
+      &-status-inactive { background: #fee2e2; color: #991b1b; }
+    }
+
+    .email-link {
+      color: $accent;
+      text-decoration: none;
+      font-weight: 600;
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  // 5. Modern Unit Grid
   .modern-unit-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -305,7 +454,7 @@ $border-color: #e2e8f0;
     }
   }
 
-  // 5. Finance Section
+  // 6. Finance Section
   .modern-finance-section {
     display: flex;
     flex-direction: column;
@@ -452,6 +601,11 @@ $border-color: #e2e8f0;
 // Responsive Tweaks
 @media (max-width: 992px) {
   .principal-dashboard-container {
+    .directory-controls {
+      flex-direction: column;
+      align-items: stretch;
+      .search-box { max-width: none; }
+    }
     .modern-finance-section {
       .balance-strip-modern {
         flex-direction: column;

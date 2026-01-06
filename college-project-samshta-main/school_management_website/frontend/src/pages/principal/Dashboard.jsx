@@ -184,9 +184,9 @@ export default function PrincipalDashboard() {
             </div>
           )}
 
-          {dashboardSubTab === "headmistress_info" && (
-            <div className="modern-profile-section">
-              <div className="profile-header-card hm-theme">
+            {dashboardSubTab === "headmistress_info" && (
+              <div className="modern-profile-section hm-context">
+                <div className="profile-header-card hm-theme">
                 <div className="profile-main-info">
                   <div className="profile-avatar hm">
                     {school.headmistress_name ? school.headmistress_name.charAt(0).toUpperCase() : "H"}
