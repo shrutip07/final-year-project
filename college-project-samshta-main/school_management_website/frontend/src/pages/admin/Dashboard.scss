@@ -378,6 +378,257 @@ $background: #F9FAFB;
       .value { color: $emerald; }
       .sub-label { color: darken($emerald, 5%); }
     }
+
+    // Principal Dashboard Specific Metric Colors
+    &.metric-teachers-blue {
+      background: linear-gradient(135deg, rgba($accent, 0.1) 0%, rgba($accent, 0.05) 100%);
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      .label { color: darken($accent, 15%); text-align: center; width: 100%; }
+      .value { color: $accent; text-align: center; width: 100%; font-weight: 800; }
+      &::before { display: none; }
+      i.watermark {
+        position: absolute;
+        right: -10px;
+        bottom: -10px;
+        font-size: 80px;
+        opacity: 0.05;
+        color: $accent;
+      }
+    }
+
+    &.metric-students-green {
+      background: linear-gradient(135deg, rgba($emerald, 0.1) 0%, rgba($emerald, 0.05) 100%);
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      .label { color: darken($emerald, 15%); text-align: center; width: 100%; }
+      .value { color: $emerald; text-align: center; width: 100%; font-weight: 800; }
+      &::before { display: none; }
+      i.watermark {
+        position: absolute;
+        right: -10px;
+        bottom: -10px;
+        font-size: 80px;
+        opacity: 0.05;
+        color: $emerald;
+      }
+    }
+
+    &.metric-ratio-amber {
+      background: linear-gradient(135deg, rgba($highlight, 0.2) 0%, rgba($highlight, 0.1) 100%);
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      .label { color: darken($highlight, 25%); text-align: center; width: 100%; }
+      .value { color: darken($highlight, 15%); text-align: center; width: 100%; font-weight: 800; }
+      &::before { display: none; }
+      i.watermark {
+        position: absolute;
+        right: -10px;
+        bottom: -10px;
+        font-size: 80px;
+        opacity: 0.05;
+        color: $highlight;
+      }
+    }
+
+    &.metric-budget-teal {
+      background: linear-gradient(135deg, rgba($support, 0.1) 0%, rgba($support, 0.05) 100%);
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      .label { color: darken($support, 15%); text-align: center; width: 100%; }
+      .value { color: $support; text-align: center; width: 100%; font-weight: 800; }
+      &::before { display: none; }
+      i.watermark {
+        position: absolute;
+        right: -10px;
+        bottom: -10px;
+        font-size: 80px;
+        opacity: 0.05;
+        color: $support;
+      }
+    }
+  }
+}
+
+// Full-width Tab Navigation for Principal
+.principal-tabs-container {
+  width: 100%;
+  margin-bottom: 25px;
+
+  .tab-navigation-bar {
+    width: 100%;
+    height: 60px;
+    padding: 6px;
+    
+    .tab-item {
+      height: 100%;
+      font-size: 15px;
+      padding: 0 20px;
+      border-radius: 30px; // Pill style
+      
+      &.active {
+        background: $primary;
+        color: $white;
+      }
+    }
+  }
+}
+
+// Finance Overview Styles
+.finance-overview-section {
+  .finance-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .finance-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .finance-metric-card {
+    background: $white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+
+    .title {
+      font-size: 16px;
+      font-weight: 700;
+      color: $text-dark;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: $text-muted;
+      margin-bottom: 12px;
+    }
+
+    .amount {
+      font-size: 24px;
+      font-weight: 800;
+      color: $primary;
+    }
+  }
+
+  .balance-strip {
+    background: $primary;
+    color: $white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+
+    .text {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .calculation {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .amount {
+      font-size: 20px;
+      font-weight: 800;
+    }
+  }
+}
+
+// Profile Enhancements
+.profile-card-wide {
+  background: $white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  display: flex;
+  margin-bottom: 25px;
+
+  .profile-left {
+    width: 300px;
+    background: linear-gradient(135deg, $primary 0%, $accent 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: $white;
+
+    .profile-avatar-large {
+      width: 120px;
+      height: 120px;
+      background: rgba($white, 0.2);
+      border: 4px solid rgba($white, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 50px;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 5px;
+      text-align: center;
+    }
+
+    .designation-badge {
+      background: $highlight;
+      color: $primary;
+      padding: 4px 15px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+  }
+
+  .profile-right {
+    flex: 1;
+    padding: 40px;
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .detail-item {
+      .label {
+        font-size: 12px;
+        color: $text-muted;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+        display: block;
+      }
+
+      .value {
+        font-size: 16px;
+        font-weight: 700;
+        color: $text-dark;
+      }
+    }
+
+    .divider {
+      height: 1px;
+      background: #f1f5f9;
+      grid-column: span 2;
+      margin: 10px 0;
+    }
   }
 }
 
