@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import ChatWidget from "../../components/ChatWidget";
 import AdminLayout from "../../components/admin/AdminLayout";
@@ -6,6 +7,7 @@ import AdminCard from "../../components/admin/AdminCard";
 import EmptyState from "../../components/admin/EmptyState";
 
 export default function Report() {
+	const navigate = useNavigate();
 	const [units, setUnits] = useState([]);
 	const [unitId, setUnitId] = useState("");
 	const [loading, setLoading] = useState(false);
@@ -46,25 +48,28 @@ export default function Report() {
       <div className="reports-page">
         <AdminCard header="Generate School Reports">
           <p className="text-muted small mb-4">Select a school to download or preview a full report</p>
-          <div className="row align-items-end">
-            <div className="col-md-8 mb-3 mb-md-0">
-              <label className="form-label small fw-bold">Select School</label>
-              <select className="form-select" value={unitId} onChange={e => setUnitId(e.target.value)}>
-                <option value="">Select</option>
-                {units.map(u => (
-                  <option key={u.unit_id} value={u.unit_id}>
-                    {u.kendrashala_name || u.name || `Unit ${u.unit_id}`}
-                  </option>
-                ))}
-              </select>
+            <div className="row align-items-end">
+              <div className="col-md-6 mb-3 mb-md-0">
+                <label className="form-label small fw-bold">Select School</label>
+                <select className="form-select" value={unitId} onChange={e => setUnitId(e.target.value)}>
+                  <option value="">Select</option>
+                  {units.map(u => (
+                    <option key={u.unit_id} value={u.unit_id}>
+                      {u.kendrashala_name || u.name || `Unit ${u.unit_id}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-md-6 d-flex gap-2">
+                <button className="btn btn-primary flex-fill" onClick={() => generateReport()} disabled={loading || !unitId}>
+                  {loading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-file-earmark-pdf me-2"></i>}
+                  Generate Report
+                </button>
+                <button className="btn btn-secondary" onClick={() => navigate("/admin")}>
+                  Go to Admin Dashboard
+                </button>
+              </div>
             </div>
-            <div className="col-md-4">
-              <button className="btn btn-primary w-100" onClick={() => generateReport()} disabled={loading || !unitId}>
-                {loading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="bi bi-file-earmark-pdf me-2"></i>}
-                Generate Report
-              </button>
-            </div>
-          </div>
         </AdminCard>
 
         {units.length === 0 ? (

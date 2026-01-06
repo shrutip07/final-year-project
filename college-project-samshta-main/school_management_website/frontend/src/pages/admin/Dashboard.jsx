@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
 import "./Dashboard.scss";
@@ -16,7 +16,21 @@ import EmptyState from "../../components/admin/EmptyState";
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
-  const [sidebarTab, setSidebarTab] = useState("dashboard");
+  const location = useLocation();
+
+  const getTabFromPath = (path) => {
+    if (path.includes("/admin/charts")) return "charts";
+    if (path.includes("/admin/notifications")) return "notifications";
+    if (path.includes("/admin/reports") || path.includes("/admin/report")) return "reports";
+    return "dashboard";
+  };
+
+  const [sidebarTab, setSidebarTab] = useState(getTabFromPath(location.pathname));
+
+  useEffect(() => {
+    setSidebarTab(getTabFromPath(location.pathname));
+  }, [location.pathname]);
+
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -349,17 +363,25 @@ export default function AdminDashboard() {
               </select>
             </div>
           </div>
-          <button
-            className="btn btn-primary"
-            disabled={!selectedReportYear}
-            onClick={fetchReportSchools}
-          >
-            {reportLoading ? (
-              <span className="spinner-border spinner-border-sm" />
-            ) : (
-              "Fetch Schools"
-            )}
-          </button>
+            <div className="d-flex gap-2">
+              <button
+                className="btn btn-primary"
+                disabled={!selectedReportYear}
+                onClick={fetchReportSchools}
+              >
+                {reportLoading ? (
+                  <span className="spinner-border spinner-border-sm" />
+                ) : (
+                  "Fetch Schools"
+                )}
+              </button>
+              <button
+                className="btn btn-secondary"
+                onClick={() => setSidebarTab("dashboard")}
+              >
+                Go to Admin Dashboard
+              </button>
+            </div>
         </AdminCard>
 
         {reportSchools.length > 0 && (
@@ -1214,9 +1236,9 @@ export default function AdminDashboard() {
             </div>
           </div>
         ) : (
-            safeUnits.map((unit, idx) => (
-              <div key={unit.unit_id} className="col-md-4 col-sm-6 mb-4">
-                <div className="school-card-pro" onClick={() => handleUnitCardClick(unit.unit_id)}>
+              safeUnits.map((unit, idx) => (
+                <div key={unit.unit_id} className="col-lg-3 col-md-4 col-sm-6 mb-4">
+                  <div className="school-card-pro" onClick={() => handleUnitCardClick(unit.unit_id)}>
                    <div className="card-accent" style={{ backgroundColor: idx % 3 === 0 ? '#002E6D' : idx % 3 === 1 ? '#00A9A5' : '#0057D9' }}></div>
                    <div className="card-header-pro">
                      <div className="school-symbol">
