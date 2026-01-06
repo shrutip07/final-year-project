@@ -12,6 +12,7 @@ import PhysicalSafety from "./PhysicalSafety";
 
 // Shared Components
 import ClerkLayout from "../../components/admin/ClerkLayout";
+import TabNavigation from "../../components/admin/TabNavigation";
 import AdminCard from "../../components/admin/AdminCard";
 import TableContainer from "../../components/admin/TableContainer";
 import EmptyState from "../../components/admin/EmptyState";
@@ -21,6 +22,7 @@ import "./Dashboard.scss";
 
 export default function ClerkDashboard() {
   const [sidebarTab, setSidebarTab] = useState("dashboard");
+  const [activeSubTab, setActiveSubTab] = useState("enrollment");
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [checkingProfile, setCheckingProfile] = useState(true);
@@ -141,100 +143,118 @@ export default function ClerkDashboard() {
           </div>
         </div>
   
-        <div className="row g-4">
-          <div className="col-lg-8">
-            <AdminCard header={
-              <div className="d-flex align-items-center gap-2">
-                <i className="bi bi-table text-primary"></i>
-                <span>Class Enrollment Statistics</span>
-              </div>
-            }>
-              <TableContainer title="">
-                <div className="table-responsive professional-table">
-                  <table className="table align-middle table-hover mb-0">
-                    <thead>
-                      <tr>
-                        <th className="ps-3">Standard</th>
-                        <th>Division</th>
-                        <th>Capacity</th>
-                        <th>Enrolled</th>
-                        <th className="text-end pe-3">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dashboard?.classStats?.length > 0 ? (
-                        dashboard.classStats.map((stat, i) => (
-                          <tr key={i}>
-                            <td className="ps-3 fw-bold text-dark">STD {stat.standard}</td>
-                            <td><span className="badge bg-light text-dark border">{stat.division || "ALL"}</span></td>
-                            <td>{stat.capacity}</td>
-                            <td>
-                              <div className="d-flex align-items-center gap-2">
-                                <span className="fw-semibold text-primary">{stat.enrolled}</span>
-                                <div className="progress flex-grow-1" style={{ height: '6px', maxWidth: '60px' }}>
-                                  <div 
-                                    className="progress-bar bg-primary" 
-                                    style={{ width: `${(stat.enrolled / stat.capacity) * 100}%` }}
-                                  ></div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="text-end pe-3">
-                              <span className={`erp-badge ${stat.seatsRemaining > 0 ? 'badge-success' : 'badge-danger'}`}>
-                                {stat.seatsRemaining} Left
-                              </span>
-                            </td>
+        <TabNavigation
+          tabs={[
+            { id: "enrollment", label: "Class Enrollment Statistics", icon: "bi-table" },
+            { id: "retirements", label: "Upcoming Retirements", icon: "bi-calendar3" },
+          ]}
+          activeTab={activeSubTab}
+          onTabChange={setActiveSubTab}
+        />
+
+        <div className="tab-pane-container mt-4">
+          {activeSubTab === "enrollment" && (
+            <div className="row">
+              <div className="col-12">
+                <AdminCard header={
+                  <div className="d-flex align-items-center gap-2">
+                    <i className="bi bi-table text-primary"></i>
+                    <span>Class Enrollment Statistics</span>
+                  </div>
+                }>
+                  <TableContainer title="">
+                    <div className="table-responsive professional-table">
+                      <table className="table align-middle table-hover mb-0">
+                        <thead>
+                          <tr>
+                            <th className="ps-3">Standard</th>
+                            <th>Division</th>
+                            <th>Capacity</th>
+                            <th>Enrolled</th>
+                            <th className="text-end pe-3">Status</th>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="5" className="text-center py-5 text-muted">
-                            <i className="bi bi-inbox fs-2 d-block mb-2"></i>
-                            No enrollment data found for current academic year.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </TableContainer>
-            </AdminCard>
-          </div>
-          <div className="col-lg-4">
-            <AdminCard header={
-              <div className="d-flex align-items-center gap-2">
-                <i className="bi bi-calendar3 text-primary"></i>
-                <span>Upcoming Retirements</span>
-              </div>
-            }>
-              <div className="retirement-list p-1">
-                {dashboard?.upcomingRetirements?.length > 0 ? (
-                  dashboard.upcomingRetirements.map((ret, i) => (
-                    <div key={i} className="retirement-item d-flex justify-content-between align-items-center mb-3 p-3 rounded-4 border-start border-4 border-primary shadow-sm bg-white">
-                      <div>
-                        <span className="d-block fw-bold text-dark mb-1">Financial Year {ret.year}</span>
-                        <div className="d-flex align-items-center gap-2">
-                          <span className="badge bg-soft-primary text-primary">{ret.count} Staff Members</span>
-                          <span className="small text-muted">Projected</span>
-                        </div>
-                      </div>
-                      <div className="icon-circle bg-light text-primary">
-                        <i className="bi bi-person-x"></i>
-                      </div>
+                        </thead>
+                        <tbody>
+                          {dashboard?.classStats?.length > 0 ? (
+                            dashboard.classStats.map((stat, i) => (
+                              <tr key={i}>
+                                <td className="ps-3 fw-bold text-dark">STD {stat.standard}</td>
+                                <td><span className="badge bg-light text-dark border">{stat.division || "ALL"}</span></td>
+                                <td>{stat.capacity}</td>
+                                <td>
+                                  <div className="d-flex align-items-center gap-2">
+                                    <span className="fw-semibold text-primary">{stat.enrolled}</span>
+                                    <div className="progress flex-grow-1" style={{ height: '6px', maxWidth: '60px' }}>
+                                      <div 
+                                        className="progress-bar bg-primary" 
+                                        style={{ width: `${(stat.enrolled / stat.capacity) * 100}%` }}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="text-end pe-3">
+                                  <span className={`erp-badge ${stat.seatsRemaining > 0 ? 'badge-success' : 'badge-danger'}`}>
+                                    {stat.seatsRemaining} Left
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="5" className="text-center py-5 text-muted">
+                                <i className="bi bi-inbox fs-2 d-block mb-2"></i>
+                                No enrollment data found for current academic year.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
                     </div>
-                  ))
-                ) : (
-                  <EmptyState title="No Records" description="No upcoming retirements found in database." />
-                )}
+                  </TableContainer>
+                </AdminCard>
               </div>
-              <div className="mt-4 p-3 bg-soft-info rounded-3">
-                <p className="small text-info mb-0">
-                  <i className="bi bi-info-circle me-1"></i>
-                  Note: Retirement projections are based on service record data.
-                </p>
+            </div>
+          )}
+
+          {activeSubTab === "retirements" && (
+            <div className="row">
+              <div className="col-lg-8">
+                <AdminCard header={
+                  <div className="d-flex align-items-center gap-2">
+                    <i className="bi bi-calendar3 text-primary"></i>
+                    <span>Upcoming Retirements</span>
+                  </div>
+                }>
+                  <div className="retirement-list p-1">
+                    {dashboard?.upcomingRetirements?.length > 0 ? (
+                      dashboard.upcomingRetirements.map((ret, i) => (
+                        <div key={i} className="retirement-item d-flex justify-content-between align-items-center mb-3 p-3 rounded-4 border-start border-4 border-primary shadow-sm bg-white">
+                          <div>
+                            <span className="d-block fw-bold text-dark mb-1">Financial Year {ret.year}</span>
+                            <div className="d-flex align-items-center gap-2">
+                              <span className="badge bg-soft-primary text-primary">{ret.count} Staff Members</span>
+                              <span className="small text-muted">Projected</span>
+                            </div>
+                          </div>
+                          <div className="icon-circle bg-light text-primary">
+                            <i className="bi bi-person-x"></i>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <EmptyState title="No Records" description="No upcoming retirements found in database." />
+                    )}
+                  </div>
+                  <div className="mt-4 p-3 bg-soft-info rounded-3">
+                    <p className="small text-info mb-0">
+                      <i className="bi bi-info-circle me-1"></i>
+                      Note: Retirement projections are based on service record data.
+                    </p>
+                  </div>
+                </AdminCard>
               </div>
-            </AdminCard>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     );
