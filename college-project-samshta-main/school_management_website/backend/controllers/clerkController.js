@@ -427,12 +427,18 @@ exports.getUnitDashboard = async (req, res) => {
 
     // Existing teacher and student counters
     const teacherRes = await pool.query(
-      "SELECT COUNT(*) as teacher_count FROM staff WHERE unit_id = $1 AND staff_type = 'teaching'",
-      [unit_id]
+      `SELECT COUNT(DISTINCT st.staff_id) as teacher_count 
+       FROM staff st
+       JOIN teacher_class_assignments tca ON st.staff_id = tca.staff_id
+       WHERE st.unit_id = $1 AND st.staff_type = 'teaching' AND tca.academic_year = $2`,
+      [unit_id, academic_year]
     );
     const studentRes = await pool.query(
-      "SELECT COUNT(*) as student_count FROM students WHERE unit_id = $1",
-      [unit_id]
+      `SELECT COUNT(DISTINCT e.student_id) as student_count 
+       FROM enrollments e
+       JOIN students s ON s.student_id = e.student_id
+       WHERE s.unit_id = $1 AND e.academic_year = $2`,
+      [unit_id, academic_year]
     );
     // Count upcoming retirements grouped by calendar year (current and future)
 const retireRes = await pool.query(
