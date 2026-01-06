@@ -28,7 +28,16 @@ const {
   getPhysicalSafetyInfo,
   updatePhysicalSafetyInfo,
   upsertClassCapacity,
-  getPhysicalSafetyAnalytics
+  getPhysicalSafetyAnalytics,
+  getMedicalReadiness,
+updateMedicalReadiness,
+getSurveillance,
+updateSurveillance,
+getEmergencyResponse,
+updateEmergencyResponse,
+listComplianceCertificates,
+addComplianceCertificate,
+deleteComplianceCertificate
 } = require('../controllers/clerkController');
 // Onboarding (create/update profile)
 router.post('/onboard', authenticateToken, authorizeRoles('clerk'), onboard);
@@ -50,6 +59,23 @@ router.post('/fee-master', authenticateToken, authorizeRoles('clerk'), setFeeMas
 router.get('/teachers', authenticateToken, authorizeRoles('clerk'), listTeachersForClerk);
 router.put('/teacher-retirement', authenticateToken, authorizeRoles('clerk'), updateTeacherRetirement);
 
+
+// Medical readiness
+router.get('/medical-readiness', authenticateToken, authorizeRoles('clerk'), getMedicalReadiness);
+router.put('/medical-readiness', authenticateToken, authorizeRoles('clerk'), updateMedicalReadiness);
+
+// Surveillance & security
+router.get('/surveillance', authenticateToken, authorizeRoles('clerk'), getSurveillance);
+router.put('/surveillance', authenticateToken, authorizeRoles('clerk'), updateSurveillance);
+
+// Emergency response
+router.get('/emergency-response', authenticateToken, authorizeRoles('clerk'), getEmergencyResponse);
+router.put('/emergency-response', authenticateToken, authorizeRoles('clerk'), updateEmergencyResponse);
+
+// Compliance certificates
+router.get('/compliance-certificates', authenticateToken, authorizeRoles('clerk'), listComplianceCertificates);
+router.post('/compliance-certificates', authenticateToken, authorizeRoles('clerk'), addComplianceCertificate);
+router.delete('/compliance-certificates/:id', authenticateToken, authorizeRoles('clerk'), deleteComplianceCertificate);
 // Dashboard unit details, teacher/students count
 router.get("/unit", authenticateToken, authorizeRoles("clerk"), getUnitDashboard);
 router.get('/teacher-salaries', authenticateToken, authorizeRoles('clerk'), getAllTeacherSalaries);
