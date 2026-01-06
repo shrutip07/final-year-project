@@ -24,19 +24,22 @@ exports.getProfile = async (req, res) => {
 };
 // Get top N students per standard for the principal's unit
 // Query parameter: ?limit=3  (default 3)
+// Get top N students per standard for the principal's unit
+// Query parameters: ?limit=3 (default), ?academic_year=2024-25 (optional)
 exports.getToppers = async (req, res) => {
   try {
     const userId = req.user.id;
     const limit = parseInt(req.query.limit, 10) || 3;
+    const academicYear = req.query.academic_year; // optional
 
     // Get principal's unit_id
     const principalResult = await pool.query('SELECT unit_id FROM principal WHERE user_id = $1', [userId]);
     if (principalResult.rows.length === 0) return res.status(404).json({ error: "No principal/unit assigned" });
     const unitId = principalResult.rows[0].unit_id;
 
-    // Partition by standard and pick top N by percentage (highest first).
-    // We assume `enrollments.percentage` exists; if your schema uses marks instead, adjust the column.
-    const q = `
+    // Build SQL with optional academic_year filter
+    // Use parameterized query; we always pass unitId and limit, and optionally academicYear
+    let q = `
       SELECT student_id, full_name, standard, division, academic_year, percentage, rn
       FROM (
         SELECT s.student_id, s.full_name, e.standard, e.division, e.academic_year, e.percentage,
@@ -44,11 +47,22 @@ exports.getToppers = async (req, res) => {
           FROM students s
           JOIN enrollments e ON e.student_id = s.student_id
          WHERE s.unit_id = $1
+    `;
+    const params = [unitId, limit];
+
+    if (academicYear) {
+      q += ` AND e.academic_year = $3`;
+      params.push(academicYear);
+    }
+
+    q += `
       ) t
       WHERE rn <= $2
       ORDER BY standard, rn;
     `;
-    const result = await pool.query(q, [unitId, limit]);
+
+    // If academicYear was provided, params = [unitId, limit, academicYear]
+    const result = await pool.query(q, params);
 
     // Group by standard for a friendly response shape
     const grouped = {};
@@ -65,15 +79,13 @@ exports.getToppers = async (req, res) => {
       });
     }
 
-    // Convert to array sorted by standard
     const response = Object.keys(grouped).sort((a,b) => {
-      // try numeric sort if possible
       const na = Number(a), nb = Number(b);
       if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
       return a.localeCompare(b);
     }).map(std => ({ standard: std, toppers: grouped[std] }));
 
-    res.json({ limit, data: response });
+    res.json({ limit, academic_year: academicYear || null, data: response });
   } catch (err) {
     console.error("getToppers error:", err);
     res.status(500).json({ error: "Failed to fetch toppers" });

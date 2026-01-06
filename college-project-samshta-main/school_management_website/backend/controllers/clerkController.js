@@ -32,6 +32,281 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({ error: "Failed to update profile" });
   }
 };
+
+// --------- MEDICAL READINESS ----------
+exports.getMedicalReadiness = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { rows: clerkRows } = await pool.query('SELECT unit_id FROM clerks WHERE user_id = $1', [userId]);
+    const unit_id = clerkRows[0]?.unit_id;
+    if (!unit_id) return res.status(404).json({ error: "No unit assigned" });
+
+    const { rows } = await pool.query('SELECT * FROM medical_readiness WHERE unit_id = $1', [unit_id]);
+    res.json(rows[0] || {});
+  } catch (err) {
+    console.error('getMedicalReadiness error:', err);
+    res.status(500).json({ error: 'Failed to load medical readiness' });
+  }
+};
+
+exports.updateMedicalReadiness = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { rows: clerkRows } = await pool.query('SELECT unit_id FROM clerks WHERE user_id = $1', [userId]);
+    const unit_id = clerkRows[0]?.unit_id;
+    if (!unit_id) return res.status(404).json({ error: "No unit assigned" });
+
+    const {
+      first_aid_kits_count,
+      first_aid_kit_locations,
+      last_kit_inspection,
+      trained_first_aiders_count,
+      trained_first_aiders_names,
+      ambulance_access,
+      nearest_hospital_name,
+      nearest_hospital_distance_km,
+      emergency_contact_numbers
+    } = req.body;
+
+    const { rows } = await pool.query(`
+      INSERT INTO medical_readiness (
+        unit_id,
+        first_aid_kits_count,
+        first_aid_kit_locations,
+        last_kit_inspection,
+        trained_first_aiders_count,
+        trained_first_aiders_names,
+        ambulance_access,
+        nearest_hospital_name,
+        nearest_hospital_distance_km,
+        emergency_contact_numbers,
+        updated_at
+      ) VALUES (
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,CURRENT_TIMESTAMP
+      )
+      ON CONFLICT (unit_id) DO UPDATE SET
+        first_aid_kits_count = $2,
+        first_aid_kit_locations = $3,
+        last_kit_inspection = $4,
+        trained_first_aiders_count = $5,
+        trained_first_aiders_names = $6,
+        ambulance_access = $7,
+        nearest_hospital_name = $8,
+        nearest_hospital_distance_km = $9,
+        emergency_contact_numbers = $10,
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *`,
+      [
+        unit_id,
+        first_aid_kits_count,
+        first_aid_kit_locations,
+        last_kit_inspection,
+        trained_first_aiders_count,
+        trained_first_aiders_names,
+        ambulance_access,
+        nearest_hospital_name,
+        nearest_hospital_distance_km,
+        emergency_contact_numbers
+      ]
+    );
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('updateMedicalReadiness error:', err);
+    res.status(500).json({ error: 'Failed to save medical readiness' });
+  }
+};
+
+// --------- SURVEILLANCE & SECURITY ----------
+exports.getSurveillance = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { rows: clerkRows } = await pool.query('SELECT unit_id FROM clerks WHERE user_id = $1', [userId]);
+    const unit_id = clerkRows[0]?.unit_id;
+    if (!unit_id) return res.status(404).json({ error: "No unit assigned" });
+
+    const { rows } = await pool.query('SELECT * FROM surveillance WHERE unit_id = $1', [unit_id]);
+    res.json(rows[0] || {});
+  } catch (err) {
+    console.error('getSurveillance error:', err);
+    res.status(500).json({ error: 'Failed to load surveillance' });
+  }
+};
+
+exports.updateSurveillance = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { rows: clerkRows } = await pool.query('SELECT unit_id FROM clerks WHERE user_id = $1', [userId]);
+    const unit_id = clerkRows[0]?.unit_id;
+    if (!unit_id) return res.status(404).json({ error: "No unit assigned" });
+
+    const {
+      cctv_cameras_count,
+      cctv_coverage_areas,
+      cctv_working_count,
+      cctv_last_maintenance,
+      recording_retention_days,
+      security_guards_count,
+      security_guard_shift,
+      visitor_log_maintained
+    } = req.body;
+
+    const { rows } = await pool.query(`
+      INSERT INTO surveillance (
+        unit_id, cctv_cameras_count, cctv_coverage_areas, cctv_working_count,
+        cctv_last_maintenance, recording_retention_days, security_guards_count,
+        security_guard_shift, visitor_log_maintained, updated_at
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,CURRENT_TIMESTAMP)
+      ON CONFLICT (unit_id) DO UPDATE SET
+        cctv_cameras_count = $2,
+        cctv_coverage_areas = $3,
+        cctv_working_count = $4,
+        cctv_last_maintenance = $5,
+        recording_retention_days = $6,
+        security_guards_count = $7,
+        security_guard_shift = $8,
+        visitor_log_maintained = $9,
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *`,
+      [
+        unit_id, cctv_cameras_count, cctv_coverage_areas, cctv_working_count,
+        cctv_last_maintenance, recording_retention_days, security_guards_count,
+        security_guard_shift, visitor_log_maintained
+      ]
+    );
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('updateSurveillance error:', err);
+    res.status(500).json({ error: 'Failed to save surveillance' });
+  }
+};
+
+// --------- EMERGENCY RESPONSE ----------
+exports.getEmergencyResponse = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { rows: clerkRows } = await pool.query('SELECT unit_id FROM clerks WHERE user_id = $1', [userId]);
+    const unit_id = clerkRows[0]?.unit_id;
+    if (!unit_id) return res.status(404).json({ error: "No unit assigned" });
+
+    const { rows } = await pool.query('SELECT * FROM emergency_response WHERE unit_id = $1', [unit_id]);
+    res.json(rows[0] || {});
+  } catch (err) {
+    console.error('getEmergencyResponse error:', err);
+    res.status(500).json({ error: 'Failed to load emergency response' });
+  }
+};
+
+exports.updateEmergencyResponse = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { rows: clerkRows } = await pool.query('SELECT unit_id FROM clerks WHERE user_id = $1', [userId]);
+    const unit_id = clerkRows[0]?.unit_id;
+    if (!unit_id) return res.status(404).json({ error: "No unit assigned" });
+
+    const {
+      emergency_plan_document,
+      emergency_plan_last_updated,
+      emergency_drills_per_year,
+      last_mock_drill_date,
+      staff_trained_in_cpr_count,
+      disaster_management_committee,
+      committee_members
+    } = req.body;
+
+    const { rows } = await pool.query(`
+      INSERT INTO emergency_response (
+        unit_id, emergency_plan_document, emergency_plan_last_updated,
+        emergency_drills_per_year, last_mock_drill_date, staff_trained_in_cpr_count,
+        disaster_management_committee, committee_members, updated_at
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,CURRENT_TIMESTAMP)
+      ON CONFLICT (unit_id) DO UPDATE SET
+        emergency_plan_document = $2,
+        emergency_plan_last_updated = $3,
+        emergency_drills_per_year = $4,
+        last_mock_drill_date = $5,
+        staff_trained_in_cpr_count = $6,
+        disaster_management_committee = $7,
+        committee_members = $8,
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING *`,
+      [
+        unit_id,
+        emergency_plan_document,
+        emergency_plan_last_updated,
+        emergency_drills_per_year,
+        last_mock_drill_date,
+        staff_trained_in_cpr_count,
+        disaster_management_committee,
+        committee_members
+      ]
+    );
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('updateEmergencyResponse error:', err);
+    res.status(500).json({ error: 'Failed to save emergency response' });
+  }
+};
+
+// --------- COMPLIANCE CERTIFICATES (list/add/delete) ----------
+exports.listComplianceCertificates = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { rows: clerkRows } = await pool.query('SELECT unit_id FROM clerks WHERE user_id = $1', [userId]);
+    const unit_id = clerkRows[0]?.unit_id;
+    if (!unit_id) return res.status(404).json({ error: "No unit assigned" });
+
+    const { rows } = await pool.query('SELECT * FROM compliance_certificates WHERE unit_id = $1 ORDER BY expiry_date', [unit_id]);
+    res.json(rows);
+  } catch (err) {
+    console.error('listComplianceCertificates error:', err);
+    res.status(500).json({ error: 'Failed to load certificates' });
+  }
+};
+
+exports.addComplianceCertificate = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { rows: clerkRows } = await pool.query('SELECT unit_id FROM clerks WHERE user_id = $1', [userId]);
+    const unit_id = clerkRows[0]?.unit_id;
+    if (!unit_id) return res.status(404).json({ error: "No unit assigned" });
+
+    const { certificate_type, certificate_number, issue_date, expiry_date, status } = req.body;
+    const { rows } = await pool.query(`
+      INSERT INTO compliance_certificates (unit_id, certificate_type, certificate_number, issue_date, expiry_date, status)
+      VALUES ($1,$2,$3,$4,$5,$6)
+      RETURNING *`,
+      [unit_id, certificate_type, certificate_number, issue_date, expiry_date, status || 'valid']
+    );
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('addComplianceCertificate error:', err);
+    res.status(500).json({ error: 'Failed to add certificate' });
+  }
+};
+
+exports.deleteComplianceCertificate = async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!id) return res.status(400).json({ error: 'id required' });
+
+    // Basic protection: ensure certificate belongs to clerk's unit
+    const userId = req.user.id;
+    const { rows: clerkRows } = await pool.query('SELECT unit_id FROM clerks WHERE user_id = $1', [userId]);
+    const unit_id = clerkRows[0]?.unit_id;
+    if (!unit_id) return res.status(404).json({ error: "No unit assigned" });
+
+    const del = await pool.query('DELETE FROM compliance_certificates WHERE id = $1 AND unit_id = $2 RETURNING *', [id, unit_id]);
+    if (del.rows.length === 0) return res.status(404).json({ error: 'Certificate not found' });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('deleteComplianceCertificate error:', err);
+    res.status(500).json({ error: 'Failed to delete certificate' });
+  }
+};
 // Upsert class capacity for the clerk's unit
 exports.upsertClassCapacity = async (req, res) => {
   try {

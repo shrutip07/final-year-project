@@ -53,9 +53,11 @@ export default function Students() {
   const [search, setSearch] = useState("");
 
   // Toppers state
-  const [toppers, setToppers] = useState([]); // grouped by standard
-  const [toppersLimit, setToppersLimit] = useState(3);
-  const [loadingToppers, setLoadingToppers] = useState(false);
+  // Toppers state
+const [toppers, setToppers] = useState([]); // grouped by standard
+const [toppersLimit, setToppersLimit] = useState(3);
+const [loadingToppers, setLoadingToppers] = useState(false);
+const [toppersYear, setToppersYear] = useState(""); // "" = all years
 
   // Fetch all students once (and toppers)
   useEffect(() => {
@@ -75,7 +77,7 @@ export default function Students() {
         setAllYears(years);
 
         // fetch toppers as well
-        await fetchToppers(toppersLimit, token);
+        await fetchToppers(toppersLimit, token, toppersYear);
       } catch (err) {
         setError(
           err.response?.data?.message ||
@@ -93,29 +95,32 @@ export default function Students() {
   }, []);
 
   // Fetch toppers function
-  async function fetchToppers(limit = 3, tokenArg = null) {
-    setLoadingToppers(true);
-    try {
-      const token = tokenArg || localStorage.getItem("token");
-      const res = await axios.get(`http://localhost:5000/api/principal/students/toppers?limit=${limit}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      // res.data.data is expected to be [{ standard: '1', toppers: [...] }, ...]
-      setToppers(res.data?.data || []);
-    } catch (err) {
-      console.error("Failed to load toppers:", err);
-      setToppers([]);
-    } finally {
-      setLoadingToppers(false);
+  // Fetch toppers function
+async function fetchToppers(limit = 3, tokenArg = null, year = "") {
+  setLoadingToppers(true);
+  try {
+    const token = tokenArg || localStorage.getItem("token");
+    let url = `http://localhost:5000/api/principal/students/toppers?limit=${limit}`;
+    if (year) {
+      url += `&academic_year=${encodeURIComponent(year)}`;
     }
+    const res = await axios.get(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setToppers(res.data?.data || []);
+  } catch (err) {
+    console.error("Failed to load toppers:", err);
+    setToppers([]);
+  } finally {
+    setLoadingToppers(false);
   }
+}
 
   // When toppersLimit changes, re-fetch toppers
   useEffect(() => {
-    // avoid calling until students load triggered initial fetch; still safe to call
-    fetchToppers(toppersLimit);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toppersLimit]);
+  fetchToppers(toppersLimit, null, toppersYear);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [toppersLimit, toppersYear]);
 
   // Filtered list by year + search
   const searchLower = search.toLowerCase();
@@ -159,28 +164,44 @@ export default function Students() {
       {/* TOPPERS PANEL */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-          <div style={{ fontWeight: 600 }}>Toppers by Standard</div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <div style={{ fontSize: 13, color: "#555" }}>Top</div>
-            <select
-              className="form-control form-control-sm"
-              value={toppersLimit}
-              onChange={(e) => setToppersLimit(Number(e.target.value))}
-              style={{ width: 100 }}
-            >
-              <option value={1}>1</option>
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-              <option value={5}>5</option>
-            </select>
-            <button
-              className="btn btn-sm btn-outline-secondary"
-              onClick={() => fetchToppers(toppersLimit)}
-            >
-              Refresh
-            </button>
-          </div>
-        </div>
+  <div style={{ fontWeight: 600 }}>Toppers by Standard</div>
+  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+    <div style={{ fontSize: 13, color: "#555" }}>Top</div>
+    <select
+      className="form-control form-control-sm"
+      value={toppersLimit}
+      onChange={(e) => setToppersLimit(Number(e.target.value))}
+      style={{ width: 100 }}
+    >
+      <option value={1}>1</option>
+      <option value={2}>2</option>
+      <option value={3}>3</option>
+      <option value={5}>5</option>
+    </select>
+
+    <div style={{ fontSize: 13, color: "#555", marginLeft: 8 }}>Year</div>
+    <select
+      className="form-control form-control-sm"
+      value={toppersYear}
+      onChange={(e) => setToppersYear(e.target.value)}
+      style={{ width: 140 }}
+    >
+      <option value="">All Years</option>
+      {allYears.map((y) => (
+        <option key={y} value={y}>
+          {y}
+        </option>
+      ))}
+    </select>
+
+    <button
+      className="btn btn-sm btn-outline-secondary"
+      onClick={() => fetchToppers(toppersLimit)}
+    >
+      Refresh
+    </button>
+  </div>
+</div>
 
         {loadingToppers ? (
           <div className="mt-2">Loading toppers…</div>
