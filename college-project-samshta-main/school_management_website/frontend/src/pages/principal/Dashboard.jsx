@@ -10,29 +10,23 @@ import PrincipalNotificationsPage from "./PrincipalNotificationsPage";
 import ChatWidget from "../../components/ChatWidget";
 import PageHeader from "../../components/admin/PageHeader";
 import AdminCard from "../../components/admin/AdminCard";
+import TabNavigation from "../../components/admin/TabNavigation";
 import "../admin/Dashboard.scss";
+
+import PrincipalLayout from "../../components/principal/PrincipalLayout";
 
 export default function PrincipalDashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [sidebarTab, setSidebarTab] = useState("dashboard");
-  const [dashboardSubTab, setDashboardSubTab] = useState("principal_profile0");
+  const [dashboardSubTab, setDashboardSubTab] = useState("principal_profile");
   const [dashboardData, setDashboardData] = useState(null);
   const [students, setStudents] = useState([]);
   const [selectedOverviewFy, setSelectedOverviewFy] = useState("2024-25");
   const [overviewMetrics, setOverviewMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const sidebarItems = [
-    { key: "dashboard", label: t("dashboard"), icon: "bi-speedometer2" },
-    { key: "profile", label: t("profile"), icon: "bi-person-circle" },
-    { key: "teachers", label: t("teachers"), icon: "bi-people" },
-    { key: "students", label: t("students"), icon: "bi-mortarboard" },
-    { key: "charts", label: t("charts"), icon: "bi-graph-up" },
-    { key: "notifications", label: t("notifications"), icon: "bi-bell" },
-  ];
 
   useEffect(() => {
     async function fetchAllData() {
@@ -107,46 +101,37 @@ export default function PrincipalDashboard() {
     return (
       <div className="principal-tab-content">
         <div className="metrics-grid mb-4">
-          <div className="metric-box metric-teachers-blue">
-            <span className="label">{t("teachers")}</span>
-            <span className="value">{teacherCount || 0}</span>
+          <div className="metric-box metric-teachers-blue text-center">
+            <span className="label fw-bold text-uppercase">{t("teachers")}</span>
+            <span className="value d-block my-2">{teacherCount || 0}</span>
             <i className="bi bi-people-fill watermark"></i>
           </div>
 
-          <div className="metric-box metric-students-green">
-            <span className="label">{t("students")}</span>
-            <span className="value">{studentCount || 0}</span>
+          <div className="metric-box metric-students-green text-center">
+            <span className="label fw-bold text-uppercase">{t("students")}</span>
+            <span className="value d-block my-2">{studentCount || 0}</span>
             <i className="bi bi-mortarboard-fill watermark"></i>
           </div>
 
-          <div className="metric-box metric-ratio-amber">
-            <span className="label">{t("teacher_ratio")}</span>
-            <span className="value">{ratio}</span>
+          <div className="metric-box metric-ratio-amber text-center">
+            <span className="label fw-bold text-uppercase">{t("teacher_ratio")}</span>
+            <span className="value d-block my-2">{ratio}</span>
             <i className="bi bi-pie-chart-fill watermark"></i>
           </div>
 
-          <div className="metric-box metric-budget-teal">
-            <span className="label">Budget Status</span>
-            <span className="value">Active</span>
+          <div className="metric-box metric-budget-teal text-center">
+            <span className="label fw-bold text-uppercase">Budget Status</span>
+            <span className="value d-block my-2">Active</span>
             <i className="bi bi-wallet2 watermark"></i>
           </div>
         </div>
 
-        <div className="principal-tabs-container">
-          <div className="tab-navigation-bar">
-            {dashboardSubTabs.map((tab) => (
-              <button
-                key={tab.id}
-                className={`tab-item ${
-                  dashboardSubTab === tab.id ? "active" : ""
-                }`}
-                onClick={() => setDashboardSubTab(tab.id)}
-              >
-                <i className={`bi ${tab.icon}`}></i>
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </div>
+        <div className="principal-tabs-container mb-4">
+          <TabNavigation
+            tabs={dashboardSubTabs}
+            activeTab={dashboardSubTab}
+            onTabChange={setDashboardSubTab}
+          />
         </div>
 
         <div className="principal-sub-content">
@@ -162,30 +147,30 @@ export default function PrincipalDashboard() {
               <div className="profile-right">
                 <div className="details-grid">
                   <div className="detail-item">
-                    <span className="label">Email Address</span>
-                    <span className="value">{principal?.email || "-"}</span>
+                    <span className="label text-muted small text-uppercase">Email Address</span>
+                    <span className="value fw-bold text-dark">{principal?.email || "-"}</span>
                   </div>
                   <div className="detail-item">
-                    <span className="label">Phone Number</span>
-                    <span className="value">{principal?.phone || "-"}</span>
-                  </div>
-                  <div className="divider" />
-                  <div className="detail-item">
-                    <span className="label">Education</span>
-                    <span className="value">{principal?.qualification || "M.A. B.Ed"}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="label">Experience</span>
-                    <span className="value">15+ Years</span>
+                    <span className="label text-muted small text-uppercase">Phone Number</span>
+                    <span className="value fw-bold text-dark">{principal?.phone || "-"}</span>
                   </div>
                   <div className="divider" />
                   <div className="detail-item">
-                    <span className="label">Joined Date</span>
-                    <span className="value">{principal?.joining_date || "2015-06-15"}</span>
+                    <span className="label text-muted small text-uppercase">Education</span>
+                    <span className="value fw-bold text-dark">{principal?.qualification || "M.A. B.Ed"}</span>
                   </div>
                   <div className="detail-item">
-                    <span className="label">Assigned Unit</span>
-                    <span className="value">{school.unit_name || "MKSSS Branch"}</span>
+                    <span className="label text-muted small text-uppercase">Experience</span>
+                    <span className="value fw-bold text-dark">15+ Years</span>
+                  </div>
+                  <div className="divider" />
+                  <div className="detail-item">
+                    <span className="label text-muted small text-uppercase">Joined Date</span>
+                    <span className="value fw-bold text-dark">{principal?.joining_date || "2015-06-15"}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="label text-muted small text-uppercase">Assigned Unit</span>
+                    <span className="value fw-bold text-dark">{school.unit_name || "MKSSS Branch"}</span>
                   </div>
                 </div>
               </div>
@@ -204,30 +189,30 @@ export default function PrincipalDashboard() {
               <div className="profile-right">
                 <div className="details-grid">
                   <div className="detail-item">
-                    <span className="label">Designation</span>
-                    <span className="value text-primary fw-bold">Headmistress</span>
+                    <span className="label text-muted small text-uppercase">Designation</span>
+                    <span className="value fw-bold text-primary">Headmistress</span>
                   </div>
                   <div className="detail-item">
-                    <span className="label">Administrative Role</span>
-                    <span className="value">Operational Lead</span>
-                  </div>
-                  <div className="divider" />
-                  <div className="detail-item">
-                    <span className="label">Full Name</span>
-                    <span className="value">{school.headmistress_name || "-"}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="label">Contact Info</span>
-                    <span className="value">Available via Office</span>
+                    <span className="label text-muted small text-uppercase">Administrative Role</span>
+                    <span className="value fw-bold text-dark">Operational Lead</span>
                   </div>
                   <div className="divider" />
                   <div className="detail-item">
-                    <span className="label">Branch Name</span>
-                    <span className="value">{school.unit_name || "-"}</span>
+                    <span className="label text-muted small text-uppercase">Full Name</span>
+                    <span className="value fw-bold text-dark">{school.headmistress_name || "-"}</span>
                   </div>
                   <div className="detail-item">
-                    <span className="label">Unit ID</span>
-                    <span className="value">{school.unit_id || "-"}</span>
+                    <span className="label text-muted small text-uppercase">Contact Info</span>
+                    <span className="value fw-bold text-dark">Available via Office</span>
+                  </div>
+                  <div className="divider" />
+                  <div className="detail-item">
+                    <span className="label text-muted small text-uppercase">Branch Name</span>
+                    <span className="value fw-bold text-dark">{school.unit_name || "-"}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="label text-muted small text-uppercase">Unit ID</span>
+                    <span className="value fw-bold text-dark">{school.unit_id || "-"}</span>
                   </div>
                 </div>
               </div>
@@ -278,7 +263,7 @@ export default function PrincipalDashboard() {
               <AdminCard 
                 header={
                   <div className="finance-card-header">
-                    <span>Finance Overview</span>
+                    <span className="fw-bold">Finance Overview</span>
                     <select
                       value={selectedOverviewFy}
                       onChange={(e) => setSelectedOverviewFy(e.target.value)}
@@ -309,7 +294,17 @@ export default function PrincipalDashboard() {
               <AdminCard 
                 header={
                   <div className="finance-card-header">
-                    <span>Budget Summary</span>
+                    <span className="fw-bold">Budget Summary</span>
+                    <select
+                      value={selectedOverviewFy}
+                      onChange={(e) => setSelectedOverviewFy(e.target.value)}
+                      className="form-select form-select-sm"
+                      style={{ width: '150px' }}
+                    >
+                      <option value="2023-24">2023-24</option>
+                      <option value="2024-25">2024-25</option>
+                      <option value="2025-26">2025-26</option>
+                    </select>
                   </div>
                 }
               >
@@ -325,19 +320,29 @@ export default function PrincipalDashboard() {
                     <span className="amount text-danger">₹{((overviewMetrics?.feesCollectedFy || 0) * 0.1).toLocaleString()}</span>
                   </div>
                 </div>
-                <div className="balance-strip">
+                <div className="balance-strip shadow-sm">
                   <div className="d-flex flex-column">
                     <span className="text">Balance (Fees Collected minus Salary Spent)</span>
                     <span className="calculation">₹{(overviewMetrics?.feesCollectedFy || 0).toLocaleString()} - ₹{(overviewMetrics?.salarySpentFy || 0).toLocaleString()} =</span>
                   </div>
-                  <span className="amount">₹{((overviewMetrics?.feesCollectedFy || 0) - (overviewMetrics?.salarySpentFy || 0)).toLocaleString()}</span>
+                  <span className="amount ms-auto">₹{((overviewMetrics?.feesCollectedFy || 0) - (overviewMetrics?.salarySpentFy || 0)).toLocaleString()}</span>
                 </div>
               </AdminCard>
 
               <AdminCard 
                 header={
                   <div className="finance-card-header">
-                    <span>Financial Year Metrics {selectedOverviewFy}</span>
+                    <span className="fw-bold">Financial Year Metrics {selectedOverviewFy}</span>
+                    <select
+                      value={selectedOverviewFy}
+                      onChange={(e) => setSelectedOverviewFy(e.target.value)}
+                      className="form-select form-select-sm"
+                      style={{ width: '150px' }}
+                    >
+                      <option value="2023-24">2023-24</option>
+                      <option value="2024-25">2024-25</option>
+                      <option value="2025-26">2025-26</option>
+                    </select>
                   </div>
                 }
               >
@@ -354,6 +359,7 @@ export default function PrincipalDashboard() {
               </AdminCard>
             </div>
           )}
+
         </div>
       </div>
     );
@@ -434,59 +440,29 @@ export default function PrincipalDashboard() {
   };
 
   return (
-    <div className="dashboard-container d-flex">
-      {/* SIDEBAR */}
-      <div className="sidebar">
-        <div className="sidebar-header">
-          <div className="app-icon">
-            <i className="bi bi-mortarboard-fill" />
-          </div>
-          <h3>{t("principal_portal")}</h3>
-        </div>
-
-        <nav className="sidebar-nav">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.key}
-              className={`nav-link ${sidebarTab === item.key ? "active" : ""}`}
-              onClick={() => setSidebarTab(item.key)}
-            >
-              <i className={`bi ${item.icon}`} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className="sidebar-footer">
-          <button
-            className="nav-link logout-btn"
-            onClick={() => {
-              localStorage.removeItem("token");
-              navigate("/login");
-            }}
-          >
-            <i className="bi bi-box-arrow-left"></i>
-            <span>{t("logout")}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* MAIN CONTENT */}
-      <main className="main-content">
+    <PrincipalLayout
+      activeSidebarTab={sidebarTab}
+      onSidebarTabChange={setSidebarTab}
+    >
+      <div className="dashboard-wrapper">
         {loading ? (
-          <div className="loading-spinner">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">{t("loading")}...</span>
-            </div>
+          <div className="d-flex flex-column align-items-center justify-content-center py-5">
+            <div className="spinner-grow text-primary" role="status"></div>
+            <span className="mt-3 text-muted fw-bold">Syncing Dashboard Data...</span>
           </div>
         ) : error ? (
-          <div className="alert alert-danger m-4">{error}</div>
+          <div className="alert alert-custom-danger d-flex align-items-center m-4" role="alert">
+            <i className="bi bi-exclamation-triangle-fill me-3 fs-3"></i>
+            <div>
+              <div className="fw-bold">Configuration Error</div>
+              {error}
+            </div>
+          </div>
         ) : (
           renderContent()
         )}
-      </main>
-
+      </div>
       <ChatWidget />
-    </div>
+    </PrincipalLayout>
   );
 }
