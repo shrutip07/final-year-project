@@ -81,6 +81,39 @@ export default function CapacityManager() {
       </div>
 
       <div className="px-0">
+        <div className="metrics-grid mb-4">
+          <div className="metric-box metric-students">
+            <div className="metric-icon">
+              <i className="bi bi-door-open"></i>
+            </div>
+            <div className="metric-info">
+              <span className="label">TOTAL CAPACITY</span>
+              <span className="value">{dashboard?.totals?.capacity || 0}</span>
+              <span className="sub-label">Across all classes</span>
+            </div>
+          </div>
+          <div className="metric-box metric-staff">
+            <div className="metric-icon">
+              <i className="bi bi-people"></i>
+            </div>
+            <div className="metric-info">
+              <span className="label">ENROLLED STUDENTS</span>
+              <span className="value">{dashboard?.totals?.enrolled || 0}</span>
+              <span className="sub-label">Active admissions</span>
+            </div>
+          </div>
+          <div className="metric-box metric-fees highlight">
+            <div className="metric-icon">
+              <i className="bi bi-bookmark-plus"></i>
+            </div>
+            <div className="metric-info">
+              <span className="label">SEATS REMAINING</span>
+              <span className="value">{dashboard?.totals?.seatsRemaining || 0}</span>
+              <span className="sub-label">Available for intake</span>
+            </div>
+          </div>
+        </div>
+
         <TabNavigation
           tabs={capacityTabs}
           activeTab={activeTab}
@@ -88,39 +121,6 @@ export default function CapacityManager() {
         />
 
         <div className="mt-4">
-          <div className="metrics-grid mb-5">
-            <div className="metric-box metric-students">
-              <div className="metric-icon">
-                <i className="bi bi-door-open"></i>
-              </div>
-              <div className="metric-info">
-                <span className="label">TOTAL CAPACITY</span>
-                <span className="value">{dashboard?.totals?.capacity || 0}</span>
-                <span className="sub-label">Across all classes</span>
-              </div>
-            </div>
-            <div className="metric-box metric-staff">
-              <div className="metric-icon">
-                <i className="bi bi-people"></i>
-              </div>
-              <div className="metric-info">
-                <span className="label">ENROLLED STUDENTS</span>
-                <span className="value">{dashboard?.totals?.enrolled || 0}</span>
-                <span className="sub-label">Active admissions</span>
-              </div>
-            </div>
-            <div className="metric-box metric-fees highlight">
-              <div className="metric-icon">
-                <i className="bi bi-bookmark-plus"></i>
-              </div>
-              <div className="metric-info">
-                <span className="label">SEATS REMAINING</span>
-                <span className="value">{dashboard?.totals?.seatsRemaining || 0}</span>
-                <span className="sub-label">Available for intake</span>
-              </div>
-            </div>
-          </div>
-
           {activeTab === "define" && (
             <div className="row justify-content-center">
               <div className="col-lg-6">
