@@ -20,7 +20,6 @@ export default function PrincipalDashboard() {
   const [sidebarTab, setSidebarTab] = useState("dashboard");
   const [dashboardSubTab, setDashboardSubTab] = useState("principal_profile");
   const [dashboardData, setDashboardData] = useState(null);
-  const [students, setStudents] = useState([]);
   const [selectedOverviewFy, setSelectedOverviewFy] = useState("2024-25");
   const [overviewMetrics, setOverviewMetrics] = useState(null);
 
