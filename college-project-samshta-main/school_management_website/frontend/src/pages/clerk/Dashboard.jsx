@@ -9,6 +9,8 @@ import TeacherSalaries from "./TeacherSalaries";
 import ClerkAddStudent from "./StudentAdd";
 import FireSafety from "./FireSafety";
 import PhysicalSafety from "./PhysicalSafety";
+import ManageRetirements from "./ManageRetirements";
+import CapacityManager from "./CapacityManager";
 
 // Shared Components
 import ClerkLayout from "../../components/admin/ClerkLayout";
@@ -299,8 +301,14 @@ export default function ClerkDashboard() {
       case "salaries":
         return <TeacherSalaries />;
 
+      case "retirements":
+        return <ManageRetirements />;
+
       case "addStudent":
         return <ClerkAddStudent />;
+
+      case "capacity":
+        return <CapacityManager />;
 
       case "fire-safety":
         return <FireSafety />;
