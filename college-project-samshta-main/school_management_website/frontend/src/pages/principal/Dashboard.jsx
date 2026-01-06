@@ -25,6 +25,15 @@ export default function PrincipalDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const sidebarItems = [
+    { key: "dashboard", label: t("dashboard"), icon: "bi-speedometer2" },
+    { key: "profile", label: t("profile"), icon: "bi-person-circle" },
+    { key: "teachers", label: t("teachers"), icon: "bi-people" },
+    { key: "students", label: t("students"), icon: "bi-mortarboard" },
+    { key: "charts", label: t("charts"), icon: "bi-graph-up" },
+    { key: "notifications", label: t("notifications"), icon: "bi-bell" },
+  ];
+
   useEffect(() => {
     async function fetchAllData() {
       try {
